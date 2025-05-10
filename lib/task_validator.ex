@@ -3,7 +3,7 @@ defmodule TaskValidator do
   Validates TaskList.md format compliance according to project guidelines.
 
   Checks for:
-  - ID format compliance (SSH#### format)
+  - ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
   - Unique task IDs
   - Required sections and fields in tasks
   - Proper subtask structure
@@ -13,7 +13,8 @@ defmodule TaskValidator do
 
   @valid_statuses ["Planned", "In Progress", "Review", "Completed", "Blocked"]
   @valid_priorities ["Critical", "High", "Medium", "Low"]
-  @id_regex ~r/^SSH\d{4}(-\d+)?$/
+  # Support various prefixes (2-4 uppercase letters) followed by digits
+  @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+)?$/
   @rating_regex ~r/^([1-5](\.\d)?)\s*(\(partial\))?$/
 
   @doc """
@@ -178,16 +179,16 @@ defmodule TaskValidator do
   end
 
   defp extract_detailed_tasks(lines) do
-    # Find task detail sections (lines starting with "### SSH")
+    # Find task detail sections (lines starting with "### " followed by ID format)
     task_indices =
       lines
       |> Enum.with_index()
       |> Enum.filter(fn {line, _} ->
-        String.match?(line, ~r/^### SSH\d{4}:/)
+        String.match?(line, ~r/^### [A-Z]{2,4}\d{3,4}:/)
       end)
       |> Enum.map(fn {line, idx} ->
         # Extract task ID from the line
-        [_, id | _] = Regex.run(~r/### (SSH\d{4})/, line)
+        [_, id | _] = Regex.run(~r/### ([A-Z]{2,4}\d{3,4})/, line)
         %{id: id, start_line: idx}
       end)
 
@@ -223,8 +224,8 @@ defmodule TaskValidator do
       String.match?(line, ~r/^#### \d+\./)
     end)
     |> Enum.map(fn {line, idx} ->
-      # Extract subtask ID from the line (SSH####-#)
-      case Regex.run(~r/\((SSH\d{4}-\d+)\)/, line) do
+      # Extract subtask ID from the line (PREFIX####-#)
+      case Regex.run(~r/\(([A-Z]{2,4}\d{3,4}-\d+)\)/, line) do
         [_, subtask_id] -> %{id: subtask_id, line: idx}
         _ -> %{id: "INVALID_FORMAT", line: idx}
       end
@@ -242,78 +243,141 @@ defmodule TaskValidator do
   end
 
   defp validate_task_structure(task) do
-    # Required sections
-    required_sections = [
-      "**Description**",
-      "**Simplicity Progression Plan**",
-      "**Abstraction Evaluation**",
-      "**Requirements**",
-      "**ExUnit Test Requirements**",
-      "**Integration Test Scenarios**",
-      "**Status**",
-      "**Priority**"
-    ]
+    # First, check subtask prefix consistency
+    subtask_prefix_result =
+      if task.subtasks != [] do
+        task_prefix =
+          if String.match?(task.id, ~r/^[A-Z]{2,4}\d{3,4}$/) do
+            Regex.run(~r/^([A-Z]{2,4})/, task.id) |> Enum.at(1)
+          else
+            nil
+          end
 
-    # Check if all required sections are present
-    missing_sections =
-      Enum.filter(required_sections, fn section ->
-        !Enum.any?(task.content, fn line ->
-          String.starts_with?(line, section)
-        end)
-      end)
+        mismatched_subtask =
+          Enum.find(task.subtasks, fn subtask ->
+            if task_prefix != nil && String.match?(subtask.id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/) do
+              subtask_prefix = Regex.run(~r/^([A-Z]{2,4})/, subtask.id) |> Enum.at(1)
+              subtask_prefix != nil && subtask_prefix != task_prefix
+            else
+              false
+            end
+          end)
 
-    if missing_sections == [] do
-      # Extract status and validate
-      status_line =
-        Enum.find(task.content, fn line -> String.starts_with?(line, "**Status**") end)
-
-      status =
-        if status_line do
-          status_line
-          |> String.replace("**Status**:", "")
-          |> String.replace("**Status**", "")
-          |> String.trim()
+        if mismatched_subtask do
+          {:error,
+           "Subtask #{mismatched_subtask.id} has different prefix than parent task #{task.id}"}
         else
-          "MISSING"
+          :ok
         end
-
-      if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
-        {:error, "Task #{task.id} has invalid status: #{status}"}
       else
-        # Extract priority and validate
-        priority_line =
-          Enum.find(task.content, fn line -> String.starts_with?(line, "**Priority**") end)
-
-        priority =
-          if priority_line do
-            priority_line
-            |> String.replace("**Priority**:", "")
-            |> String.replace("**Priority**", "")
-            |> String.trim()
-          else
-            "MISSING"
-          end
-
-        if priority != "MISSING" && !Enum.member?(@valid_priorities, priority) do
-          {:error, "Task #{task.id} has invalid priority: #{priority}"}
-        else
-          # Validate subtasks if task is "In Progress"
-          if status == "In Progress" && task.subtasks == [] do
-            {:error, "Task #{task.id} is in progress but has no subtasks"}
-          else
-            validate_subtasks(task)
-          end
-        end
+        :ok
       end
-    else
-      {:error,
-       "Task #{task.id} is missing required sections: #{Enum.join(missing_sections, ", ")}"}
+
+    case subtask_prefix_result do
+      {:error, reason} ->
+        {:error, reason}
+
+      :ok ->
+        # Required sections
+        required_sections = [
+          "**Description**",
+          "**Simplicity Progression Plan**",
+          "**Abstraction Evaluation**",
+          "**Requirements**",
+          "**ExUnit Test Requirements**",
+          "**Integration Test Scenarios**",
+          "**Status**",
+          "**Priority**"
+        ]
+
+        # Check if all required sections are present
+        missing_sections =
+          Enum.filter(required_sections, fn section ->
+            !Enum.any?(task.content, fn line ->
+              String.starts_with?(line, section)
+            end)
+          end)
+
+        if missing_sections == [] do
+          # Extract status and validate
+          status_line =
+            Enum.find(task.content, fn line -> String.starts_with?(line, "**Status**") end)
+
+          status =
+            if status_line do
+              status_line
+              |> String.replace("**Status**:", "")
+              |> String.replace("**Status**", "")
+              |> String.trim()
+            else
+              "MISSING"
+            end
+
+          if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
+            {:error, "Task #{task.id} has invalid status: #{status}"}
+          else
+            # Extract priority and validate
+            priority_line =
+              Enum.find(task.content, fn line -> String.starts_with?(line, "**Priority**") end)
+
+            priority =
+              if priority_line do
+                priority_line
+                |> String.replace("**Priority**:", "")
+                |> String.replace("**Priority**", "")
+                |> String.trim()
+              else
+                "MISSING"
+              end
+
+            if priority != "MISSING" && !Enum.member?(@valid_priorities, priority) do
+              {:error, "Task #{task.id} has invalid priority: #{priority}"}
+            else
+              # Validate subtasks if task is "In Progress"
+              if status == "In Progress" && task.subtasks == [] do
+                {:error, "Task #{task.id} is in progress but has no subtasks"}
+              else
+                validate_subtasks(task)
+              end
+            end
+          end
+        else
+          {:error,
+           "Task #{task.id} is missing required sections: #{Enum.join(missing_sections, ", ")}"}
+        end
     end
   end
 
   defp validate_subtasks(task) do
+    # Get the task prefix for checking subtask consistency
+    task_prefix =
+      if String.match?(task.id, ~r/^[A-Z]{2,4}\d{3,4}$/) do
+        Regex.run(~r/^([A-Z]{2,4})/, task.id) |> Enum.at(1)
+      else
+        nil
+      end
+
     # Validate each subtask
     Enum.reduce_while(task.subtasks, :ok, fn subtask, _acc ->
+      # Check subtask ID prefix consistency with parent task
+      if task_prefix != nil do
+        subtask_prefix =
+          if String.match?(subtask.id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/) do
+            Regex.run(~r/^([A-Z]{2,4})/, subtask.id) |> Enum.at(1)
+          else
+            nil
+          end
+
+        if subtask_prefix != nil && subtask_prefix != task_prefix do
+          return =
+            {:halt,
+             {:error, "Subtask #{subtask.id} has different prefix than parent task #{task.id}"}}
+
+          # Early return on prefix mismatch
+          return
+        end
+      end
+
       # For completed subtasks, check rating
       subtask_content =
         task.content

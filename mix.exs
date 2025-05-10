@@ -11,7 +11,7 @@ defmodule TaskValidator.MixProject do
       package: package(),
       deps: deps(),
       name: "TaskValidator",
-      source_url: "https://github.com/yourusername/task_validator"
+      source_url: "https://github.com/zen-hiv/task_validator"
     ]
   end
 
@@ -39,7 +39,7 @@ defmodule TaskValidator.MixProject do
   defp package do
     [
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/yourusername/task_validator"}
+      links: %{"GitHub" => "https://github.com/zen-hiv/task_validator"}
     ]
   end
 end
