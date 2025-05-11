@@ -2,6 +2,13 @@ defmodule Mix.Tasks.ValidateTasklist do
   @moduledoc """
   Validates the format and structure of a TaskList.md file.
 
+  Validates that task lists follow the required format:
+  - Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits
+  - Subtasks must use the same prefix as their parent task
+  - Required sections are present for each task
+  - Tasks marked as "In Progress" have at least one subtask
+  - Completed subtasks have a valid review rating
+
   ## Usage
 
       mix validate_tasklist [OPTIONS]

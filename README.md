@@ -41,10 +41,44 @@ end
 
 The TaskValidator enforces a specific format for task lists:
 
-- Task IDs must follow the SSH#### pattern
+- Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits (e.g., SSH0001, SCP0001, ERR001, REF0002)
+- Subtasks must use the same prefix as their parent task (e.g., SSH0001-1 for a subtask of SSH0001)
 - Each task must have required sections (Description, Status, Priority, etc.)
 - Tasks marked as "In Progress" must have subtasks
 - Review ratings must follow the specified format (1-5 scale)
+
+## Multi-Project Support
+
+The task validator supports multiple project prefixes in the same task list. Each prefix typically represents a different component or subproject:
+
+```markdown
+## Current Tasks
+
+| ID      | Description          | Status      | Priority |
+| ------- | -------------------- | ----------- | -------- |
+| SSH0001 | SSH authentication   | In Progress | High     |
+| SCP0001 | File transfer module | Planned     | Medium   |
+| ERR001  | Error handling       | In Progress | High     |
+```
+
+The validator ensures consistency within each task hierarchy, so a task with ID "SSH0001" must have subtasks with IDs like "SSH0001-1", "SSH0001-2", etc.
+
+## Example Files
+
+The repository includes several example files in the `test/fixtures` directory:
+
+- `sample_tasklist.md` - A basic valid task list
+- `multi_prefix_tasklist.md` - A valid task list with multiple project prefixes
+- `prefix_mismatch.md` - Demonstrates prefix mismatch validation (subtask has different prefix than parent)
+- `invalid_rating.md` - Shows validation of review rating format
+- `invalid_mix_prefixes.md` - Contains various validation errors
+
+You can test validation against these examples:
+
+```bash
+mix validate_tasklist --path test/fixtures/multi_prefix_tasklist.md  # Should pass
+mix validate_tasklist --path test/fixtures/prefix_mismatch.md        # Should fail
+```
 
 ## License
 
