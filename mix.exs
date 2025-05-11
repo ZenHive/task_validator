@@ -11,7 +11,8 @@ defmodule TaskValidator.MixProject do
       package: package(),
       deps: deps(),
       name: "TaskValidator",
-      source_url: "https://github.com/zen-hiv/task_validator"
+      source_url: "https://github.com/zen-hiv/task_validator",
+      docs: docs()
     ]
   end
 
@@ -25,7 +26,7 @@ defmodule TaskValidator.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.24", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false}
     ]
   end
 
@@ -38,8 +39,20 @@ defmodule TaskValidator.MixProject do
 
   defp package do
     [
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE),
+      maintainers: ["TaskValidator Team"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/zen-hiv/task_validator"}
+      links: %{
+        "GitHub" => "https://github.com/zen-hiv/task_validator",
+        "Docs" => "https://hexdocs.pm/task_validator"
+      }
+    ]
+  end
+
+  defp docs do
+    [
+      main: "TaskValidator",
+      extras: ["README.md"]
     ]
   end
 end
