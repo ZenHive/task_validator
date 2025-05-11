@@ -4,14 +4,14 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.2.0",
+      version: "0.2.1",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
       name: "TaskValidator",
-      source_url: "https://github.com/zen-hiv/task_validator",
+      source_url: "https://github.com/ZenHive/task_validator",
       docs: docs()
     ]
   end
@@ -44,7 +44,7 @@ defmodule TaskValidator.MixProject do
       maintainers: ["TaskValidator Team"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/zen-hiv/task_validator",
+        "GitHub" => "https://github.com/ZenHive/task_validator",
         "Docs" => "https://hexdocs.pm/task_validator"
       }
     ]
