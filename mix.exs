@@ -4,7 +4,7 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.2.1",
+      version: "0.3.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -52,8 +52,21 @@ defmodule TaskValidator.MixProject do
 
   defp docs do
     [
-      main: "TaskValidator",
-      extras: ["README.md"]
+      main: "readme",
+      extras: [
+        "README.md",
+        "CHANGELOG.md",
+        "guides/writing_compliant_tasks.md",
+        "guides/sample_tasklist.md"
+      ],
+      source_url: "https://github.com/ZenHive/task_validator",
+      groups_for_extras: [
+        Guides: ~r/guides\/[^\/]+\.md/
+      ],
+      groups_for_modules: [
+        Core: [TaskValidator],
+        Tasks: [Mix.Tasks.ValidateTasklist]
+      ]
     ]
   end
 end

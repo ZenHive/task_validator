@@ -148,10 +148,14 @@ defmodule TaskValidatorTest do
     ### SSH0001: Task with no subtasks
     **Description**: This task has no subtasks
     **Simplicity Progression Plan**: Progressive simplicity plan
+    **Simplicity Principle**: Design this project with simplicity as the guiding principle. Identify and eliminate unnecessary features, workflows, and dependencies. Focus on core functionality that delivers maximum value with minimal complexity. Optimize for maintainability by reducing moving parts rather than adding layers.
     **Abstraction Evaluation**: Abstraction justification
     **Requirements**: Functional requirements
     **ExUnit Test Requirements**: Unit test requirements
     **Integration Test Scenarios**: Integration test requirements
+    **Typespec Requirements**: Type specifications for public functions
+    **TypeSpec Documentation**: Documentation for type specifications
+    **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
     """
@@ -183,10 +187,14 @@ defmodule TaskValidatorTest do
     ### SSH0001: Task with subtask missing sections
     **Description**: This task has a subtask missing sections
     **Simplicity Progression Plan**: Progressive simplicity plan
+    **Simplicity Principle**: Design this project with simplicity as the guiding principle. Identify and eliminate unnecessary features, workflows, and dependencies. Focus on core functionality that delivers maximum value with minimal complexity. Optimize for maintainability by reducing moving parts rather than adding layers.
     **Abstraction Evaluation**: Abstraction justification
     **Requirements**: Functional requirements
     **ExUnit Test Requirements**: Unit test requirements
     **Integration Test Scenarios**: Integration test requirements
+    **Typespec Requirements**: Type specifications for public functions
+    **TypeSpec Documentation**: Documentation for type specifications
+    **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
 
@@ -223,10 +231,14 @@ defmodule TaskValidatorTest do
     ### SSH0001: Task with completed subtask missing rating
     **Description**: This task has a completed subtask missing review rating
     **Simplicity Progression Plan**: Progressive simplicity plan
+    **Simplicity Principle**: Design this project with simplicity as the guiding principle. Identify and eliminate unnecessary features, workflows, and dependencies. Focus on core functionality that delivers maximum value with minimal complexity. Optimize for maintainability by reducing moving parts rather than adding layers.
     **Abstraction Evaluation**: Abstraction justification
     **Requirements**: Functional requirements
     **ExUnit Test Requirements**: Unit test requirements
     **Integration Test Scenarios**: Integration test requirements
+    **Typespec Requirements**: Type specifications for public functions
+    **TypeSpec Documentation**: Documentation for type specifications
+    **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
 
@@ -264,10 +276,14 @@ defmodule TaskValidatorTest do
     ### SSH0001: Task with invalid rating format
     **Description**: This task has a completed subtask with invalid rating format
     **Simplicity Progression Plan**: Progressive simplicity plan
+    **Simplicity Principle**: Design this project with simplicity as the guiding principle. Identify and eliminate unnecessary features, workflows, and dependencies. Focus on core functionality that delivers maximum value with minimal complexity. Optimize for maintainability by reducing moving parts rather than adding layers.
     **Abstraction Evaluation**: Abstraction justification
     **Requirements**: Functional requirements
     **ExUnit Test Requirements**: Unit test requirements
     **Integration Test Scenarios**: Integration test requirements
+    **Typespec Requirements**: Type specifications for public functions
+    **TypeSpec Documentation**: Documentation for type specifications
+    **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
 
@@ -310,10 +326,14 @@ defmodule TaskValidatorTest do
     ### SSH0001: Valid task
     **Description**: This is a valid task description
     **Simplicity Progression Plan**: Progressive simplicity plan
+    **Simplicity Principle**: Design this project with simplicity as the guiding principle. Identify and eliminate unnecessary features, workflows, and dependencies. Focus on core functionality that delivers maximum value with minimal complexity. Optimize for maintainability by reducing moving parts rather than adding layers.
     **Abstraction Evaluation**: Abstraction justification
     **Requirements**: Functional requirements
     **ExUnit Test Requirements**: Unit test requirements
     **Integration Test Scenarios**: Integration test requirements
+    **Typespec Requirements**: Type specifications for public functions
+    **TypeSpec Documentation**: Documentation for type specifications
+    **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
 

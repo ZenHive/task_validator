@@ -9,7 +9,7 @@ Add `task_validator` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:task_validator, "~> 0.1.0"}
+    {:task_validator, "~> 0.3.0"}
   ]
 end
 ```

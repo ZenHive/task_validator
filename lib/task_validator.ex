@@ -2,13 +2,28 @@ defmodule TaskValidator do
   @moduledoc """
   Validates TaskList.md format compliance according to project guidelines.
 
-  Checks for:
-  - ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
-  - Unique task IDs
-  - Required sections and fields in tasks
-  - Proper subtask structure
-  - Valid status values
-  - Review rating format
+  The `TaskValidator` ensures that task documents follow a consistent structure,
+  making it easier to track and manage work across multiple project components.
+
+  ## Validation Checks
+
+  * ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
+  * Unique task IDs across the document
+  * Required sections and fields present in each task
+  * Proper subtask structure with consistent prefixes
+  * Valid status values from the allowed list
+  * Proper review rating format for completed tasks
+
+  ## Usage Example
+
+      case TaskValidator.validate_file("path/to/TaskList.md") do
+        {:ok, message} ->
+          # Task list validation succeeded
+          IO.puts("Validation passed: " <> message)
+        {:error, reason} ->
+          # Task list validation failed
+          IO.puts("Validation failed: " <> reason)
+      end
   """
 
   @valid_statuses ["Planned", "In Progress", "Review", "Completed", "Blocked"]
@@ -282,10 +297,14 @@ defmodule TaskValidator do
         required_sections = [
           "**Description**",
           "**Simplicity Progression Plan**",
+          "**Simplicity Principle**",
           "**Abstraction Evaluation**",
           "**Requirements**",
           "**ExUnit Test Requirements**",
           "**Integration Test Scenarios**",
+          "**Typespec Requirements**",
+          "**TypeSpec Documentation**",
+          "**TypeSpec Verification**",
           "**Status**",
           "**Priority**"
         ]
