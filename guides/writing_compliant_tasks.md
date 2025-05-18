@@ -134,11 +134,37 @@ For completed tasks, include a review rating:
 - Scale of 1-5 with optional decimal (e.g., `4.5`)
 - Can include `(partial)` suffix for partially meeting requirements
 
+## Required Sections for Completed Tasks
+
+When a task is marked as "Completed", it must include these additional sections:
+
+**Implementation Notes**
+Describe the implementation approach and patterns used.
+
+**Complexity Assessment**
+Assess the final complexity level (High/Medium/Low) and explain why.
+
+**Maintenance Impact**
+Evaluate the maintenance burden and any special considerations.
+
+Example:
+```markdown
+**Implementation Notes**
+Elegant indirection pattern using Registry for PID resolution
+
+**Complexity Assessment**
+Low - Used built-in Registry with minimal custom code
+
+**Maintenance Impact**
+Low - Self-contained solution with clear interface
+```
+
 ## Common Validation Errors
 
 1. **Missing detailed entries** - All non-completed tasks need detailed entries
 2. **Missing required sections** - Ensure all required sections are present
-3. **Inconsistent subtask prefixes** - Subtasks must use same prefix as parent
-4. **In Progress tasks without subtasks** - Any "In Progress" task needs subtasks
-5. **Invalid status values** - Must be one of the valid status values
-6. **Missing review ratings** - Completed subtasks need review ratings
+3. **Missing completion details** - Completed tasks must include implementation notes, complexity assessment and maintenance impact
+4. **Inconsistent subtask prefixes** - Subtasks must use same prefix as parent
+5. **In Progress tasks without subtasks** - Any "In Progress" task needs subtasks
+6. **Invalid status values** - Must be one of the valid status values
+7. **Missing review ratings** - Completed subtasks need review ratings

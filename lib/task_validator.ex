@@ -32,6 +32,13 @@ defmodule TaskValidator do
   @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+)?$/
   @rating_regex ~r/^([1-5](\.\d)?)\s*(\(partial\))?$/
 
+  # Add new required sections for completed tasks
+  @completed_task_sections [
+    "**Implementation Notes**",
+    "**Complexity Assessment**",
+    "**Maintenance Impact**"
+  ]
+
   @doc """
   Validates a TaskList.md file against the specified format requirements.
 
@@ -309,13 +316,42 @@ defmodule TaskValidator do
           "**Priority**"
         ]
 
-        # Check if all required sections are present
+        # First check if all base required sections are present
         missing_sections =
           Enum.filter(required_sections, fn section ->
             !Enum.any?(task.content, fn line ->
               String.starts_with?(line, section)
             end)
           end)
+
+        # Extract status to check if task is completed
+        status_line =
+          Enum.find(task.content, fn line -> String.starts_with?(line, "**Status**") end)
+
+        status =
+          if status_line do
+            status_line
+            |> String.replace("**Status**:", "")
+            |> String.replace("**Status**", "")
+            |> String.trim()
+          else
+            "MISSING"
+          end
+
+        # For completed tasks, check additional required sections
+        missing_sections =
+          if status == "Completed" do
+            missing_completed_sections =
+              Enum.filter(@completed_task_sections, fn section ->
+                !Enum.any?(task.content, fn line ->
+                  String.starts_with?(line, section)
+                end)
+              end)
+
+            missing_sections ++ missing_completed_sections
+          else
+            missing_sections
+          end
 
         if missing_sections == [] do
           # Extract status and validate
