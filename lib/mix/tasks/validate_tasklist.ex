@@ -2,12 +2,61 @@ defmodule Mix.Tasks.ValidateTasklist do
   @moduledoc """
   Validates the format and structure of a TaskList.md file.
 
-  Validates that task lists follow the required format:
-  - Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits
-  - Subtasks must use the same prefix as their parent task
-  - Required sections are present for each task
-  - Tasks marked as "In Progress" have at least one subtask
-  - Completed subtasks have a valid review rating
+  ## Task List Structure
+  The task list must contain two main sections:
+  - Current Tasks (Active tasks in progress)
+  - Completed Tasks (Tasks that have been finished)
+
+  ## Validation Rules
+
+  ### Task ID Format
+  - 2-4 uppercase letters as prefix (e.g., SSH, SCP, ERR)
+  - 3-4 digits as sequence number
+  - Optional hyphen and number for subtasks (e.g., SSH0001-1)
+  - Examples: SSH0001, SCP0001, ERR001, SSH0001-1
+
+  ### Status Values
+  Valid statuses:
+  - Planned
+  - In Progress
+  - Review
+  - Completed
+  - Blocked
+
+  ### Priority Values
+  Valid priorities:
+  - Critical
+  - High
+  - Medium
+  - Low
+
+  ### Required Sections
+  Main tasks must include:
+  - Description
+  - Simplicity Progression Plan
+  - Simplicity Principle
+  - Abstraction Evaluation
+  - Requirements
+  - ExUnit Test Requirements
+  - Integration Test Scenarios
+  - Typespec Requirements
+  - TypeSpec Documentation
+  - TypeSpec Verification
+  - Status
+  - Priority
+
+  ### Subtask Requirements
+  - Must use same prefix as parent task
+  - Must have "Status" section
+  - If status is "Completed", must have "Review Rating"
+  - Review rating format: 1-5 with optional decimal (e.g., 4.5)
+  - Review rating can include "(partial)" suffix
+
+  ### Additional Rules
+  - Tasks marked as "In Progress" must have at least one subtask
+  - All non-completed tasks must have detailed entries
+  - No duplicate task IDs allowed
+  - All subtasks must use the same prefix as their parent task
 
   ## Usage
 
@@ -15,7 +64,7 @@ defmodule Mix.Tasks.ValidateTasklist do
 
   ## Options
 
-      --path  Specify a non-default path to the TaskList.md file
+      --path  Specify a non-default path to the TaskList.md file (default: docs/TaskList.md)
 
   ## Example
 
