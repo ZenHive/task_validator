@@ -9,10 +9,11 @@ defmodule TaskValidator do
 
   * ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
   * Unique task IDs across the document
-  * Required sections and fields present in each task
+  * Required sections and fields present in each task, including Error Handling Guidelines
   * Proper subtask structure with consistent prefixes
   * Valid status values from the allowed list
   * Proper review rating format for completed tasks
+  * Error handling patterns and conventions
 
   ## Usage Example
 
@@ -32,11 +33,29 @@ defmodule TaskValidator do
   @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+)?$/
   @rating_regex ~r/^([1-5](\.\d)?)\s*(\(partial\))?$/
 
+  # Required sections for error handling - machine-readable, token-optimized format
+  @error_handling_sections [
+    "**Error Handling**",
+    "**Core Principles**",
+    "- Pass raw errors",
+    "- Use {:ok, result} | {:error, reason}",
+    "- Let it crash",
+    "**Error Implementation**",
+    "- No wrapping",
+    "- Minimal rescue",
+    "- function/1 & /! versions",
+    "**Error Examples**",
+    "- Raw error passthrough",
+    "- Simple rescue case",
+    "- Supervisor handling"
+  ]
+
   # Add new required sections for completed tasks
   @completed_task_sections [
     "**Implementation Notes**",
     "**Complexity Assessment**",
-    "**Maintenance Impact**"
+    "**Maintenance Impact**",
+    "**Error Handling Implementation**"
   ]
 
   @doc """
@@ -353,6 +372,16 @@ defmodule TaskValidator do
             missing_sections
           end
 
+        # All tasks require error handling guidelines
+        missing_error_handling_sections =
+          Enum.filter(@error_handling_sections, fn section ->
+            !Enum.any?(task.content, fn line ->
+              String.starts_with?(line, section)
+            end)
+          end)
+
+        missing_sections = missing_sections ++ missing_error_handling_sections
+
         if missing_sections == [] do
           # Extract status and validate
           status_line =
@@ -441,10 +470,12 @@ defmodule TaskValidator do
           !String.match?(line, ~r/^####/) || line == Enum.at(task.content, subtask.line)
         end)
 
-      # Check if subtask has required sections
-      required_subtask_sections = [
-        "**Status**"
-      ]
+      # Check if subtask has required sections, including error handling
+      # Add error handling sections to subtask requirements
+      required_subtask_sections =
+        [
+          "**Status**"
+        ] ++ @error_handling_sections
 
       missing_sections =
         Enum.filter(required_subtask_sections, fn section ->

@@ -39,6 +39,19 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for password authentication
 **Simplicity Constraints**: Keep the API minimal
 **Implementation**: Implement password authentication
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 
 #### 2. Second subtask (SSH0001-2)
@@ -46,6 +59,19 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for key-based authentication
 **Simplicity Constraints**: Reuse code from password authentication where possible
 **Implementation**: Implement key-based authentication
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: Planned
 
 ### SSH0002: Create configuration parser

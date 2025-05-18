@@ -156,6 +156,19 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specifications for public functions
     **TypeSpec Documentation**: Documentation for type specifications
     **TypeSpec Verification**: Verification approach for typespecs
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: In Progress
     **Priority**: High
     """
@@ -239,6 +252,19 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specifications for public functions
     **TypeSpec Documentation**: Documentation for type specifications
     **TypeSpec Verification**: Verification approach for typespecs
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: In Progress
     **Priority**: High
 
@@ -246,6 +272,19 @@ defmodule TaskValidatorTest do
     **Test-First Approach**: Test first
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: Completed
     """
 
@@ -284,6 +323,19 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specifications for public functions
     **TypeSpec Documentation**: Documentation for type specifications
     **TypeSpec Verification**: Verification approach for typespecs
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: In Progress
     **Priority**: High
 
@@ -291,6 +343,19 @@ defmodule TaskValidatorTest do
     **Test-First Approach**: Test first
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: Completed
     **Review Rating**: 6.0
     """
@@ -334,6 +399,19 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specifications for public functions
     **TypeSpec Documentation**: Documentation for type specifications
     **TypeSpec Verification**: Verification approach for typespecs
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: In Progress
     **Priority**: High
 
@@ -341,6 +419,19 @@ defmodule TaskValidatorTest do
     **Test-First Approach**: Test first
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
     **Status**: In Progress
     """
   end

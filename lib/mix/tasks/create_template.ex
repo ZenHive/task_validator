@@ -89,6 +89,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **TypeSpec Verification**
   Use Dialyzer to verify type correctness
 
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
+
   **Status**: In Progress
   **Priority**: High
 
@@ -97,6 +111,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create the foundational structure and interfaces
 
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
+
   **Status**: Completed
   **Review Rating**: 4.5
 
@@ -104,6 +132,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   **Description**
   Implement core features and functionality
+
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
 
   **Status**: In Progress
 
@@ -149,6 +191,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   **TypeSpec Verification**
   Regular verification of documentation accuracy
+
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
 
   **Status**: Planned
   **Priority**: Medium
