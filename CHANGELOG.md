@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.1 (2025-05-18)
+
+### Features
+
+- Added validation for completed tasks requiring implementation notes, complexity assessment, and maintenance impact
+- Enhanced documentation with examples of required completion sections
+- Updated guides with examples of compliant task documentation
+
 ## v0.4.0 (2025-05-18)
 
 ### Features
