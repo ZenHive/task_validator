@@ -24,6 +24,12 @@ mix validate_tasklist
 
 # Validate a custom file path
 mix validate_tasklist --path ./path/to/custom/TaskList.md
+
+# Create a new task list template
+mix create_template
+
+# Create a template with custom prefix
+mix create_template --prefix SSH
 ```
 
 ### Programmatic

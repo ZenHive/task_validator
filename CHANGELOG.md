@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.0 (2025-05-18)
+
+### Features
+
+- Added `mix create_template` task for generating new task list templates
+- Added `mix validate_tasklist` task for validating task lists
+- Improved CLI interface with better error handling and user feedback
+
 ## v0.3.0 (2024-05-29)
 
 ### Enhancements

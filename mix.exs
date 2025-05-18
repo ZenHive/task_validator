@@ -4,7 +4,7 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.3.0",
+      version: "0.4.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -65,7 +65,10 @@ defmodule TaskValidator.MixProject do
       ],
       groups_for_modules: [
         Core: [TaskValidator],
-        Tasks: [Mix.Tasks.ValidateTasklist]
+        Tasks: [
+          Mix.Tasks.ValidateTasklist,
+          Mix.Tasks.TaskValidator.CreateTemplate
+        ]
       ]
     ]
   end
