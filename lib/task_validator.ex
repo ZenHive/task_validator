@@ -3,17 +3,42 @@ defmodule TaskValidator do
   Validates TaskList.md format compliance according to project guidelines.
 
   The `TaskValidator` ensures that task documents follow a consistent structure,
-  making it easier to track and manage work across multiple project components.
+  making it easier to track and manage work across multiple project components,
+  with a strong focus on error handling practices.
 
   ## Validation Checks
 
   * ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
   * Unique task IDs across the document
   * Required sections and fields present in each task, including Error Handling Guidelines
+  * Error handling sections required for all tasks and subtasks, ensuring:
+    - Core error handling principles are documented
+    - Implementation details are specified
+    - Example error scenarios are provided
   * Proper subtask structure with consistent prefixes
   * Valid status values from the allowed list
   * Proper review rating format for completed tasks
   * Error handling patterns and conventions
+
+  ## Error Handling Requirements
+
+  All tasks and subtasks must include error handling sections:
+
+  ```markdown
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
+  ```
 
   ## Usage Example
 

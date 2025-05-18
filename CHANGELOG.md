@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.5.0 (2025-05-18)
+
+### Breaking Changes
+
+- Added mandatory error handling requirements for subtasks
+- All subtasks must now include error handling sections with core principles, implementation details, and examples
+- Enhanced validation to ensure consistent error handling patterns across tasks and subtasks
+
+### Documentation
+
+- Updated guides and examples to demonstrate proper error handling documentation
+- Added examples of compliant error handling sections for subtasks
+- Improved documentation around error handling validation rules
+
 ## v0.4.1 (2025-05-18)
 
 ### Features

@@ -37,6 +37,28 @@ Examples:
 - `ERR001` - Error handling task
 - `SCP0005` - File transfer task
 
+## Error Handling Requirements
+
+Every task and subtask must include error handling sections that follow this format:
+
+```markdown
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+```
+
+These sections ensure consistent error handling practices across the project. Tasks and subtasks without proper error handling sections will fail validation.
+
 ## Detailed Task Entries
 
 Each task needs a detailed entry with the following format:
@@ -106,6 +128,53 @@ Completed
 
 **Status**
 In Progress
+
+#### 1. Implement password authentication (SSH0001-1)
+
+**Description**
+Initial implementation of password-based authentication.
+
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
+**Status**
+Completed
+
+**Review Rating**
+4.5
+
+#### 2. Add key-based authentication (SSH0001-2)
+
+**Description**
+Support for RSA and ED25519 keys with proper validation.
+
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
+**Status**
+In Progress
 ```
 
 ## Status Values
@@ -161,10 +230,12 @@ Low - Self-contained solution with clear interface
 
 ## Common Validation Errors
 
-1. **Missing detailed entries** - All non-completed tasks need detailed entries
-2. **Missing required sections** - Ensure all required sections are present
-3. **Missing completion details** - Completed tasks must include implementation notes, complexity assessment and maintenance impact
-4. **Inconsistent subtask prefixes** - Subtasks must use same prefix as parent
-5. **In Progress tasks without subtasks** - Any "In Progress" task needs subtasks
-6. **Invalid status values** - Must be one of the valid status values
-7. **Missing review ratings** - Completed subtasks need review ratings
+1. **Missing error handling sections** - All tasks and subtasks must include complete error handling documentation
+2. **Incomplete error handling documentation** - All three error handling subsections (Core Principles, Implementation, Examples) are required
+3. **Missing detailed entries** - All non-completed tasks need detailed entries
+4. **Missing required sections** - Ensure all required sections are present
+5. **Missing completion details** - Completed tasks must include implementation notes, complexity assessment and maintenance impact
+6. **Inconsistent subtask prefixes** - Subtasks must use same prefix as parent
+7. **In Progress tasks without subtasks** - Any "In Progress" task needs subtasks
+8. **Invalid status values** - Must be one of the valid status values
+9. **Missing review ratings** - Completed subtasks need review ratings

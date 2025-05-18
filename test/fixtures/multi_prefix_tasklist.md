@@ -34,6 +34,19 @@ Simplicity principles and requirements
 **Requirements**: Support password and key-based authentication
 **ExUnit Test Requirements**: Test all authentication methods
 **Integration Test Scenarios**: Test with real SSH connections
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 **Priority**: High
 
@@ -42,6 +55,19 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for password authentication
 **Simplicity Constraints**: Keep the API minimal
 **Implementation**: Implement password authentication
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 
 ### SCP0001: Create SCP transfer module
@@ -52,6 +78,19 @@ Simplicity principles and requirements
 **Requirements**: Support file upload and download
 **ExUnit Test Requirements**: Test transfer operations
 **Integration Test Scenarios**: Test with real files
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 **Priority**: High
 
@@ -60,6 +99,19 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for file upload
 **Simplicity Constraints**: Maintain consistent error handling
 **Implementation**: Implement file upload functionality
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 
 #### 2. Second subtask (SCP0001-2)

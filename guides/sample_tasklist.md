@@ -50,6 +50,20 @@ Medium - abstracts authentication mechanisms while maintaining clear and secure 
 - Secure storage of authentication data
 - Proper error handling for auth failures
 
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
 **ExUnit Test Requirements**
 
 - Test both authentication methods independently
@@ -87,6 +101,20 @@ High
 **Description**
 Implement basic password authentication with encryption and rate limiting.
 
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
 **Status**
 Completed
 
@@ -97,6 +125,20 @@ Completed
 
 **Description**
 Support for RSA and ED25519 keys with proper validation.
+
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 
 **Status**
 In Progress
@@ -222,6 +264,20 @@ High
 **Description**
 Create a comprehensive classification of errors in the system.
 
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
 **Status**
 Completed
 
@@ -232,6 +288,20 @@ Completed
 
 **Description**
 Create handlers for common error scenarios.
+
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 
 **Status**
 In Progress
@@ -297,6 +367,20 @@ Medium
 **Description**
 Create the foundational structure for project documentation.
 
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
 **Status**
 Completed
 
@@ -308,6 +392,20 @@ Completed
 **Description**
 Generate comprehensive API documentation from code comments.
 
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
 **Status**
 Completed
 
@@ -318,6 +416,20 @@ Completed
 
 **Description**
 Create usage tutorials and example code.
+
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 
 **Status**
 Completed

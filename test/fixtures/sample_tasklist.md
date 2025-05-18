@@ -31,6 +31,19 @@ Simplicity principles and requirements
 **Requirements**: Support password and key-based authentication
 **ExUnit Test Requirements**: Test all authentication methods
 **Integration Test Scenarios**: Test with real SSH connections
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: In Progress
 **Priority**: High
 
@@ -82,6 +95,19 @@ Simplicity principles and requirements
 **Requirements**: Support standard SSH config format
 **ExUnit Test Requirements**: Test with sample configs
 **Integration Test Scenarios**: Test with real config files
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
 **Status**: Planned
 **Priority**: Medium
 

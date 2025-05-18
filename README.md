@@ -9,7 +9,7 @@ Add `task_validator` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:task_validator, "~> 0.4.1"}
+    {:task_validator, "~> 0.5.0"}
   ]
 end
 ```
@@ -45,13 +45,37 @@ end
 
 ## Format Specification
 
-The TaskValidator enforces a specific format for task lists:
+The TaskValidator enforces a specific format for task lists with a strong focus on error handling:
 
 - Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits (e.g., SSH0001, SCP0001, ERR001, REF0002)
 - Subtasks must use the same prefix as their parent task (e.g., SSH0001-1 for a subtask of SSH0001)
-- Each task must have required sections (Description, Status, Priority, etc.)
+- Each task and subtask must have comprehensive error handling sections that document:
+  * Core error handling principles
+  * Implementation details
+  * Example error scenarios
+- Other required sections include Description, Status, Priority, etc.
 - Tasks marked as "In Progress" must have subtasks
 - Review ratings must follow the specified format (1-5 scale)
+
+### Error Handling Requirements
+
+All tasks and subtasks must include the following error handling sections:
+
+```markdown
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+```
 
 ## Multi-Project Support
 
