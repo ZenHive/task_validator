@@ -169,6 +169,10 @@ defmodule TaskValidatorTest do
     - Raw error passthrough
     - Simple rescue case
     - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
     **Status**: In Progress
     **Priority**: High
     """
@@ -265,6 +269,10 @@ defmodule TaskValidatorTest do
     - Raw error passthrough
     - Simple rescue case
     - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
     **Status**: In Progress
     **Priority**: High
 
@@ -273,18 +281,10 @@ defmodule TaskValidatorTest do
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
     **Error Handling**
-    **Core Principles**
-    - Pass raw errors
-    - Use {:ok, result} | {:error, reason}
-    - Let it crash
-    **Error Implementation**
-    - No wrapping
-    - Minimal rescue
-    - function/1 & /! versions
-    **Error Examples**
-    - Raw error passthrough
-    - Simple rescue case
-    - Supervisor handling
+    **Task-Specific Approach**
+    - Error pattern for this task
+    **Error Reporting**
+    - Monitoring approach
     **Status**: Completed
     """
 
@@ -336,6 +336,10 @@ defmodule TaskValidatorTest do
     - Raw error passthrough
     - Simple rescue case
     - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
     **Status**: In Progress
     **Priority**: High
 
@@ -343,6 +347,50 @@ defmodule TaskValidatorTest do
     **Test-First Approach**: Test first
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
+    **Error Handling**
+    **Task-Specific Approach**
+    - Error pattern for this task
+    **Error Reporting**
+    - Monitoring approach
+    **Status**: Completed
+    **Review Rating**: 6.0
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:error, error_message} = TaskValidator.validate_file(tasklist_path)
+    assert error_message =~ "invalid review rating format"
+  end
+
+  test "validate_file/1 with new task error handling format" do
+    tasklist_path = "#{@temp_dir}/new_error_handling_format.md"
+
+    content = """
+    # SSHForge Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+    | SSH0001 | Main task with new format | In Progress | High | - | - |
+
+    ## Completed Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+
+    ## Active Task Details
+
+    ### SSH0001: Main task with new format
+
+    **Description**: Test task for new error handling format
+    **Simplicity Progression Plan**: Simple plan
+    **Simplicity Principle**: Keep it simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Testing requirements
+    **ExUnit Test Requirements**: Unit tests
+    **Integration Test Scenarios**: Integration tests
+    **Typespec Requirements**: Type specs
+    **TypeSpec Documentation**: Documentation
+    **TypeSpec Verification**: Verification
     **Error Handling**
     **Core Principles**
     - Pass raw errors
@@ -356,14 +404,145 @@ defmodule TaskValidatorTest do
     - Raw error passthrough
     - Simple rescue case
     - Supervisor handling
-    **Status**: Completed
-    **Review Rating**: 6.0
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
+    **Status**: In Progress
+    **Priority**: High
+
+    #### 1. First subtask (SSH0001-1)
+
+    **Description**: First subtask
+    **Error Handling**
+    **Task-Specific Approach**
+    - Error pattern for this task
+    **Error Reporting**
+    - Monitoring approach
+    **Status**: In Progress
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:ok, _message} = TaskValidator.validate_file(tasklist_path)
+  end
+
+  test "validate_file/1 fails with main task using subtask error format" do
+    tasklist_path = "#{@temp_dir}/main_task_wrong_format.md"
+
+    content = """
+    # SSHForge Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+    | SSH0001 | Main task with wrong format | In Progress | High | - | - |
+
+    ## Completed Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+
+    ## Active Task Details
+
+    ### SSH0001: Main task with wrong format
+
+    **Description**: Test task with wrong error handling format
+    **Simplicity Progression Plan**: Simple plan
+    **Simplicity Principle**: Keep it simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Testing requirements
+    **ExUnit Test Requirements**: Unit tests
+    **Integration Test Scenarios**: Integration tests
+    **Typespec Requirements**: Type specs
+    **TypeSpec Documentation**: Documentation
+    **TypeSpec Verification**: Verification
+    **Error Handling**
+    **Task-Specific Approach**
+    - Error pattern for this task
+    **Error Reporting**
+    - Monitoring approach
+    **Status**: In Progress
+    **Priority**: High
     """
 
     File.write!(tasklist_path, content)
 
     assert {:error, error_message} = TaskValidator.validate_file(tasklist_path)
-    assert error_message =~ "invalid review rating format"
+    assert error_message =~ "missing required sections"
+  end
+
+  test "validate_file/1 fails with subtask using main task error format" do
+    tasklist_path = "#{@temp_dir}/subtask_wrong_format.md"
+
+    content = """
+    # SSHForge Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+    | SSH0001 | Main task with subtask using wrong format | In Progress | High | - | - |
+
+    ## Completed Tasks
+    | ID | Description | Status | Priority | Assignee | Review Rating |
+    | --- | --- | --- | --- | --- | --- |
+
+    ## Active Task Details
+
+    ### SSH0001: Main task with subtask using wrong format
+
+    **Description**: Test task for subtask with wrong format
+    **Simplicity Progression Plan**: Simple plan
+    **Simplicity Principle**: Keep it simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Testing requirements
+    **ExUnit Test Requirements**: Unit tests
+    **Integration Test Scenarios**: Integration tests
+    **Typespec Requirements**: Type specs
+    **TypeSpec Documentation**: Documentation
+    **TypeSpec Verification**: Verification
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
+    **Status**: In Progress
+    **Priority**: High
+
+    #### 1. First subtask (SSH0001-1)
+
+    **Description**: Subtask with wrong format
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
+    **Status**: In Progress
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:error, error_message} = TaskValidator.validate_file(tasklist_path)
+    assert error_message =~ "missing required sections"
   end
 
   defp valid_tasklist_content do
@@ -412,6 +591,10 @@ defmodule TaskValidatorTest do
     - Raw error passthrough
     - Simple rescue case
     - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
     **Status**: In Progress
     **Priority**: High
 
@@ -420,18 +603,10 @@ defmodule TaskValidatorTest do
     **Simplicity Constraints**: Keep it simple
     **Implementation**: Implement it
     **Error Handling**
-    **Core Principles**
-    - Pass raw errors
-    - Use {:ok, result} | {:error, reason}
-    - Let it crash
-    **Error Implementation**
-    - No wrapping
-    - Minimal rescue
-    - function/1 & /! versions
-    **Error Examples**
-    - Raw error passthrough
-    - Simple rescue case
-    - Supervisor handling
+    **Task-Specific Approach**
+    - Error pattern for this task
+    **Error Reporting**
+    - Monitoring approach
     **Status**: In Progress
     """
   end
