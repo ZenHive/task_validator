@@ -32,10 +32,9 @@ defmodule TaskValidator.MixProject do
 
   defp description do
     """
-    A library for validating Markdown task lists against a structured format specification.
-    Enforces comprehensive error handling documentation in tasks and subtasks while supporting
-    multiple project prefixes (SSH0001, SCP0001, ERR001, etc.). Ensures consistent task
-    tracking with proper error handling guidelines, ID formats, and required sections.
+    A library for validating Markdown task lists with structured format specifications.
+    Enforces error handling documentation, supports multi-project prefixes (SSH0001, ERR001),
+    and ensures consistent task tracking with ID formats and required sections.
     """
   end
 
