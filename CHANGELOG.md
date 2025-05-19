@@ -4,15 +4,15 @@
 
 ### Breaking Changes
 
-- Added mandatory error handling requirements for subtasks
-- All subtasks must now include error handling sections with core principles, implementation details, and examples
-- Enhanced validation to ensure consistent error handling patterns across tasks and subtasks
+- Changed error handling requirements: main tasks and subtasks now have different formats
+- Main tasks require comprehensive error handling with GenServer specifics
+- Subtasks use simplified error handling focused on task-specific approaches
 
 ### Documentation
 
-- Updated guides and examples to demonstrate proper error handling documentation
-- Added examples of compliant error handling sections for subtasks
-- Improved documentation around error handling validation rules
+- Updated all documentation to reflect different error handling requirements
+- Added clear examples showing main task vs subtask error handling formats
+- Fixed test fixtures and templates to follow the new error handling patterns
 
 ## v0.4.1 (2025-05-18)
 

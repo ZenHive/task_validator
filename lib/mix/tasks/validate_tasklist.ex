@@ -31,12 +31,10 @@ defmodule Mix.Tasks.ValidateTasklist do
   - Low
 
   ### Error Handling Requirements
-  All tasks and subtasks must include:
-  - Core error handling principles
-  - Implementation details
-  - Example error scenarios
+  Main tasks and subtasks have different error handling requirements:
 
-  Example format:
+  #### Main Tasks
+  Must include comprehensive error handling documentation:
   ```markdown
   **Error Handling**
   **Core Principles**
@@ -51,12 +49,26 @@ defmodule Mix.Tasks.ValidateTasklist do
   - Raw error passthrough
   - Simple rescue case
   - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
+  ```
+
+  #### Subtasks
+  Use simplified error handling format:
+  ```markdown
+  **Error Handling**
+  **Task-Specific Approach**
+  - Error pattern for this task
+  **Error Reporting**
+  - Monitoring approach
   ```
 
   ### Common Validation Errors:
-  - Missing error handling sections in tasks or subtasks
+  - Using wrong error handling format (e.g., main task format for subtasks)
+  - Missing error handling sections
   - Incomplete error handling documentation
-  - Invalid error handling format
 
   ### Required Sections
   Main tasks must include:
