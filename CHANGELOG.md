@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.0 (2025-05-18)
+## v0.5.0 (2025-05-19)
 
 ### Breaking Changes
 

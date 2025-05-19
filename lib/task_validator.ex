@@ -11,10 +11,9 @@ defmodule TaskValidator do
   * ID format compliance (like SSH0001, SCP0001, ERR001, etc.)
   * Unique task IDs across the document
   * Required sections and fields present in each task, including Error Handling Guidelines
-  * Error handling sections required for all tasks and subtasks, ensuring:
-    - Core error handling principles are documented
-    - Implementation details are specified
-    - Example error scenarios are provided
+  * Different error handling requirements for main tasks and subtasks:
+    - Main tasks: Comprehensive error handling documentation with GenServer-specific examples
+    - Subtasks: Simplified error handling focused on task-specific approaches
   * Proper subtask structure with consistent prefixes
   * Valid status values from the allowed list
   * Proper review rating format for completed tasks
@@ -22,7 +21,7 @@ defmodule TaskValidator do
 
   ## Error Handling Requirements
 
-  All tasks and subtasks must include error handling sections:
+  Main tasks must include comprehensive error handling sections:
 
   ```markdown
   **Error Handling**
@@ -38,6 +37,20 @@ defmodule TaskValidator do
   - Raw error passthrough
   - Simple rescue case
   - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
+  ```
+
+  Subtasks have a simplified error handling format:
+
+  ```markdown
+  **Error Handling**
+  **Task-Specific Approach**
+  - Error pattern for this task
+  **Error Reporting**
+  - Monitoring approach
   ```
 
   ## Usage Example
@@ -72,7 +85,20 @@ defmodule TaskValidator do
     "**Error Examples**",
     "- Raw error passthrough",
     "- Simple rescue case",
-    "- Supervisor handling"
+    "- Supervisor handling",
+    "**GenServer Specifics**",
+    "- Handle_call/3 error pattern",
+    "- Terminate/2 proper usage",
+    "- Process linking considerations"
+  ]
+
+  # Required sections for error handling in subtasks - simplified format
+  @subtask_error_handling_sections [
+    "**Error Handling**",
+    "**Task-Specific Approach**",
+    "- Error pattern for this task",
+    "**Error Reporting**",
+    "- Monitoring approach"
   ]
 
   # Add new required sections for completed tasks
@@ -495,39 +521,40 @@ defmodule TaskValidator do
           !String.match?(line, ~r/^####/) || line == Enum.at(task.content, subtask.line)
         end)
 
-      # Check if subtask has required sections, including error handling
-      # Add error handling sections to subtask requirements
-      required_subtask_sections =
-        [
-          "**Status**"
-        ] ++ @error_handling_sections
+      # Extract status first
+      status_line =
+        Enum.find(subtask_content, fn line -> String.starts_with?(line, "**Status**") end)
 
-      missing_sections =
-        Enum.filter(required_subtask_sections, fn section ->
-          !Enum.any?(subtask_content, fn line ->
-            String.starts_with?(line, section)
-          end)
-        end)
-
-      if missing_sections == [] do
-        # Extract status
-        status_line =
-          Enum.find(subtask_content, fn line -> String.starts_with?(line, "**Status**") end)
-
-        status =
-          if status_line do
-            status_line
-            |> String.replace("**Status**:", "")
-            |> String.replace("**Status**", "")
-            |> String.trim()
-          else
-            "MISSING"
-          end
-
-        if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
-          {:halt, {:error, "Subtask #{subtask.id} has invalid status: #{status}"}}
+      status =
+        if status_line do
+          status_line
+          |> String.replace("**Status**:", "")
+          |> String.replace("**Status**", "")
+          |> String.trim()
         else
-          # If completed, check review rating
+          "MISSING"
+        end
+
+      # Check if status is valid
+      if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
+        {:halt, {:error, "Subtask #{subtask.id} has invalid status: #{status}"}}
+      else
+        # Check if subtask has required sections, including error handling
+        # Use simplified error handling format for subtasks
+        required_subtask_sections =
+          [
+            "**Status**"
+          ] ++ @subtask_error_handling_sections
+
+        missing_sections =
+          Enum.filter(required_subtask_sections, fn section ->
+            !Enum.any?(subtask_content, fn line ->
+              String.starts_with?(line, section)
+            end)
+          end)
+
+        if missing_sections == [] do
+          # If completed, check review rating (after confirming no missing sections)
           if status == "Completed" do
             rating_line =
               Enum.find(subtask_content, fn line ->
@@ -553,11 +580,11 @@ defmodule TaskValidator do
           else
             {:cont, :ok}
           end
+        else
+          {:halt,
+           {:error,
+            "Subtask #{subtask.id} is missing required sections: #{Enum.join(missing_sections, ", ")}"}}
         end
-      else
-        {:halt,
-         {:error,
-          "Subtask #{subtask.id} is missing required sections: #{Enum.join(missing_sections, ", ")}"}}
       end
     end)
   end

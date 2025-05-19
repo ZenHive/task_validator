@@ -49,17 +49,16 @@ The TaskValidator enforces a specific format for task lists with a strong focus 
 
 - Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits (e.g., SSH0001, SCP0001, ERR001, REF0002)
 - Subtasks must use the same prefix as their parent task (e.g., SSH0001-1 for a subtask of SSH0001)
-- Each task and subtask must have comprehensive error handling sections that document:
-  * Core error handling principles
-  * Implementation details
-  * Example error scenarios
+- Main tasks and subtasks have different error handling section requirements:
+  * Main tasks: Comprehensive error handling documentation including GenServer specifics
+  * Subtasks: Simplified error handling focused on task-specific approaches
 - Other required sections include Description, Status, Priority, etc.
 - Tasks marked as "In Progress" must have subtasks
 - Review ratings must follow the specified format (1-5 scale)
 
 ### Error Handling Requirements
 
-All tasks and subtasks must include the following error handling sections:
+Main tasks must include the following comprehensive error handling sections:
 
 ```markdown
 **Error Handling**
@@ -75,6 +74,20 @@ All tasks and subtasks must include the following error handling sections:
 - Raw error passthrough
 - Simple rescue case
 - Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+```
+
+Subtasks have a simplified error handling format:
+
+```markdown
+**Error Handling**
+**Task-Specific Approach**
+- Error pattern for this task
+**Error Reporting**
+- Monitoring approach
 ```
 
 ## Multi-Project Support

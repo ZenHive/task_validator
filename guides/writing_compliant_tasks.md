@@ -39,7 +39,11 @@ Examples:
 
 ## Error Handling Requirements
 
-Every task and subtask must include error handling sections that follow this format:
+Main tasks and subtasks have different error handling documentation requirements.
+
+### Main Tasks Error Handling Format
+
+Main tasks must include comprehensive error handling sections that follow this format:
 
 ```markdown
 **Error Handling**
@@ -55,9 +59,25 @@ Every task and subtask must include error handling sections that follow this for
 - Raw error passthrough
 - Simple rescue case
 - Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
 ```
 
-These sections ensure consistent error handling practices across the project. Tasks and subtasks without proper error handling sections will fail validation.
+### Subtasks Error Handling Format
+
+Subtasks have a simplified error handling format:
+
+```markdown
+**Error Handling**
+**Task-Specific Approach**
+- Error pattern for this task
+**Error Reporting**
+- Monitoring approach
+```
+
+These sections ensure consistent error handling practices across the project while providing appropriate level of detail for each task type. Tasks without proper error handling sections will fail validation.
 
 ## Detailed Task Entries
 
@@ -135,18 +155,12 @@ In Progress
 Initial implementation of password-based authentication.
 
 **Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
+**Task-Specific Approach**
+- Handle invalid credentials with specific error tuples
+- Use clean separation for auth failures vs. connection failures
+**Error Reporting**
+- Log auth attempts with appropriate level (info/warn)
+- Track failed attempts for rate limiting
 
 **Status**
 Completed
@@ -160,18 +174,12 @@ Completed
 Support for RSA and ED25519 keys with proper validation.
 
 **Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
+**Task-Specific Approach**
+- Return descriptive error for invalid key formats
+- Handle key verification timeout with custom error
+**Error Reporting**
+- Log key verification attempts
+- Report metrics on key type usage
 
 **Status**
 In Progress

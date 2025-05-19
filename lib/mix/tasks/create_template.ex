@@ -102,6 +102,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Raw error passthrough
   - Simple rescue case
   - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
 
   **Status**: In Progress
   **Priority**: High
@@ -112,18 +116,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   Create the foundational structure and interfaces
 
   **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
+  **Task-Specific Approach**
+  - Error pattern for this task
+  **Error Reporting**
+  - Monitoring approach
 
   **Status**: Completed
   **Review Rating**: 4.5
@@ -134,18 +130,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   Implement core features and functionality
 
   **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
+  **Task-Specific Approach**
+  - Error pattern for this task
+  **Error Reporting**
+  - Monitoring approach
 
   **Status**: In Progress
 
@@ -205,6 +193,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Raw error passthrough
   - Simple rescue case
   - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
 
   **Status**: Planned
   **Priority**: Medium
