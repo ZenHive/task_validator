@@ -28,14 +28,27 @@ Task IDs must follow this pattern:
 
 - 2-4 uppercase letters as a prefix (representing a component or module)
 - 3-4 digits as a sequential number
-- Optional hyphen and digit(s) for subtasks
+- Optional suffix for subtasks:
+  - Numeric: `-1`, `-2` (e.g., SSH0001-1)
+  - Letter: `a`, `b`, `c` for checkbox style (e.g., SSH0001a)
 
 Examples:
 
 - `SSH0001` - Main task for SSH component
-- `SSH0001-1` - First subtask of SSH0001
-- `ERR001` - Error handling task
+- `SSH0001-1` - First subtask of SSH0001 (numeric style)
+- `SSH0001a` - First subtask of SSH0001 (checkbox style)
+- `ERR001` - Error handling task (3-digit IDs allowed)
 - `SCP0005` - File transfer task
+
+### Task Categories
+
+Task numbers fall into specific categories:
+- **Core Infrastructure (1-99)**: Essential system components
+- **Features (100-199)**: User-facing functionality
+- **Documentation (200-299)**: Documentation tasks
+- **Testing (300-399)**: Test implementation
+
+Each category has specific required sections (see Category-Specific Requirements below).
 
 ## Error Handling Requirements
 
@@ -135,6 +148,20 @@ In Progress
 
 **Priority**
 High
+
+**Dependencies**
+- ERR001 (Error handling framework must be complete)
+- AUTH005 (Authentication interface design)
+
+**Code Quality KPIs**
+- Functions per module: 4
+- Lines per function: 12
+- Call depth: 2
+
+**Subtasks**
+- [x] Connection setup [SSH0001a]
+- [ ] Authentication flow [SSH0001b]
+- [ ] Session establishment [SSH0001c]
 
 #### 1. Implement password authentication (SSH0001-1)
 
@@ -236,6 +263,76 @@ Low - Used built-in Registry with minimal custom code
 Low - Self-contained solution with clear interface
 ```
 
+## Dependencies Field
+
+Tasks should specify their dependencies on other tasks:
+
+```markdown
+**Dependencies**
+- SSH0001 (Authentication must be complete)
+- ERR001 (Error handling framework required)
+- None (for tasks with no dependencies)
+```
+
+The validator ensures all referenced task IDs exist in the task list.
+
+## Code Quality KPIs
+
+All tasks must include code quality metrics:
+
+```markdown
+**Code Quality KPIs**
+- Functions per module: 3
+- Lines per function: 10
+- Call depth: 2
+```
+
+These metrics must adhere to the following limits:
+- Maximum functions per module: 5
+- Maximum lines per function: 15
+- Maximum call depth: 2
+
+## Checkbox Subtasks
+
+Subtasks can use checkbox format for better visual tracking:
+
+```markdown
+**Subtasks**
+- [x] Connection setup [SSH0001a]
+- [ ] Authentication flow [SSH0001b]
+- [ ] Session establishment [SSH0001c]
+```
+
+Note the letter suffix (a, b, c) instead of numeric suffix (-1, -2, -3).
+
+## Category-Specific Requirements
+
+Different task categories require different sections:
+
+### Core Infrastructure Tasks (1-99)
+Required sections:
+- Architecture Decision
+- System Impact
+- Dependency Analysis
+
+### Feature Tasks (100-199)
+Required sections:
+- Feature Specification
+- User Impact
+- Integration Points
+
+### Documentation Tasks (200-299)
+Required sections:
+- Documentation Scope
+- Target Audience
+- Related Documents
+
+### Testing Tasks (300-399)
+Required sections:
+- Test Coverage
+- Test Categories
+- Performance Impact
+
 ## Common Validation Errors
 
 1. **Missing error handling sections** - All tasks and subtasks must include complete error handling documentation
@@ -247,3 +344,7 @@ Low - Self-contained solution with clear interface
 7. **In Progress tasks without subtasks** - Any "In Progress" task needs subtasks
 8. **Invalid status values** - Must be one of the valid status values
 9. **Missing review ratings** - Completed subtasks need review ratings
+10. **Invalid dependencies** - Referenced task IDs must exist
+11. **KPI violations** - Code quality metrics exceed maximum limits
+12. **Invalid task category** - Task number doesn't match prefix category
+13. **Missing category-specific sections** - Required sections based on task category are missing

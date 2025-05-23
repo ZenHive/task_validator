@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.6.0 (2025-05-23)
+
+### Features
+
+- Added support for checkbox-style subtasks (e.g., `- [ ] Subtask a [SSH0001a]`)
+- Added Dependencies field validation with cross-reference checking
+- Added Code Quality KPIs validation (max functions per module: 5, max lines per function: 15, max call depth: 2)
+- Added task category validation with predefined ranges:
+  - Core infrastructure: 1-99
+  - Features: 100-199
+  - Documentation: 200-299
+  - Testing: 300-399
+- Added category-specific required sections for different task types
+- Enhanced template generator with `--category` option for category-specific templates
+
+### Enhancements
+
+- Improved task ID regex to support letter suffixes for checkbox subtasks
+- Enhanced validation to ensure dependencies reference existing tasks
+- Added comprehensive category validation rules
+- Updated templates to include new required fields and sections
+
 ## v0.5.0 (2025-05-19)
 
 ### Breaking Changes

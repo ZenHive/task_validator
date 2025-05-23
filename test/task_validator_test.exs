@@ -17,6 +17,19 @@ defmodule TaskValidatorTest do
     assert {:ok, _message} = TaskValidator.validate_file(tasklist_path)
   end
 
+  test "validate_file/1 with checkbox subtasks" do
+    assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/checkbox_subtasks.md")
+  end
+
+  test "validate_file/1 with task dependencies" do
+    assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/task_dependencies.md")
+  end
+
+  test "validate_file/1 with invalid dependencies" do
+    assert {:error, "Task TSK0001 has invalid dependencies: TSK9999"} =
+             TaskValidator.validate_file("test/fixtures/invalid_dependencies.md")
+  end
+
   test "validate_file/1 with missing task details" do
     tasklist_path = "#{@temp_dir}/missing_details.md"
 
@@ -173,6 +186,13 @@ defmodule TaskValidatorTest do
     - Handle_call/3 error pattern
     - Terminate/2 proper usage
     - Process linking considerations
+    **Dependencies**: None
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
+    **Architecture Notes**: Simple task implementation
+    **Complexity Assessment**: Low - Basic task structure
     **Status**: In Progress
     **Priority**: High
     """
@@ -214,6 +234,12 @@ defmodule TaskValidatorTest do
     **TypeSpec Verification**: Verification approach for typespecs
     **Status**: In Progress
     **Priority**: High
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
+    **Dependencies**
+    - None
 
     #### 1. First subtask (SSH0001-1)
     **Test-First Approach**: Test first
@@ -273,6 +299,13 @@ defmodule TaskValidatorTest do
     - Handle_call/3 error pattern
     - Terminate/2 proper usage
     - Process linking considerations
+    **Dependencies**: None
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
+    **Architecture Notes**: Simple task implementation
+    **Complexity Assessment**: Low - Basic task structure
     **Status**: In Progress
     **Priority**: High
 
@@ -340,6 +373,16 @@ defmodule TaskValidatorTest do
     - Handle_call/3 error pattern
     - Terminate/2 proper usage
     - Process linking considerations
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
+    **Dependencies**
+    - None
+    **Architecture Notes**
+    Core system architecture implementation
+    **Complexity Assessment**
+    Medium - Requires careful design
     **Status**: In Progress
     **Priority**: High
 
@@ -391,6 +434,13 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specs
     **TypeSpec Documentation**: Documentation
     **TypeSpec Verification**: Verification
+    **Dependencies**: None
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
+    **Architecture Notes**: Simple task implementation
+    **Complexity Assessment**: Low - Basic task structure
     **Error Handling**
     **Core Principles**
     - Pass raw errors
@@ -578,6 +628,12 @@ defmodule TaskValidatorTest do
     **Typespec Requirements**: Type specifications for public functions
     **TypeSpec Documentation**: Documentation for type specifications
     **TypeSpec Verification**: Verification approach for typespecs
+    **Dependencies**
+    - None
+    **Code Quality KPIs**
+    - Functions per module: 3
+    - Lines per function: 12
+    - Call depth: 2
     **Error Handling**
     **Core Principles**
     - Pass raw errors
@@ -597,6 +653,10 @@ defmodule TaskValidatorTest do
     - Process linking considerations
     **Status**: In Progress
     **Priority**: High
+    **Architecture Notes**
+    Core authentication system design
+    **Complexity Assessment**
+    Medium - Multi-method authentication
 
     #### 1. First subtask (SSH0001-1)
     **Test-First Approach**: Test first
@@ -608,6 +668,55 @@ defmodule TaskValidatorTest do
     **Error Reporting**
     - Monitoring approach
     **Status**: In Progress
+
+    ## Completed Task Details
+
+    ### SSH0002: Completed task
+    **Description**: This is a completed task
+    **Simplicity Progression Plan**: Simple plan
+    **Simplicity Principle**: Keep it simple
+    **Abstraction Evaluation**: Low abstraction
+    **Requirements**: Basic requirements
+    **ExUnit Test Requirements**: Unit tests
+    **Integration Test Scenarios**: Integration tests
+    **Typespec Requirements**: Type specs
+    **TypeSpec Documentation**: Type documentation
+    **TypeSpec Verification**: Type verification
+    **Status**: Completed
+    **Priority**: Medium
+    **Dependencies**: None
+    **Code Quality KPIs**
+    - Functions per module: 2
+    - Lines per function: 10
+    - Call depth: 1
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    - Use {:ok, result} | {:error, reason}
+    - Let it crash
+    **Error Implementation**
+    - No wrapping
+    - Minimal rescue
+    - function/1 & /! versions
+    **Error Examples**
+    - Raw error passthrough
+    - Simple rescue case
+    - Supervisor handling
+    **GenServer Specifics**
+    - Handle_call/3 error pattern
+    - Terminate/2 proper usage
+    - Process linking considerations
+    **Architecture Notes**
+    Simple implementation
+    **Complexity Assessment**
+    Low - Basic structure
+    **Error Handling Implementation**
+    Standard error handling
+    **Implementation Notes**
+    Basic implementation complete
+    **Maintenance Impact**
+    Minimal
+    **Review Rating**: 4.5
     """
   end
 end

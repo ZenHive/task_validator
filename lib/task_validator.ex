@@ -68,8 +68,22 @@ defmodule TaskValidator do
   @valid_statuses ["Planned", "In Progress", "Review", "Completed", "Blocked"]
   @valid_priorities ["Critical", "High", "Medium", "Low"]
   # Support various prefixes (2-4 uppercase letters) followed by digits
-  @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+)?$/
+  # Also support letter suffix for checkbox-style subtasks (e.g., WNX0019a)
+  @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+|[a-z])?$/
   @rating_regex ~r/^([1-5](\.\d)?)\s*(\(partial\))?$/
+
+  # Code quality KPI limits
+  @max_functions_per_module 5
+  @max_lines_per_function 15
+  @max_call_depth 2
+
+  # Task category ranges
+  @category_ranges %{
+    "core" => {1, 99},
+    "features" => {100, 199},
+    "documentation" => {200, 299},
+    "testing" => {300, 399}
+  }
 
   # Required sections for error handling - machine-readable, token-optimized format
   @error_handling_sections [
@@ -309,32 +323,63 @@ defmodule TaskValidator do
   end
 
   defp extract_subtasks(task_content) do
-    # Find lines starting with "#### "
+    # Find lines starting with "#### " or checkbox format "- [ ]"
     task_content
     |> Enum.with_index()
     |> Enum.filter(fn {line, _} ->
-      String.match?(line, ~r/^#### \d+\./)
+      String.match?(line, ~r/^#### \d+\./) || String.match?(line, ~r/^- \[[x\s]\]/)
     end)
     |> Enum.map(fn {line, idx} ->
-      # Extract subtask ID from the line (PREFIX####-#)
-      case Regex.run(~r/\(([A-Z]{2,4}\d{3,4}-\d+)\)/, line) do
-        [_, subtask_id] -> %{id: subtask_id, line: idx}
-        _ -> %{id: "INVALID_FORMAT", line: idx}
+      cond do
+        # Traditional numbered subtask format
+        String.match?(line, ~r/^#### \d+\./) ->
+          case Regex.run(~r/\(([A-Z]{2,4}\d{3,4}-\d+)\)/, line) do
+            [_, subtask_id] -> %{id: subtask_id, line: idx, format: :numbered}
+            _ -> %{id: "INVALID_FORMAT", line: idx, format: :numbered}
+          end
+
+        # Checkbox subtask format
+        String.match?(line, ~r/^- \[[x\s]\]/) ->
+          # Extract subtask ID from checkbox line
+          # Support both formats: "- [ ] Description [CHK0001a]" and "- [ ] **CHK0001a**: Description"
+          subtask_id =
+            case Regex.run(~r/\[([A-Z]{2,4}\d{3,4}[a-z]?)\]$/, line) do
+              [_, id] ->
+                id
+
+              _ ->
+                case Regex.run(~r/\*\*([A-Z]{2,4}\d{3,4}[a-z]?)\*\*/, line) do
+                  [_, id] -> id
+                  _ -> "INVALID_FORMAT"
+                end
+            end
+
+          # Determine if checkbox is checked
+          checked = String.contains?(line, "[x]")
+          %{id: subtask_id, line: idx, format: :checkbox, checked: checked}
       end
     end)
   end
 
   defp validate_detailed_tasks(detailed_tasks) do
+    # First, collect all valid task IDs for dependency validation
+    all_task_ids =
+      detailed_tasks
+      |> Enum.flat_map(fn task ->
+        [task.id | Enum.map(task.subtasks, & &1.id)]
+      end)
+      |> MapSet.new()
+
     # Validate each detailed task
     Enum.reduce_while(detailed_tasks, :ok, fn task, _acc ->
-      case validate_task_structure(task) do
+      case validate_task_structure(task, all_task_ids) do
         :ok -> {:cont, :ok}
         {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
   end
 
-  defp validate_task_structure(task) do
+  defp validate_task_structure(task, all_task_ids) do
     # First, check subtask prefix consistency
     subtask_prefix_result =
       if task.subtasks != [] do
@@ -382,8 +427,10 @@ defmodule TaskValidator do
           "**Typespec Requirements**",
           "**TypeSpec Documentation**",
           "**TypeSpec Verification**",
+          "**Code Quality KPIs**",
           "**Status**",
-          "**Priority**"
+          "**Priority**",
+          "**Dependencies**"
         ]
 
         # First check if all base required sections are present
@@ -435,44 +482,134 @@ defmodule TaskValidator do
 
         if missing_sections == [] do
           # Extract status and validate
-          status_line =
-            Enum.find(task.content, fn line -> String.starts_with?(line, "**Status**") end)
+          status_idx =
+            Enum.find_index(task.content, fn line -> String.starts_with?(line, "**Status**") end)
 
           status =
-            if status_line do
-              status_line
-              |> String.replace("**Status**:", "")
-              |> String.replace("**Status**", "")
-              |> String.trim()
-            else
-              "MISSING"
+            cond do
+              is_nil(status_idx) ->
+                "MISSING"
+
+              # Check if status is on the same line (e.g., "**Status**: In Progress")
+              String.contains?(Enum.at(task.content, status_idx), ":") ->
+                Enum.at(task.content, status_idx)
+                |> String.replace("**Status**:", "")
+                |> String.replace("**Status**", "")
+                |> String.trim()
+
+              # Status is on the next line
+              status_idx + 1 < length(task.content) ->
+                Enum.at(task.content, status_idx + 1)
+                |> String.trim()
+
+              true ->
+                "MISSING"
             end
 
           if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
             {:error, "Task #{task.id} has invalid status: #{status}"}
           else
             # Extract priority and validate
-            priority_line =
-              Enum.find(task.content, fn line -> String.starts_with?(line, "**Priority**") end)
+            priority_idx =
+              Enum.find_index(task.content, fn line ->
+                String.starts_with?(line, "**Priority**")
+              end)
 
             priority =
-              if priority_line do
-                priority_line
-                |> String.replace("**Priority**:", "")
-                |> String.replace("**Priority**", "")
-                |> String.trim()
-              else
-                "MISSING"
+              cond do
+                is_nil(priority_idx) ->
+                  "MISSING"
+
+                # Check if priority is on the same line
+                String.contains?(Enum.at(task.content, priority_idx), ":") ->
+                  Enum.at(task.content, priority_idx)
+                  |> String.replace("**Priority**:", "")
+                  |> String.replace("**Priority**", "")
+                  |> String.trim()
+
+                # Priority is on the next line
+                priority_idx + 1 < length(task.content) ->
+                  Enum.at(task.content, priority_idx + 1)
+                  |> String.trim()
+
+                true ->
+                  "MISSING"
               end
 
             if priority != "MISSING" && !Enum.member?(@valid_priorities, priority) do
               {:error, "Task #{task.id} has invalid priority: #{priority}"}
             else
-              # Validate subtasks if task is "In Progress"
-              if status == "In Progress" && task.subtasks == [] do
-                {:error, "Task #{task.id} is in progress but has no subtasks"}
-              else
-                validate_subtasks(task)
+              # Extract and validate dependencies
+              dependencies_line =
+                Enum.find(task.content, fn line ->
+                  String.starts_with?(line, "**Dependencies**")
+                end)
+
+              dependencies =
+                if dependencies_line do
+                  dependencies_line
+                  |> String.replace("**Dependencies**:", "")
+                  |> String.replace("**Dependencies**", "")
+                  |> String.trim()
+                else
+                  "MISSING"
+                end
+
+              # Validate dependencies if not "None" or missing
+              dependency_validation =
+                if dependencies != "MISSING" && dependencies != "None" do
+                  # Parse dependencies (comma-separated task IDs)
+                  dep_ids =
+                    dependencies
+                    |> String.split(",")
+                    |> Enum.map(&String.trim/1)
+                    |> Enum.reject(&(&1 == ""))
+
+                  # Check if all dependencies exist
+                  invalid_deps =
+                    Enum.reject(dep_ids, fn dep_id ->
+                      MapSet.member?(all_task_ids, dep_id)
+                    end)
+
+                  if invalid_deps == [] do
+                    :ok
+                  else
+                    {:error,
+                     "Task #{task.id} has invalid dependencies: #{Enum.join(invalid_deps, ", ")}"}
+                  end
+                else
+                  :ok
+                end
+
+              case dependency_validation do
+                {:error, reason} ->
+                  {:error, reason}
+
+                :ok ->
+                  # Validate Code Quality KPIs section
+                  kpi_validation = validate_code_quality_kpis(task)
+
+                  case kpi_validation do
+                    {:error, reason} ->
+                      {:error, reason}
+
+                    :ok ->
+                      # Validate task category
+                      category_validation = validate_task_category(task)
+
+                      case category_validation do
+                        {:error, reason} ->
+                          {:error, reason}
+
+                        :ok ->
+                          # Validate subtasks if task is "In Progress"
+                          if status == "In Progress" && task.subtasks == [] do
+                            {:error, "Task #{task.id} is in progress but has no subtasks"}
+                          else
+                            validate_subtasks(task)
+                          end
+                      end
+                  end
               end
             end
           end
@@ -481,6 +618,137 @@ defmodule TaskValidator do
            "Task #{task.id} is missing required sections: #{Enum.join(missing_sections, ", ")}"}
         end
     end
+  end
+
+  defp validate_task_category(task) do
+    # Extract numeric part from task ID to determine category
+    case Regex.run(~r/^[A-Z]{2,4}(\d{3,4})/, task.id) do
+      [_, number_str] ->
+        number = String.to_integer(number_str)
+
+        # Find which category this number belongs to
+        category =
+          Enum.find(@category_ranges, fn {_category, {min, max}} ->
+            number >= min && number <= max
+          end)
+
+        case category do
+          {category_name, _range} ->
+            # Validate that the task has appropriate sections for its category
+            validate_category_specific_sections(task, category_name)
+
+          nil ->
+            {:error, "Task #{task.id} number #{number} doesn't fit any defined category range"}
+        end
+
+      nil ->
+        {:error, "Task #{task.id} has invalid ID format for category validation"}
+    end
+  end
+
+  defp validate_category_specific_sections(task, category_name) do
+    # Define category-specific required sections
+    category_sections =
+      case category_name do
+        "core" ->
+          ["**Architecture Notes**", "**Complexity Assessment**"]
+
+        "features" ->
+          ["**Abstraction Evaluation**", "**Simplicity Progression Plan**"]
+
+        "documentation" ->
+          ["**Content Strategy**", "**Audience Analysis**"]
+
+        "testing" ->
+          ["**Test Strategy**", "**Coverage Requirements**"]
+
+        _ ->
+          []
+      end
+
+    # Check if all category-specific sections are present
+    missing_sections =
+      Enum.filter(category_sections, fn section ->
+        !Enum.any?(task.content, fn line ->
+          String.starts_with?(line, section)
+        end)
+      end)
+
+    if missing_sections == [] do
+      :ok
+    else
+      {:error,
+       "Task #{task.id} (#{category_name} category) missing required sections: #{Enum.join(missing_sections, ", ")}"}
+    end
+  end
+
+  defp validate_code_quality_kpis(task) do
+    # Find the Code Quality KPIs section
+    kpi_section_start =
+      Enum.find_index(task.content, fn line ->
+        String.starts_with?(line, "**Code Quality KPIs**")
+      end)
+
+    if kpi_section_start == nil do
+      {:error, "Task #{task.id} is missing Code Quality KPIs section"}
+    else
+      # Extract the KPI section content
+      kpi_content =
+        task.content
+        |> Enum.drop(kpi_section_start + 1)
+        |> Enum.take_while(fn line ->
+          !String.match?(line, ~r/^\*\*[^*]+\*\*/) && String.trim(line) != ""
+        end)
+        |> Enum.reject(&(String.trim(&1) == ""))
+
+      # Parse KPI values
+      kpis = %{
+        functions_per_module: extract_kpi_value(kpi_content, ~r/functions per module:\s*(\d+)/i),
+        lines_per_function: extract_kpi_value(kpi_content, ~r/lines per function:\s*(\d+)/i),
+        call_depth: extract_kpi_value(kpi_content, ~r/call depth:\s*(\d+)/i)
+      }
+
+      # Check all KPIs are present
+      missing_kpis =
+        [:functions_per_module, :lines_per_function, :call_depth]
+        |> Enum.filter(fn key -> is_nil(kpis[key]) end)
+        |> Enum.map(fn
+          :functions_per_module -> "Functions per module"
+          :lines_per_function -> "Lines per function"
+          :call_depth -> "Call depth"
+        end)
+
+      if missing_kpis != [] do
+        {:error, "Task #{task.id} missing KPIs: #{Enum.join(missing_kpis, ", ")}"}
+      else
+        # Validate KPI values are within limits
+        cond do
+          kpis.functions_per_module > @max_functions_per_module ->
+            {:error,
+             "Task #{task.id} exceeds max functions per module: #{kpis.functions_per_module} > #{@max_functions_per_module}"}
+
+          kpis.lines_per_function > @max_lines_per_function ->
+            {:error,
+             "Task #{task.id} exceeds max lines per function: #{kpis.lines_per_function} > #{@max_lines_per_function}"}
+
+          kpis.call_depth > @max_call_depth ->
+            {:error,
+             "Task #{task.id} exceeds max call depth: #{kpis.call_depth} > #{@max_call_depth}"}
+
+          true ->
+            :ok
+        end
+      end
+    end
+  end
+
+  defp extract_kpi_value(content, regex) do
+    Enum.find_value(content, fn line ->
+      case Regex.run(regex, line) do
+        [_, value] -> String.to_integer(value)
+        _ -> nil
+      end
+    end)
   end
 
   defp validate_subtasks(task) do
@@ -497,10 +765,17 @@ defmodule TaskValidator do
       # Check subtask ID prefix consistency with parent task
       if task_prefix != nil do
         subtask_prefix =
-          if String.match?(subtask.id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/) do
-            Regex.run(~r/^([A-Z]{2,4})/, subtask.id) |> Enum.at(1)
-          else
-            nil
+          cond do
+            # Traditional numbered format (SSH0001-1)
+            String.match?(subtask.id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/) ->
+              Regex.run(~r/^([A-Z]{2,4})/, subtask.id) |> Enum.at(1)
+
+            # Checkbox format (WNX0019a)
+            String.match?(subtask.id, ~r/^[A-Z]{2,4}\d{3,4}[a-z]$/) ->
+              Regex.run(~r/^([A-Z]{2,4})/, subtask.id) |> Enum.at(1)
+
+            true ->
+              nil
           end
 
         if subtask_prefix != nil && subtask_prefix != task_prefix do
@@ -515,47 +790,88 @@ defmodule TaskValidator do
 
       # For completed subtasks, check rating
       subtask_content =
-        task.content
-        |> Enum.slice(subtask.line..length(task.content))
-        |> Enum.take_while(fn line ->
-          !String.match?(line, ~r/^####/) || line == Enum.at(task.content, subtask.line)
-        end)
+        if Map.get(subtask, :format) == :checkbox do
+          # For checkbox format, content is usually on the same line or immediately following
+          # Take the checkbox line and any following lines until next checkbox or section
+          task.content
+          |> Enum.slice(subtask.line..length(task.content))
+          |> Enum.take_while(fn line ->
+            (!String.match?(line, ~r/^####/) && !String.match?(line, ~r/^- \[[x\s]\]/)) ||
+              line == Enum.at(task.content, subtask.line)
+          end)
+        else
+          # Traditional numbered format
+          task.content
+          |> Enum.slice(subtask.line..length(task.content))
+          |> Enum.take_while(fn line ->
+            !String.match?(line, ~r/^####/) || line == Enum.at(task.content, subtask.line)
+          end)
+        end
 
       # Extract status first
-      status_line =
-        Enum.find(subtask_content, fn line -> String.starts_with?(line, "**Status**") end)
-
       status =
-        if status_line do
-          status_line
-          |> String.replace("**Status**:", "")
-          |> String.replace("**Status**", "")
-          |> String.trim()
+        if Map.get(subtask, :format) == :checkbox do
+          # For checkbox format, checked means completed
+          if Map.get(subtask, :checked, false) do
+            "Completed"
+          else
+            "Planned"
+          end
         else
-          "MISSING"
+          # Traditional format uses Status field
+          status_idx =
+            Enum.find_index(subtask_content, fn line ->
+              String.starts_with?(line, "**Status**")
+            end)
+
+          cond do
+            is_nil(status_idx) ->
+              "MISSING"
+
+            # Check if status is on the same line
+            String.contains?(Enum.at(subtask_content, status_idx), ":") ->
+              Enum.at(subtask_content, status_idx)
+              |> String.replace("**Status**:", "")
+              |> String.replace("**Status**", "")
+              |> String.trim()
+
+            # Status is on the next line
+            status_idx + 1 < length(subtask_content) ->
+              Enum.at(subtask_content, status_idx + 1)
+              |> String.trim()
+
+            true ->
+              "MISSING"
+          end
         end
 
       # Check if status is valid
       if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
         {:halt, {:error, "Subtask #{subtask.id} has invalid status: #{status}"}}
       else
-        # Check if subtask has required sections, including error handling
-        # Use simplified error handling format for subtasks
-        required_subtask_sections =
-          [
-            "**Status**"
-          ] ++ @subtask_error_handling_sections
-
+        # Check if subtask has required sections
         missing_sections =
-          Enum.filter(required_subtask_sections, fn section ->
-            !Enum.any?(subtask_content, fn line ->
-              String.starts_with?(line, section)
+          if Map.get(subtask, :format) == :checkbox do
+            # Checkbox format subtasks don't require separate sections
+            # They're typically one-line items
+            []
+          else
+            # Traditional format requires status and error handling sections
+            required_subtask_sections =
+              [
+                "**Status**"
+              ] ++ @subtask_error_handling_sections
+
+            Enum.filter(required_subtask_sections, fn section ->
+              !Enum.any?(subtask_content, fn line ->
+                String.starts_with?(line, section)
+              end)
             end)
-          end)
+          end
 
         if missing_sections == [] do
-          # If completed, check review rating (after confirming no missing sections)
-          if status == "Completed" do
+          # If completed, check review rating (only for traditional format)
+          if status == "Completed" && Map.get(subtask, :format) != :checkbox do
             rating_line =
               Enum.find(subtask_content, fn line ->
                 String.starts_with?(line, "**Review Rating**")

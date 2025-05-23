@@ -4,7 +4,7 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.5.0",
+      version: "0.6.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -33,8 +33,8 @@ defmodule TaskValidator.MixProject do
   defp description do
     """
     A library for validating Markdown task lists with structured format specifications.
-    Enforces error handling documentation, supports multi-project prefixes (SSH0001, ERR001),
-    and ensures consistent task tracking with ID formats and required sections.
+    Features: checkbox subtasks, dependencies, code quality KPIs, task categories,
+    multi-project prefixes, and comprehensive error handling documentation.
     """
   end
 
