@@ -14,6 +14,11 @@
   - Testing: 300-399
 - Added category-specific required sections for different task types
 - Enhanced template generator with `--category` option for category-specific templates
+- Added reference definitions support to reduce repetition in task lists
+  - Define reusable content blocks with `## Reference Definitions`
+  - Use references in tasks with `{{reference-name}}` syntax
+  - Templates now use references for error handling and KPIs
+  - Significantly reduces task list file size
 
 ### Enhancements
 

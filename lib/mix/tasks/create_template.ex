@@ -25,6 +25,43 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   use Mix.Task
 
+  @reference_definitions """
+
+  ## Reference Definitions
+
+  ### error-handling-main
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
+
+  ### error-handling-subtask
+  **Error Handling**
+  **Task-Specific Approach**
+  - Error pattern for this task
+  **Error Reporting**
+  - Monitoring approach
+
+  ### standard-kpis
+  **Code Quality KPIs**
+  - Functions per module: 3
+  - Lines per function: 12
+  - Call depth: 2
+  """
+
   @features_template """
   # Project Task List
 
@@ -94,28 +131,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Dependencies**
   - None
 
-  **Code Quality KPIs**
-  - Functions per module: 3
-  - Lines per function: 12
-  - Call depth: 2
+  {{standard-kpis}}
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: High
@@ -137,11 +155,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create the foundational structure and interfaces
 
-  **Error Handling**
-  **Task-Specific Approach**
-  - Error pattern for this task
-  **Error Reporting**
-  - Monitoring approach
+  {{error-handling-subtask}}
 
   **Status**: Completed
   **Review Rating**: 4.5
@@ -151,11 +165,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Implement core features and functionality
 
-  **Error Handling**
-  **Task-Specific Approach**
-  - Error pattern for this task
-  **Error Reporting**
-  - Monitoring approach
+  {{error-handling-subtask}}
 
   **Status**: Planned
 
@@ -205,28 +215,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Dependencies**
   - None
 
-  **Code Quality KPIs**
-  - Functions per module: 3
-  - Lines per function: 12
-  - Call depth: 2
+  {{standard-kpis}}
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: Medium
@@ -319,23 +310,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Complexity Assessment**
   Medium complexity focused on correctness and performance
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: High
@@ -351,11 +326,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create the foundational architecture and core interfaces
 
-  **Error Handling**
-  **Task-Specific Approach**
-  - Error pattern for this task
-  **Error Reporting**
-  - Monitoring approach
+  {{error-handling-subtask}}
 
   **Status**: Completed
   **Review Rating**: 4.5
@@ -365,11 +336,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Implement performance optimizations and monitoring
 
-  **Error Handling**
-  **Task-Specific Approach**
-  - Error pattern for this task
-  **Error Reporting**
-  - Monitoring approach
+  {{error-handling-subtask}}
 
   **Status**: Planned
 
@@ -420,10 +387,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Dependencies**
   - <%= @prefix %>0001
 
-  **Code Quality KPIs**
-  - Functions per module: 2
-  - Lines per function: 10
-  - Call depth: 1
+  {{standard-kpis}}
 
   **Architecture Notes**
   Standard documentation framework
@@ -431,23 +395,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Complexity Assessment**
   Low - Standard tooling
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: Medium
@@ -495,10 +443,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Dependencies**
   - None
 
-  **Code Quality KPIs**
-  - Functions per module: 1
-  - Lines per function: 8
-  - Call depth: 1
+  {{standard-kpis}}
 
   **Architecture Notes**
   Simple standard structure
@@ -506,23 +451,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Complexity Assessment**
   Low - Basic setup only
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Error Handling Implementation**
   Standard error patterns
@@ -613,23 +542,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Audience Analysis**
   Target developers with varying experience levels, prioritize clarity over completeness
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: Medium
@@ -709,23 +622,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Coverage Requirements**
   Minimum 90% code coverage with focus on critical business logic and error paths
 
-  **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
-  **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  {{error-handling-main}}
 
   **Status**: Planned
   **Priority**: High
@@ -764,7 +661,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
     task_number = get_category_task_number(category)
     template = get_template_for_category(category)
 
-    content = EEx.eval_string(template, assigns: [prefix: prefix, task_number: task_number])
+    content =
+      EEx.eval_string(template <> @reference_definitions,
+        assigns: [prefix: prefix, task_number: task_number]
+      )
 
     case File.write(path, content) do
       :ok ->

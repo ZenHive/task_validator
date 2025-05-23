@@ -132,11 +132,96 @@ defmodule TaskValidator do
   def validate_file(file_path) do
     with {:ok, content} <- File.read(file_path),
          {:ok, lines} <- {:ok, String.split(content, "\n")},
-         {:ok, tasks} <- extract_tasks(lines),
+         {:ok, references} <- extract_references(lines),
+         {:ok, resolved_lines} <- resolve_references(lines, references),
+         {:ok, tasks} <- extract_tasks(resolved_lines),
          :ok <- validate_task_ids(tasks),
-         :ok <- validate_task_details(lines, tasks) do
+         :ok <- validate_task_details(resolved_lines, tasks) do
       {:ok, "TaskList.md validation passed!"}
     end
+  end
+
+  @doc """
+  Extracts reference definitions from the content.
+  Reference definitions are in the format:
+  ## Reference Definitions
+  ### error-handling
+  **Error Handling**
+  **Core Principles**
+  ...
+  """
+  @spec extract_references(list(String.t())) :: {:ok, map()}
+  def extract_references(lines) do
+    # Find the Reference Definitions section
+    ref_start = Enum.find_index(lines, &(&1 == "## Reference Definitions"))
+
+    if ref_start do
+      references =
+        lines
+        |> Enum.drop(ref_start + 1)
+        |> extract_reference_blocks(%{})
+
+      {:ok, references}
+    else
+      # No reference definitions found, that's OK
+      {:ok, %{}}
+    end
+  end
+
+  defp extract_reference_blocks([], acc), do: acc
+
+  defp extract_reference_blocks(lines, acc) do
+    case lines do
+      ["### " <> ref_name | rest] ->
+        # Extract content until next ### or end
+        {content, remaining} =
+          Enum.split_while(rest, fn line ->
+            !String.starts_with?(line, "### ") && !String.starts_with?(line, "## ")
+          end)
+
+        # Store the reference content
+        updated_acc = Map.put(acc, ref_name, content)
+        extract_reference_blocks(remaining, updated_acc)
+
+      [_ | rest] ->
+        extract_reference_blocks(rest, acc)
+
+      [] ->
+        acc
+    end
+  end
+
+  @doc """
+  Resolves references in the content by replacing {{ref-name}} with actual content.
+  """
+  @spec resolve_references(list(String.t()), map()) :: {:ok, list(String.t())}
+  def resolve_references(lines, references) do
+    resolved_lines =
+      Enum.map(lines, fn line ->
+        # Check if line contains a reference like {{error-handling}}
+        if String.contains?(line, "{{") && String.contains?(line, "}}") do
+          case Regex.run(~r/\{\{([^}]+)\}\}/, line) do
+            [_full_match, ref_name] ->
+              case Map.get(references, ref_name) do
+                nil ->
+                  # Reference not found, keep as is
+                  line
+
+                ref_content ->
+                  # Replace the line with the reference content
+                  ref_content
+              end
+
+            _ ->
+              line
+          end
+        else
+          line
+        end
+      end)
+      |> List.flatten()
+
+    {:ok, resolved_lines}
   end
 
   @doc """

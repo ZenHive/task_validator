@@ -30,6 +30,10 @@ defmodule TaskValidatorTest do
              TaskValidator.validate_file("test/fixtures/invalid_dependencies.md")
   end
 
+  test "validate_file/1 with reference definitions" do
+    assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/reference_test.md")
+  end
+
   test "validate_file/1 with missing task details" do
     tasklist_path = "#{@temp_dir}/missing_details.md"
 

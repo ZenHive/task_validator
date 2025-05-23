@@ -67,6 +67,7 @@ The TaskValidator enforces a specific format for task lists with a strong focus 
 - Other required sections include Description, Status, Priority, Dependencies, etc.
 - Tasks marked as "In Progress" must have subtasks
 - Review ratings must follow the specified format (1-5 scale)
+- Support for reference definitions to reduce repetition (e.g., {{error-handling-main}})
 
 ### Error Handling Requirements
 
@@ -142,6 +143,42 @@ All tasks must include code quality metrics that adhere to these limits:
 - Lines per function: 12
 - Call depth: 2
 ```
+
+### Reference Definitions
+
+To reduce repetition in task lists, you can define reusable content blocks:
+
+```markdown
+## Reference Definitions
+
+### error-handling-main
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+...
+
+### standard-kpis
+**Code Quality KPIs**
+- Functions per module: 3
+...
+```
+
+Then use them in tasks with `{{reference-name}}`:
+
+```markdown
+### SSH0001: Some task
+
+**Dependencies**
+- None
+
+{{standard-kpis}}
+
+{{error-handling-main}}
+
+**Status**: Planned
+```
+
+This significantly reduces file size and maintains consistency across tasks.
 
 ### Task Categories
 

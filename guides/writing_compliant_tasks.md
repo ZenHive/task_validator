@@ -333,6 +333,40 @@ Required sections:
 - Test Categories
 - Performance Impact
 
+## Using Reference Definitions
+
+To reduce repetition and maintain consistency, use reference definitions for common sections:
+
+1. Define references at the end of your task list:
+```markdown
+## Reference Definitions
+
+### error-handling-main
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+...
+```
+
+2. Use references in tasks:
+```markdown
+### SSH0001: Some task
+
+**Description**
+Task description here
+
+{{error-handling-main}}
+
+**Status**: Planned
+```
+
+Common reference definitions:
+- `{{error-handling-main}}` - Full error handling for main tasks
+- `{{error-handling-subtask}}` - Simplified error handling for subtasks
+- `{{standard-kpis}}` - Standard code quality KPIs
+
 ## Common Validation Errors
 
 1. **Missing error handling sections** - All tasks and subtasks must include complete error handling documentation
