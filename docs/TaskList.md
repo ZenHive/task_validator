@@ -1,9 +1,12 @@
 # Task Validator Development Task List
 
 <!-- AI INSTRUCTION: This document uses content references to reduce repetition -->
-<!-- When you see "DEF: Standard Error Handling", substitute content from #def-error-handling -->
-<!-- When you see "DEF: Standard KPI Limits", substitute content from #def-kpi-limits -->
-<!-- When you see "DEF: No Dependencies", substitute content from #def-no-dependencies -->
+<!-- When you see "{{error-handling-main}}", substitute content from #{{error-handling-main}} -->
+<!-- When you see "{{standard-kpis}}", substitute content from #{{standard-kpis}}-->
+<!-- When you see "{{def-no-dependencies}}", substitute content from #def-no-dependencies -->
+<!-- When you see "{{test-requirements}}", substitute content from #{{test-requirements}} -->
+<!-- When you see "{{typespec-requirements}}", substitute content from #{{typespec-requirements}} -->
+
 
 ## Current Tasks
 
@@ -41,40 +44,18 @@
 - Maintain human readability
 - Clear AI instructions at top
 
-**ExUnit Test Requirements**:
-- Test reference extraction
-- Test reference expansion
-- Test validation with references
-- Test missing reference handling
-
-**Integration Test Scenarios**:
-- Validate files with references
-- Ensure backward compatibility
-- Test error messages with references
-- Validate nested references
-
-**Typespec Requirements**:
-- Update validate_file/1 spec
-- Add reference-related type specs
-- Document reference format
-
-**TypeSpec Documentation**:
-- Document reference format in moduledoc
-- Example of reference usage
-- Reference naming conventions
-
-**TypeSpec Verification**:
-- Run dialyzer on updated code
-- Verify type consistency
-- Test with invalid references
-
-**Error Handling**: DEF: Standard Error Handling
+**ExUnit Test Requirements**: {{test-requirements}}
+**Integration Test Scenarios**: {{test-requirements}}
+**Typespec Requirements**: {{typespec-requirements}}
+**TypeSpec Documentation**: {{typespec-requirements}}
+**TypeSpec Verification**: {{typespec-requirements}}
+**Error Handling**: {{error-handling-main}}
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (validator enhancement)
-- DEF: Standard KPI Limits
+- {{standard-kpis}}
 
-**Dependencies**: DEF: No Dependencies
+**Dependencies**: {{def-no-dependencies}}
 
 **Architecture Notes**:
 - References are expanded during validation only
@@ -88,7 +69,7 @@
 
 **Description**: Modify extract_references/1 to recognize sections with #def- prefix as reference definitions.
 
-**Error Handling**: DEF: Standard Error Handling
+**Error Handling**: {{error-handling-main}}
 
 **Task-Specific Approach**:
 - Parse sections starting with ## def-
@@ -105,7 +86,7 @@
 
 **Description**: Update validation logic to expand "Standard X" references using the reference map.
 
-**Error Handling**: DEF: Standard Error Handling
+**Error Handling**: {{error-handling-main}}
 
 **Task-Specific Approach**:
 - Pattern match on "Standard {Name}"
@@ -122,7 +103,7 @@
 
 **Description**: Create comprehensive tests for the new reference system.
 
-**Error Handling**: DEF: Standard Error Handling
+**Error Handling**: {{error-handling-main}}
 
 **Task-Specific Approach**:
 - Test valid reference files
@@ -158,38 +139,17 @@
 - Use references in task sections
 - Maintain template readability
 
-**ExUnit Test Requirements**:
-- Test template generation
-- Validate generated templates
-- Test with different categories
-- Ensure references are valid
+**ExUnit Test Requirements**: {{test-requirements}}
+**Integration Test Scenarios**: {{test-requirements}}
+**Typespec Requirements**: {{typespec-requirements}}
+**TypeSpec Documentation**: {{typespec-requirements}}
+**TypeSpec Verification**: {{typespec-requirements}}
 
-**Integration Test Scenarios**:
-- Generate and validate template
-- Test all category types
-- Verify reference usage
-- Check AI instructions
-
-**Typespec Requirements**:
-- Update run/1 spec if needed
-- Document new options
-- Type specs for references
-
-**TypeSpec Documentation**:
-- Document reference usage in templates
-- Example generated output
-- Template customization
-
-**TypeSpec Verification**:
-- Validate generated templates
-- Check type consistency
-- Test edge cases
-
-**Error Handling**: DEF: Standard Error Handling
+**Error Handling**: {{error-handling-main}}
 
 **Code Quality KPIs**:
 - Lines of code: ~80 lines (template updates)
-- DEF: Standard KPI Limits
+- {{standard-kpis}}
 
 **Dependencies**: VAL0001
 
@@ -243,11 +203,11 @@
 - Gather user feedback
 - Iterate on clarity
 
-**Error Handling**: DEF: Standard Error Handling
+**Error Handling**: {{error-handling-main}}
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (documentation)
-- DEF: Standard KPI Limits
+- {{standard-kpis}}
 
 **Dependencies**: VAL0001, VAL0002
 
@@ -256,7 +216,7 @@
 
 <!-- CONTENT DEFINITIONS - DO NOT MODIFY SECTION HEADERS -->
 
-## def-error-handling
+## {{error-handling-main}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
@@ -287,15 +247,15 @@
 - Include context in error messages
 - Monitor error rates
 
-## def-kpi-limits
+## {{standard-kpis}}
 - Functions per module: 5 maximum
 - Lines per function: 15 maximum
 - Call depth: 2 maximum
 
-## def-no-dependencies
+## {{def-no-dependencies}}
 None
 
-## def-test-requirements
+## {{test-requirements}}
 **ExUnit Test Requirements**:
 - Comprehensive unit tests for all functions
 - Edge case testing
@@ -308,7 +268,7 @@ None
 - Concurrent operation testing
 - Failure recovery testing
 
-## def-typespec-requirements
+## {{typespec-requirements}}
 **Typespec Requirements**:
 - All public functions must have @spec
 - Use custom types for clarity
@@ -323,5 +283,3 @@ None
 - Run dialyzer with no warnings
 - Test with invalid inputs
 - Verify type coverage
-
-
