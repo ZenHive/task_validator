@@ -1,7 +1,7 @@
 # Task Validator Development Task List
 
 <!-- AI INSTRUCTION: This document uses content references to reduce repetition -->
-<!-- When you see "{{error-handling-main}}", substitute content from #{{error-handling-main}} -->
+<!-- When you see "{{error-handling}}", substitute content from #{{error-handling}} -->
 <!-- When you see "{{standard-kpis}}", substitute content from #{{standard-kpis}}-->
 <!-- When you see "{{def-no-dependencies}}", substitute content from #def-no-dependencies -->
 <!-- When you see "{{test-requirements}}", substitute content from #{{test-requirements}} -->
@@ -15,7 +15,8 @@
 | VAL0001 | Support AI-Friendly Content References                | In Progress | High     |          |               |
 | VAL0001-1 | ├─ Update validator to recognize def- sections      | Planned     | High     |          |               |
 | VAL0001-2 | ├─ Implement reference expansion in validation      | Planned     | High     |          |               |
-| VAL0001-3 | └─ Add tests for reference format                   | Planned     | Medium   |          |               |
+| VAL0001-3 | ├─ Add tests for reference format                   | Planned     | Medium   |          |               |
+| VAL0001-4 | └─ Update test fixtures to use content references   | Planned     | High     |          |               |
 | VAL0002 | Update Template Generator for New Format              | Planned     | Medium   |          |               |
 | VAL0003 | Create Migration Guide for Existing Task Lists        | Planned     | Low      |          |               |
 
@@ -23,13 +24,13 @@
 
 ### VAL0001: Support AI-Friendly Content References
 
-**Description**: Enhance the task validator to support content references that reduce repetition while remaining AI-editor friendly. This allows task lists to use references like "DEF: Standard Error Handling" which AI editors can expand using definitions at the end of the file.
+**Description**: Enhance the task validator to support content references that reduce repetition while remaining AI-editor friendly. This allows task lists to use references like "{{error-handling}}" which AI editors can expand using definitions at the end of the file.
 
 **Simplicity Progression Plan**:
-1. Parse def- sections at end of file
+1. Parse {{reference}} sections at end of file
 2. Build reference map during validation
 3. Expand references when validating sections
-4. Maintain backward compatibility
+4. No backward compatibility needed
 
 **Simplicity Principle**: Keep the reference system simple - just string replacement during validation, no complex templating.
 
@@ -39,7 +40,7 @@
 - **Justification**: Reduces file size by 60-70% while keeping content accessible
 
 **Requirements**:
-- Support #def-{name} section headers
+- Support #{{reference-name}} section headers
 - Expand references during validation
 - Maintain human readability
 - Clear AI instructions at top
@@ -49,7 +50,7 @@
 **Typespec Requirements**: {{typespec-requirements}}
 **TypeSpec Documentation**: {{typespec-requirements}}
 **TypeSpec Verification**: {{typespec-requirements}}
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (validator enhancement)
@@ -67,12 +68,12 @@
 
 #### 1. Update validator to recognize def- sections (VAL0001-1)
 
-**Description**: Modify extract_references/1 to recognize sections with #def- prefix as reference definitions.
+**Description**: Modify extract_references/1 to recognize sections with #{{reference-name}} format as reference definitions.
 
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
-- Parse sections starting with ## def-
+- Parse sections starting with ## {{reference-name}}
 - Store content until next section
 - Build reference map
 
@@ -84,12 +85,12 @@
 
 #### 2. Implement reference expansion in validation (VAL0001-2)
 
-**Description**: Update validation logic to expand "Standard X" references using the reference map.
+**Description**: Update validation logic to expand "{{reference-name}}" references using the reference map.
 
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
-- Pattern match on "Standard {Name}"
+- Pattern match on "{{reference-name}}"
 - Look up in reference map
 - Substitute during validation
 
@@ -103,7 +104,7 @@
 
 **Description**: Create comprehensive tests for the new reference system.
 
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
 - Test valid reference files
@@ -145,7 +146,7 @@
 **TypeSpec Documentation**: {{typespec-requirements}}
 **TypeSpec Verification**: {{typespec-requirements}}
 
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Code Quality KPIs**:
 - Lines of code: ~80 lines (template updates)
@@ -203,7 +204,7 @@
 - Gather user feedback
 - Iterate on clarity
 
-**Error Handling**: {{error-handling-main}}
+**Error Handling**: {{error-handling}}
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (documentation)
@@ -216,7 +217,7 @@
 
 <!-- CONTENT DEFINITIONS - DO NOT MODIFY SECTION HEADERS -->
 
-## {{error-handling-main}}
+## {{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
