@@ -1,10 +1,9 @@
 # Task Validator Development Task List
 
 <!-- AI INSTRUCTION: This document uses content references to reduce repetition -->
-<!-- When you see "Standard Error Handling", substitute content from #def-error-handling -->
-<!-- When you see "Standard Error Handling (Subtask)", substitute content from #def-error-handling-subtask -->
-<!-- When you see "{{kpi-limits}}", substitute content from #def-kpi-limits -->
-<!-- When you see "Standard Dependencies", substitute content from #def-standard-dependencies -->
+<!-- When you see "DEF: Standard Error Handling", substitute content from #def-error-handling -->
+<!-- When you see "DEF: Standard KPI Limits", substitute content from #def-kpi-limits -->
+<!-- When you see "DEF: No Dependencies", substitute content from #def-no-dependencies -->
 
 ## Current Tasks
 
@@ -21,7 +20,7 @@
 
 ### VAL0001: Support AI-Friendly Content References
 
-**Description**: Enhance the task validator to support content references that reduce repetition while remaining AI-editor friendly. This allows task lists to use references like "Standard Error Handling" which AI editors can expand using definitions at the end of the file.
+**Description**: Enhance the task validator to support content references that reduce repetition while remaining AI-editor friendly. This allows task lists to use references like "DEF: Standard Error Handling" which AI editors can expand using definitions at the end of the file.
 
 **Simplicity Progression Plan**:
 1. Parse def- sections at end of file
@@ -69,13 +68,13 @@
 - Verify type consistency
 - Test with invalid references
 
-**Error Handling**: Standard Error Handling
+**Error Handling**: DEF: Standard Error Handling
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (validator enhancement)
-{{kpi-limits}}
+- DEF: Standard KPI Limits
 
-**Dependencies**: None
+**Dependencies**: DEF: No Dependencies
 
 **Architecture Notes**:
 - References are expanded during validation only
@@ -89,7 +88,7 @@
 
 **Description**: Modify extract_references/1 to recognize sections with #def- prefix as reference definitions.
 
-**Error Handling**: Standard Error Handling (Subtask)
+**Error Handling**: DEF: Standard Error Handling
 
 **Task-Specific Approach**:
 - Parse sections starting with ## def-
@@ -106,7 +105,7 @@
 
 **Description**: Update validation logic to expand "Standard X" references using the reference map.
 
-**Error Handling**: Standard Error Handling (Subtask)
+**Error Handling**: DEF: Standard Error Handling
 
 **Task-Specific Approach**:
 - Pattern match on "Standard {Name}"
@@ -123,7 +122,7 @@
 
 **Description**: Create comprehensive tests for the new reference system.
 
-**Error Handling**: Standard Error Handling (Subtask)
+**Error Handling**: DEF: Standard Error Handling
 
 **Task-Specific Approach**:
 - Test valid reference files
@@ -186,11 +185,11 @@
 - Check type consistency
 - Test edge cases
 
-**Error Handling**: Standard Error Handling
+**Error Handling**: DEF: Standard Error Handling
 
 **Code Quality KPIs**:
 - Lines of code: ~80 lines (template updates)
-{{kpi-limits}}
+- DEF: Standard KPI Limits
 
 **Dependencies**: VAL0001
 
@@ -244,11 +243,11 @@
 - Gather user feedback
 - Iterate on clarity
 
-**Error Handling**: Standard Error Handling
+**Error Handling**: DEF: Standard Error Handling
 
 **Code Quality KPIs**:
-- Lines of code: ~200 lines (documentation)
-{{kpi-limits}}
+- Lines of code: ~100 lines (documentation)
+- DEF: Standard KPI Limits
 
 **Dependencies**: VAL0001, VAL0002
 
@@ -263,42 +262,66 @@
 - Pass raw errors
 - Use {:ok, result} | {:error, reason}
 - Let it crash
+
 **Error Implementation**
 - No wrapping
 - Minimal rescue
 - function/1 & /! versions
+
 **Error Examples**
 - Raw error passthrough
 - Simple rescue case
 - Supervisor handling
-**GenServer Specifics**
+
+**GenServer Specifics** (if applicable to main tasks)
 - Handle_call/3 error pattern
 - Terminate/2 proper usage
 - Process linking considerations
 
-## def-error-handling-subtask
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
+**Task-Specific Approach** (for subtasks)
+- Define error patterns specific to this task
+- Document any special error handling needs
 
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
+**Error Reporting**
+- Use Logger for error tracking
+- Include context in error messages
+- Monitor error rates
 
 ## def-kpi-limits
 - Functions per module: 5 maximum
 - Lines per function: 15 maximum
 - Call depth: 2 maximum
-- Cyclomatic complexity: Low (simple conditional logic only)
-- Test coverage: 90%+ for all code
 
-## def-standard-dependencies
-**Dependencies**: None - This is a standalone task with no dependencies on other tasks.
+## def-no-dependencies
+None
+
+## def-test-requirements
+**ExUnit Test Requirements**:
+- Comprehensive unit tests for all functions
+- Edge case testing
+- Error condition testing
+- Integration testing where applicable
+
+**Integration Test Scenarios**:
+- End-to-end validation testing
+- Performance testing for large inputs
+- Concurrent operation testing
+- Failure recovery testing
+
+## def-typespec-requirements
+**Typespec Requirements**:
+- All public functions must have @spec
+- Use custom types for clarity
+- Document complex types
+
+**TypeSpec Documentation**:
+- Clear @doc for all public functions
+- Examples in documentation
+- Parameter constraints documented
+
+**TypeSpec Verification**:
+- Run dialyzer with no warnings
+- Test with invalid inputs
+- Verify type coverage
+
+

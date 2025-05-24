@@ -132,96 +132,53 @@ defmodule TaskValidator do
   def validate_file(file_path) do
     with {:ok, content} <- File.read(file_path),
          {:ok, lines} <- {:ok, String.split(content, "\n")},
-         {:ok, references} <- extract_references(lines),
-         {:ok, resolved_lines} <- resolve_references(lines, references),
-         {:ok, tasks} <- extract_tasks(resolved_lines),
+         {:ok, _definitions} <- validate_definitions(lines),
+         {:ok, tasks} <- extract_tasks(lines),
          :ok <- validate_task_ids(tasks),
-         :ok <- validate_task_details(resolved_lines, tasks) do
+         :ok <- validate_task_details(lines, tasks) do
       {:ok, "TaskList.md validation passed!"}
     end
   end
 
   @doc """
-  Extracts reference definitions from the content.
-  Reference definitions are in the format:
-  ## Reference Definitions
-  ### error-handling
+  Checks for definition sections that are used by AI editors.
+  Definition sections are in the format:
+  ## def-error-handling
   **Error Handling**
   **Core Principles**
   ...
+  
+  This function doesn't expand references - that's for AI editors to do.
+  We just validate that referenced definitions exist.
   """
-  @spec extract_references(list(String.t())) :: {:ok, map()}
-  def extract_references(lines) do
-    # Find the Reference Definitions section
-    ref_start = Enum.find_index(lines, &(&1 == "## Reference Definitions"))
-
-    if ref_start do
-      references =
-        lines
-        |> Enum.drop(ref_start + 1)
-        |> extract_reference_blocks(%{})
-
-      {:ok, references}
+  @spec validate_definitions(list(String.t())) :: {:ok, list(String.t())} | {:error, String.t()}
+  def validate_definitions(lines) do
+    # Find all ## def- sections
+    definitions =
+      lines
+      |> Enum.filter(&String.starts_with?(&1, "## def-"))
+      |> Enum.map(fn "## def-" <> name -> String.trim(name) end)
+    
+    # Find AI instructions that reference definitions
+    ai_instructions =
+      lines
+      |> Enum.filter(&String.contains?(&1, "<!-- AI INSTRUCTION:"))
+      |> Enum.join(" ")
+    
+    # Extract referenced definition names from AI instructions
+    referenced =
+      Regex.scan(~r/#def-([a-z-]+)/, ai_instructions)
+      |> Enum.map(fn [_, name] -> name end)
+      |> Enum.uniq()
+    
+    # Check if all referenced definitions exist
+    missing = referenced -- definitions
+    
+    if missing == [] do
+      {:ok, definitions}
     else
-      # No reference definitions found, that's OK
-      {:ok, %{}}
+      {:error, "Missing definition sections: #{Enum.join(missing, ", ")}"}
     end
-  end
-
-  defp extract_reference_blocks([], acc), do: acc
-
-  defp extract_reference_blocks(lines, acc) do
-    case lines do
-      ["### " <> ref_name | rest] ->
-        # Extract content until next ### or end
-        {content, remaining} =
-          Enum.split_while(rest, fn line ->
-            !String.starts_with?(line, "### ") && !String.starts_with?(line, "## ")
-          end)
-
-        # Store the reference content
-        updated_acc = Map.put(acc, ref_name, content)
-        extract_reference_blocks(remaining, updated_acc)
-
-      [_ | rest] ->
-        extract_reference_blocks(rest, acc)
-
-      [] ->
-        acc
-    end
-  end
-
-  @doc """
-  Resolves references in the content by replacing {{ref-name}} with actual content.
-  """
-  @spec resolve_references(list(String.t()), map()) :: {:ok, list(String.t())}
-  def resolve_references(lines, references) do
-    resolved_lines =
-      Enum.map(lines, fn line ->
-        # Check if line contains a reference like {{error-handling}}
-        if String.contains?(line, "{{") && String.contains?(line, "}}") do
-          case Regex.run(~r/\{\{([^}]+)\}\}/, line) do
-            [_full_match, ref_name] ->
-              case Map.get(references, ref_name) do
-                nil ->
-                  # Reference not found, keep as is
-                  line
-
-                ref_content ->
-                  # Replace the line with the reference content
-                  ref_content
-              end
-
-            _ ->
-              line
-          end
-        else
-          line
-        end
-      end)
-      |> List.flatten()
-
-    {:ok, resolved_lines}
   end
 
   @doc """
@@ -556,10 +513,18 @@ defmodule TaskValidator do
           end
 
         # All tasks require error handling guidelines
+        # Check if task has either inline error handling OR a reference to "Standard Error Handling"
+        has_error_handling_reference = Enum.any?(task.content, fn line ->
+          String.contains?(line, "Standard Error Handling") && !String.contains?(line, "Subtask")
+        end)
+        
         missing_error_handling_sections =
-          Enum.filter(@error_handling_sections, fn section ->
-            !Enum.any?(task.content, fn line ->
-              String.starts_with?(line, section)
+          if has_error_handling_reference do
+            []  # If we have a reference, we don't need the inline sections
+          else
+            Enum.filter(@error_handling_sections, fn section ->
+              !Enum.any?(task.content, fn line ->
+                String.starts_with?(line, section)
             end)
           end)
 
@@ -942,10 +907,19 @@ defmodule TaskValidator do
             []
           else
             # Traditional format requires status and error handling sections
-            required_subtask_sections =
-              [
-                "**Status**"
-              ] ++ @subtask_error_handling_sections
+            # Check if subtask has either inline error handling OR a reference
+            has_subtask_error_reference = Enum.any?(subtask_content, fn line ->
+              String.contains?(line, "Standard Error Handling (Subtask)")
+            end)
+            
+            error_sections_to_check = 
+              if has_subtask_error_reference do
+                []  # If we have a reference, we don't need inline sections
+              else
+                @subtask_error_handling_sections
+              end
+            
+            required_subtask_sections = ["**Status**"] ++ error_sections_to_check
 
             Enum.filter(required_subtask_sections, fn section ->
               !Enum.any?(subtask_content, fn line ->
