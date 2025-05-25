@@ -160,6 +160,7 @@ defmodule TaskValidator do
             # Extract content until next ## header
             content = extract_reference_content(lines, idx + 1)
             Map.put(acc, ref_name, content)
+
           _ ->
             acc
         end
@@ -190,7 +191,7 @@ defmodule TaskValidator do
       |> Enum.reduce([], fn {line, line_num}, acc ->
         # Find all references in this line
         refs = Regex.scan(~r/\{\{([^}]+)\}\}/, line)
-        
+
         Enum.reduce(refs, acc, fn [_full_match, ref_name], inner_acc ->
           if Map.has_key?(references, ref_name) do
             inner_acc
@@ -511,7 +512,7 @@ defmodule TaskValidator do
         # Some sections can be replaced by references
         section_to_reference = %{
           "**ExUnit Test Requirements**" => "test-requirements",
-          "**Integration Test Scenarios**" => "test-requirements", 
+          "**Integration Test Scenarios**" => "test-requirements",
           "**Typespec Requirements**" => "typespec-requirements",
           "**TypeSpec Documentation**" => "typespec-requirements",
           "**TypeSpec Verification**" => "typespec-requirements",
@@ -522,13 +523,15 @@ defmodule TaskValidator do
         missing_sections =
           Enum.filter(required_sections, fn section ->
             # Check if section is present directly
-            has_section? = Enum.any?(task.content, fn line ->
-              String.starts_with?(line, section)
-            end)
+            has_section? =
+              Enum.any?(task.content, fn line ->
+                String.starts_with?(line, section)
+              end)
 
             # If not present, check if it has a reference placeholder
             if !has_section? && Map.has_key?(section_to_reference, section) do
               ref_name = Map.get(section_to_reference, section)
+
               Enum.any?(task.content, fn line ->
                 String.contains?(line, "{{#{ref_name}}}")
               end) == false
@@ -571,7 +574,7 @@ defmodule TaskValidator do
         has_error_handling_reference? =
           Enum.any?(task.content, fn line ->
             String.contains?(line, "{{error-handling") ||
-            String.contains?(line, "{{def-error-handling")
+              String.contains?(line, "{{def-error-handling")
           end)
 
         missing_error_handling_sections =
@@ -820,45 +823,46 @@ defmodule TaskValidator do
           end)
           |> Enum.reject(&(String.trim(&1) == ""))
 
-      # Parse KPI values
-      kpis = %{
-        functions_per_module: extract_kpi_value(kpi_content, ~r/functions per module:\s*(\d+)/i),
-        lines_per_function: extract_kpi_value(kpi_content, ~r/lines per function:\s*(\d+)/i),
-        call_depth: extract_kpi_value(kpi_content, ~r/call depth:\s*(\d+)/i)
-      }
+        # Parse KPI values
+        kpis = %{
+          functions_per_module:
+            extract_kpi_value(kpi_content, ~r/functions per module:\s*(\d+)/i),
+          lines_per_function: extract_kpi_value(kpi_content, ~r/lines per function:\s*(\d+)/i),
+          call_depth: extract_kpi_value(kpi_content, ~r/call depth:\s*(\d+)/i)
+        }
 
-      # Check all KPIs are present
-      missing_kpis =
-        [:functions_per_module, :lines_per_function, :call_depth]
-        |> Enum.filter(fn key -> is_nil(kpis[key]) end)
-        |> Enum.map(fn
-          :functions_per_module -> "Functions per module"
-          :lines_per_function -> "Lines per function"
-          :call_depth -> "Call depth"
-        end)
+        # Check all KPIs are present
+        missing_kpis =
+          [:functions_per_module, :lines_per_function, :call_depth]
+          |> Enum.filter(fn key -> is_nil(kpis[key]) end)
+          |> Enum.map(fn
+            :functions_per_module -> "Functions per module"
+            :lines_per_function -> "Lines per function"
+            :call_depth -> "Call depth"
+          end)
 
-      if missing_kpis != [] do
-        {:error, "Task #{task.id} missing KPIs: #{Enum.join(missing_kpis, ", ")}"}
-      else
-        # Validate KPI values are within limits
-        cond do
-          kpis.functions_per_module > @max_functions_per_module ->
-            {:error,
-             "Task #{task.id} exceeds max functions per module: #{kpis.functions_per_module} > #{@max_functions_per_module}"}
+        if missing_kpis != [] do
+          {:error, "Task #{task.id} missing KPIs: #{Enum.join(missing_kpis, ", ")}"}
+        else
+          # Validate KPI values are within limits
+          cond do
+            kpis.functions_per_module > @max_functions_per_module ->
+              {:error,
+               "Task #{task.id} exceeds max functions per module: #{kpis.functions_per_module} > #{@max_functions_per_module}"}
 
-          kpis.lines_per_function > @max_lines_per_function ->
-            {:error,
-             "Task #{task.id} exceeds max lines per function: #{kpis.lines_per_function} > #{@max_lines_per_function}"}
+            kpis.lines_per_function > @max_lines_per_function ->
+              {:error,
+               "Task #{task.id} exceeds max lines per function: #{kpis.lines_per_function} > #{@max_lines_per_function}"}
 
-          kpis.call_depth > @max_call_depth ->
-            {:error,
-             "Task #{task.id} exceeds max call depth: #{kpis.call_depth} > #{@max_call_depth}"}
+            kpis.call_depth > @max_call_depth ->
+              {:error,
+               "Task #{task.id} exceeds max call depth: #{kpis.call_depth} > #{@max_call_depth}"}
 
-          true ->
-            :ok
+            true ->
+              :ok
+          end
         end
       end
-    end
     end
   end
 
@@ -981,7 +985,7 @@ defmodule TaskValidator do
             has_error_handling_reference? =
               Enum.any?(subtask_content, fn line ->
                 String.contains?(line, "{{error-handling") ||
-                String.contains?(line, "{{def-error-handling")
+                  String.contains?(line, "{{def-error-handling")
               end)
 
             required_subtask_sections =
