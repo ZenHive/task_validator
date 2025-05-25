@@ -144,18 +144,18 @@ defmodule TaskValidator do
   @doc """
   Extracts reference definitions from the content.
   Reference definitions are in the format:
-  ## {{reference-name}}
+  ## \\{\\{reference-name\\}\\} or ## #\\{\\{reference-name\\}\\}
   Content for the reference
   ...
   """
   @spec extract_references(list(String.t())) :: {:ok, map()}
   def extract_references(lines) do
-    # Find all lines that match ## {{reference-name}} pattern
+    # Find all lines that match ## {{reference-name}} or ## #{{reference-name}} pattern
     references =
       lines
       |> Enum.with_index()
       |> Enum.reduce(%{}, fn {line, idx}, acc ->
-        case Regex.run(~r/^## \{\{([^}]+)\}\}$/, line) do
+        case Regex.run(~r/^## #?\{\{([^}]+)\}\}$/, line) do
           [_, ref_name] ->
             # Extract content until next ## header
             content = extract_reference_content(lines, idx + 1)
@@ -1014,7 +1014,8 @@ defmodule TaskValidator do
             has_error_handling_reference? =
               Enum.any?(subtask_content, fn line ->
                 String.contains?(line, "{{error-handling") ||
-                  String.contains?(line, "{{def-error-handling")
+                  String.contains?(line, "{{def-error-handling") ||
+                  String.contains?(line, "{{subtask-error-handling")
               end)
 
             required_subtask_sections =

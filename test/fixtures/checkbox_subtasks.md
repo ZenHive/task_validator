@@ -27,22 +27,8 @@ Low - Direct checkbox support
 - Parse checkbox format
 - Track completion status
 
-**ExUnit Test Requirements**
-- Test checkbox parsing
-- Test status tracking
-
-**Integration Test Scenarios**
-- Full task list with checkboxes
-- Mixed format support
-
-**Typespec Requirements**
-- Define checkbox task types
-
-**TypeSpec Documentation**
-Document checkbox format support
-
-**TypeSpec Verification**
-Verify checkbox task types
+{{test-requirements}}
+{{typespec-requirements}}
 
 **Status**
 In Progress
@@ -50,8 +36,7 @@ In Progress
 **Priority**
 High
 
-**Dependencies**
-- None
+{{def-no-dependencies}}
 
 **Architecture Notes**
 Simple checkbox task format implementation
@@ -59,28 +44,9 @@ Simple checkbox task format implementation
 **Complexity Assessment**
 Low - Basic checkbox parsing and status tracking
 
-**Code Quality KPIs**
-- Functions per module: 3
-- Lines per function: 10
-- Call depth: 2
+{{standard-kpis}}
 
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
+{{error-handling}}
 
 **Architecture Decision**
 Testing checkbox format
@@ -107,11 +73,7 @@ Completed
 **Review Rating**
 4.5
 
-**Error Handling**
-**Task-Specific Approach**
-- Simple error handling
-**Error Reporting**
-- Standard logging
+{{subtask-error-handling}}
 
 #### CHK0001b: Second subtask pending
 
@@ -121,8 +83,67 @@ Second checkbox subtask
 **Status**
 In Progress
 
+{{subtask-error-handling}}
+
+## #{{error-handling}}
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+
+## #{{subtask-error-handling}}
 **Error Handling**
 **Task-Specific Approach**
-- Basic error handling
+- Error pattern for this task
 **Error Reporting**
-- Log to file
+- Monitoring approach
+
+## #{{test-requirements}}
+**ExUnit Test Requirements**:
+- Comprehensive unit tests
+- Edge case testing
+- Error condition testing
+
+**Integration Test Scenarios**:
+- End-to-end validation
+- Performance testing
+- Concurrent operation testing
+
+## #{{typespec-requirements}}
+**Typespec Requirements**:
+- All public functions must have @spec
+- Use custom types for clarity
+- Document complex types
+
+**TypeSpec Documentation**:
+- Clear @doc for all public functions
+- Examples in documentation
+- Parameter constraints documented
+
+**TypeSpec Verification**:
+- Run dialyzer with no warnings
+- Test with invalid inputs
+- Verify type coverage
+
+## #{{standard-kpis}}
+**Code Quality KPIs**
+- Functions per module: 5
+- Lines per function: 15
+- Call depth: 2
+
+## #{{def-no-dependencies}}
+**Dependencies**
+- None

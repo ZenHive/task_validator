@@ -30,34 +30,11 @@ Simplicity principles and requirements
 **Simplicity Principle**: Clear separation of authentication concerns
 **Abstraction Evaluation**: Keep implementation details hidden behind clean API
 **Requirements**: Support password and key-based authentication
-**ExUnit Test Requirements**: Test all authentication methods
-**Integration Test Scenarios**: Test with real SSH connections
-**Typespec Requirements**: Define authentication types and response structures
-**TypeSpec Documentation**: Document authentication interface contracts
-**TypeSpec Verification**: Use Dialyzer to verify authentication types
-**Dependencies**
-- None
-**Code Quality KPIs**
-- Functions per module: 3
-- Lines per function: 12
-- Call depth: 2
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
+{{test-requirements}}
+{{typespec-requirements}}
+{{def-no-dependencies}}
+{{standard-kpis}}
+{{error-handling}}
 **Status**: In Progress
 **Priority**: High
 **Architecture Decision**: Modular authentication system
@@ -69,11 +46,7 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for password authentication
 **Simplicity Constraints**: Keep the API minimal
 **Implementation**: Implement password authentication
-**Error Handling**
-**Task-Specific Approach**
-- Error pattern for this task
-**Error Reporting**
-- Monitoring approach
+{{subtask-error-handling}}
 **Status**: In Progress
 
 #### 2. Second subtask (SSH0001-2)
@@ -81,11 +54,7 @@ Simplicity principles and requirements
 **Test-First Approach**: Write tests for key-based authentication
 **Simplicity Constraints**: Reuse code from password authentication where possible
 **Implementation**: Implement key-based authentication
-**Error Handling**
-**Task-Specific Approach**
-- Error pattern for this task
-**Error Reporting**
-- Monitoring approach
+{{subtask-error-handling}}
 **Status**: Planned
 
 ### SSH0002: Create configuration parser
@@ -95,34 +64,12 @@ Simplicity principles and requirements
 **Simplicity Principle**: Simple parser with clear error messages
 **Abstraction Evaluation**: Hide parser implementation details
 **Requirements**: Support standard SSH config format
-**ExUnit Test Requirements**: Test with sample configs
-**Integration Test Scenarios**: Test with real config files
-**Typespec Requirements**: Define configuration data structures
-**TypeSpec Documentation**: Document configuration parsing types
-**TypeSpec Verification**: Verify parser type safety
+{{test-requirements}}
+{{typespec-requirements}}
 **Dependencies**
 - SSH0001
-**Code Quality KPIs**
-- Functions per module: 4
-- Lines per function: 10
-- Call depth: 2
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
+{{standard-kpis}}
+{{error-handling}}
 **Status**: Planned
 **Priority**: Medium
 **Architecture Decision**: YAML-like parser
@@ -144,46 +91,14 @@ Simplicity principles and requirements
 - Build configuration
 - Initial documentation
 
-**ExUnit Test Requirements**:
-- Verify build process
-- Test configuration loading
+{{test-requirements}}
+{{typespec-requirements}}
 
-**Integration Test Scenarios**:
-- Full project build and test
+{{def-no-dependencies}}
 
-**Typespec Requirements**:
-- Basic type definitions
-- Module specifications
+{{standard-kpis}}
 
-**TypeSpec Documentation**: Document core type specifications
-
-**TypeSpec Verification**: Initial Dialyzer setup and verification
-
-**Dependencies**
-- None
-
-**Code Quality KPIs**
-- Functions per module: 2
-- Lines per function: 8
-- Call depth: 1
-
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
+{{error-handling}}
 
 **Status**: Completed
 
@@ -204,3 +119,66 @@ Simplicity principles and requirements
 **Error Handling Implementation**: Used standard OTP patterns with minimal custom error handling
 
 **Review Rating**: 4.5
+
+## #{{error-handling}}
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+
+## #{{subtask-error-handling}}
+**Error Handling**
+**Task-Specific Approach**
+- Error pattern for this task
+**Error Reporting**
+- Monitoring approach
+
+## #{{test-requirements}}
+**ExUnit Test Requirements**:
+- Comprehensive unit tests
+- Edge case testing
+- Error condition testing
+
+**Integration Test Scenarios**:
+- End-to-end validation
+- Performance testing
+- Concurrent operation testing
+
+## #{{typespec-requirements}}
+**Typespec Requirements**:
+- All public functions must have @spec
+- Use custom types for clarity
+- Document complex types
+
+**TypeSpec Documentation**:
+- Clear @doc for all public functions
+- Examples in documentation
+- Parameter constraints documented
+
+**TypeSpec Verification**:
+- Run dialyzer with no warnings
+- Test with invalid inputs
+- Verify type coverage
+
+## #{{standard-kpis}}
+**Code Quality KPIs**
+- Functions per module: 5
+- Lines per function: 15
+- Call depth: 2
+
+## #{{def-no-dependencies}}
+**Dependencies**
+- None

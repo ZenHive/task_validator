@@ -29,25 +29,8 @@ Low-level dependency checking with clear interfaces
 - Handle missing dependencies gracefully
 - Provide clear error messages
 
-**ExUnit Test Requirements**
-- Test dependency validation
-- Test missing dependency handling
-- Test circular dependency detection
-
-**Integration Test Scenarios**
-- Test with valid dependencies
-- Test with missing dependencies
-- Test dependency resolution order
-
-**Typespec Requirements**
-- Define dependency validation types
-- Specify return types for validation functions
-
-**TypeSpec Documentation**
-Document dependency validation interface and return types
-
-**TypeSpec Verification**
-Use Dialyzer to verify dependency type safety
+{{test-requirements}}
+{{typespec-requirements}}
 
 **Dependencies**
 - TSK0002 (Must be completed first)
@@ -62,28 +45,9 @@ Simple dependency validation system
 **Complexity Assessment**
 Low - Basic dependency checking only
 
-**Code Quality KPIs**
-- Functions per module: 3
-- Lines per function: 10
-- Call depth: 2
+{{standard-kpis}}
 
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
+{{error-handling}}
 
 **Architecture Decision**
 Using simple dependency tracking
@@ -103,13 +67,7 @@ Check dependencies exist
 **Status**
 In Progress
 
-**Error Handling**
-**Task-Specific Approach**
-- Error pattern for this task
-- Return error if dependency missing
-**Error Reporting**
-- Monitoring approach
-- Log dependency issues
+{{subtask-error-handling}}
 
 ## Completed Tasks
 
@@ -140,27 +98,10 @@ Low - Direct implementation with clear interfaces
 - Stable API interface
 - Clear error handling
 
-**ExUnit Test Requirements**
-- Test core functionality
-- Test API stability
-- Test error conditions
+{{test-requirements}}
+{{typespec-requirements}}
 
-**Integration Test Scenarios**
-- Test with dependent tasks
-- Test standalone operation
-
-**Typespec Requirements**
-- Define core data types
-- Specify function interfaces
-
-**TypeSpec Documentation**
-Document all public types and functions
-
-**TypeSpec Verification**
-Verify type safety with Dialyzer
-
-**Dependencies**
-- None
+{{def-no-dependencies}}
 
 **Status**: Completed
 
@@ -172,11 +113,20 @@ Simple foundational implementation
 **Complexity Assessment**
 Low - straightforward
 
-**Code Quality KPIs**
-- Functions per module: 2
-- Lines per function: 8
-- Call depth: 1
+{{standard-kpis}}
 
+{{error-handling}}
+
+**Error Handling Implementation**
+Standard error patterns with minimal complexity
+
+**Implementation Notes**
+Basic implementation complete
+
+**Maintenance Impact**
+Minimal
+
+## #{{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
@@ -195,11 +145,46 @@ Low - straightforward
 - Terminate/2 proper usage
 - Process linking considerations
 
-**Error Handling Implementation**
-Standard error patterns with minimal complexity
+## #{{subtask-error-handling}}
+**Error Handling**
+**Task-Specific Approach**
+- Error pattern for this task
+**Error Reporting**
+- Monitoring approach
 
-**Implementation Notes**
-Basic implementation complete
+## #{{test-requirements}}
+**ExUnit Test Requirements**:
+- Comprehensive unit tests
+- Edge case testing
+- Error condition testing
 
-**Maintenance Impact**
-Minimal
+**Integration Test Scenarios**:
+- End-to-end validation
+- Performance testing
+- Concurrent operation testing
+
+## #{{typespec-requirements}}
+**Typespec Requirements**:
+- All public functions must have @spec
+- Use custom types for clarity
+- Document complex types
+
+**TypeSpec Documentation**:
+- Clear @doc for all public functions
+- Examples in documentation
+- Parameter constraints documented
+
+**TypeSpec Verification**:
+- Run dialyzer with no warnings
+- Test with invalid inputs
+- Verify type coverage
+
+## #{{standard-kpis}}
+**Code Quality KPIs**
+- Functions per module: 5
+- Lines per function: 15
+- Call depth: 2
+
+## #{{def-no-dependencies}}
+**Dependencies**
+- None

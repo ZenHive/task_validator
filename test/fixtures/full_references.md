@@ -48,7 +48,7 @@ Low complexity
 
 **Status**: Planned
 
-## {{error-handling}}
+## #{{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
@@ -76,7 +76,7 @@ Low complexity
 **Error Reporting**
 - Monitoring approach
 
-## {{test-requirements}}
+## #{{test-requirements}}
 **ExUnit Test Requirements**:
 - Comprehensive unit tests
 - Edge case testing
@@ -87,7 +87,7 @@ Low complexity
 - Performance testing
 - Concurrent operation testing
 
-## {{typespec-requirements}}
+## #{{typespec-requirements}}
 **Typespec Requirements**:
 - All public functions must have @spec
 - Use custom types for clarity
@@ -103,10 +103,10 @@ Low complexity
 - Test with invalid inputs
 - Verify type coverage
 
-## {{standard-kpis}}
+## #{{standard-kpis}}
 - Functions per module: 5 maximum
 - Lines per function: 15 maximum
 - Call depth: 2 maximum
 
-## {{def-no-dependencies}}
+## #{{def-no-dependencies}}
 None
