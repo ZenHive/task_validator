@@ -26,14 +26,14 @@
 ### VAL0001: Support AI-Friendly Content References
 
 **Description**: Enhance the task validator to fully support content references that reduce repetition while remaining AI-editor friendly. The validator has three core responsibilities:
-1. Parse definition sections (`## {{reference-name}}`) 
+1. Parse definition sections (`## #{{reference-name}}`) 
 2. Check that all `{{reference}}` placeholders have corresponding definitions
 3. Accept the placeholders as valid content (not require expansion)
 
 The validator does NOT expand {{reference}} placeholders - that is the responsibility of AI tools and editors.
 
 **Simplicity Progression Plan**:
-1. Parse `## {{reference-name}}` definition sections at end of file
+1. Parse `## #{{reference-name}}` definition sections at end of file
 2. Build reference map during validation
 3. Check all `{{reference}}` placeholders have definitions
 4. Accept placeholders as valid content (no expansion required)
@@ -47,27 +47,25 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - **Justification**: Reduces file size by 60-70% while keeping content accessible
 
 **Requirements**:
-- Parse `## {{reference-name}}` definition sections
+- Parse `## #{{reference-name}}` definition sections
 - Validate all `{{reference}}` placeholders have corresponding definitions  
 - Accept placeholders as valid content without requiring expansion
 - Maintain human readability
 - Clear AI instructions at top
 
-**ExUnit Test Requirements**: {{test-requirements}}
-**Integration Test Scenarios**: {{test-requirements}}
-**Typespec Requirements**: {{typespec-requirements}}
-**TypeSpec Documentation**: {{typespec-requirements}}
-**TypeSpec Verification**: {{typespec-requirements}}
-**Error Handling**: {{error-handling}}
+{{test-requirements}}
+{{typespec-requirements}}
+{{error-handling}}
 
 **Code Quality KPIs**:
 - Lines of code: ~100 lines (validator enhancement)
 - {{standard-kpis}}
 
-**Dependencies**: {{def-no-dependencies}}
+**Dependencies**
+- None
 
 **Architecture Notes**:
-- Validator parses `## {{reference-name}}` sections into reference map
+- Validator parses `## #{{reference-name}}` sections into reference map
 - Validator checks `{{reference}}` placeholders have definitions
 - Validator accepts placeholders as valid content (no expansion)
 - AI tools are responsible for expanding references when editing
@@ -78,14 +76,34 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 **Priority**: High
 **Review Rating**: 5.0
 
-#### 1. Update validator to parse definition sections (VAL0001-1)
+**Implementation Notes**
+- Successfully implemented reference parsing and validation
+- Validator only checks reference existence, not expansion
+- AI tools handle reference expansion when editing
 
-**Description**: Modify extract_references/1 to parse sections with `## {{reference-name}}` format as reference definitions and build a reference map.
+**Complexity Assessment**
+- Medium complexity due to parsing logic
+- Clear separation between validation and expansion
 
-**Error Handling**: {{error-handling}}
+**Maintenance Impact**
+- Low impact - self-contained validation logic
+- No changes needed to existing task lists
 
-**Task-Specific Approach**:
-- Parse sections starting with `## {{reference-name}}`
+**Error Handling Implementation**
+- Clear error messages for missing references
+- Reports line numbers for invalid references
+
+**Subtasks**
+- [x] Update validator to parse definition sections [VAL0001-1]
+- [x] Implement placeholder validation [VAL0001-2]
+- [x] Add tests for reference format [VAL0001-3]
+- [x] Update test fixtures to use content references [VAL0001-4]
+
+#### VAL0001-1: Update validator to parse definition sections
+
+**Description**: Modify extract_references/1 to parse sections with `## #{{reference-name}}` format as reference definitions and build a reference map.
+
+{{error-handling-subtask}}
 - Extract content until next section header
 - Build reference map for validation lookup
 - Store reference names and content locations
@@ -95,15 +113,13 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Report invalid reference names
 
 **Status**: Completed
+**Review Rating**: 5/5
 
-#### 2. Implement placeholder validation (VAL0001-2)
+#### VAL0001-2: Implement placeholder validation
 
-**Description**: Update validation logic to check that all `{{reference-name}}` placeholders have corresponding definitions in the reference map, and accept placeholders as valid content.
+**Description**: Update validation logic to check that all `{{reference}}` placeholders have corresponding definitions in the reference map, and accept placeholders as valid content.
 
-**Error Handling**: {{error-handling}}
-
-**Task-Specific Approach**:
-- Pattern match on `{{reference-name}}` placeholders in task content
+{{error-handling-subtask}}
 - Look up each placeholder in reference map
 - Validate reference definition exists (no expansion/substitution)
 - Accept placeholders as valid content during validation
@@ -113,15 +129,13 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Show which task uses invalid reference
 
 **Status**: Completed
+**Review Rating**: 5/5
 
-#### 3. Add tests for reference format (VAL0001-3)
+#### VAL0001-3: Add tests for reference format
 
 **Description**: Create comprehensive tests for the new reference validation system.
 
-**Error Handling**: {{error-handling}}
-
-**Task-Specific Approach**:
-- Test valid reference files
+{{error-handling-subtask}}
 - Test missing references
 - Test validation without expansion (validator only checks existence)
 
@@ -130,16 +144,13 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Show actual vs expected validation results
 
 **Status**: Completed
-**Review Rating**: 5/5
+**Review Rating**: 5
 
-#### 4. Update test fixtures to use content references (VAL0001-4)
+#### VAL0001-4: Update test fixtures to use content references
 
 **Description**: Convert all test fixtures in test/fixtures/* to use the new content reference format. This ensures our test cases demonstrate best practices and validate the reference system properly.
 
-**Error Handling**: {{error-handling}}
-
-**Task-Specific Approach**:
-- Identify repetitive content in fixtures
+{{error-handling-subtask}}
 - Create appropriate references
 - Update fixture files with references
 - Ensure fixtures still test edge cases
@@ -149,7 +160,8 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Keep invalid fixtures invalid
 - Document changes in comments
 
-**Status**: Planned
+**Status**: Completed
+**Review Rating**: 5
 
 ### VAL0002: Update Template Generator for New Format
 
@@ -174,13 +186,9 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Use references in task sections
 - Maintain template readability
 
-**ExUnit Test Requirements**: {{test-requirements}}
-**Integration Test Scenarios**: {{test-requirements}}
-**Typespec Requirements**: {{typespec-requirements}}
-**TypeSpec Documentation**: {{typespec-requirements}}
-**TypeSpec Verification**: {{typespec-requirements}}
-
-**Error Handling**: {{error-handling}}
+{{test-requirements}}
+{{typespec-requirements}}
+{{error-handling}}
 
 **Code Quality KPIs**:
 - Lines of code: ~80 lines (template updates)
@@ -198,22 +206,30 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 **Priority**: Medium
 
 **Implementation Notes**:
-- Updated @reference_definitions module attribute to use ## #{{ref}} format
+- Updated @reference_definitions module attribute to use ## #{{reference}} format
 - Escaped hash symbols in template strings to prevent Elixir interpolation
-- Templates now include {{standard-kpis}}, {{error-handling-main}}, and {{error-handling-subtask}} references
+- Templates now include `{{standard-kpis}}`, `{{error-handling-main}}`, and `{{error-handling-subtask}}` references
 - All template categories (core, features, documentation, testing) updated
 - Generated templates pass validation with new reference format
+
+**Complexity Assessment**
+- Low complexity - straightforward template updates
+- Used existing EEx templating system
 
 **Maintenance Impact**:
 - Template changes are backward compatible
 - AI tools expanding references will handle both old and new formats
 - No changes needed to existing task lists
 
+**Error Handling Implementation**
+- Templates generate valid references
+- Validation catches any missing references
+
 **Review Rating**: 5.0
 
 <!-- CONTENT DEFINITIONS - DO NOT MODIFY SECTION HEADERS -->
 
-## {{error-handling}}
+## #{{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
@@ -244,15 +260,15 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Include context in error messages
 - Monitor error rates
 
-## {{standard-kpis}}
+## #{{standard-kpis}}
 - Functions per module: 5 maximum
 - Lines per function: 15 maximum
 - Call depth: 2 maximum
 
-## {{def-no-dependencies}}
+## #{{def-no-dependencies}}
 None
 
-## {{test-requirements}}
+## #{{test-requirements}}
 **ExUnit Test Requirements**:
 - Comprehensive unit tests for all functions
 - Edge case testing
@@ -265,7 +281,7 @@ None
 - Concurrent operation testing
 - Failure recovery testing
 
-## {{typespec-requirements}}
+## #{{typespec-requirements}}
 **Typespec Requirements**:
 - All public functions must have @spec
 - Use custom types for clarity
@@ -280,3 +296,35 @@ None
 - Run dialyzer with no warnings
 - Test with invalid inputs
 - Verify type coverage
+
+## #{{error-handling-subtask}}
+**Error Handling**
+**Task-Specific Approach**
+- Error pattern for this task
+**Error Reporting**
+- Monitoring approach
+
+## #{{error-handling-main}}
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+
+## #{{reference-name}}
+(Placeholder for reference name - used in documentation)
+
+## #{{reference}}
+(Placeholder for reference - used in documentation)
