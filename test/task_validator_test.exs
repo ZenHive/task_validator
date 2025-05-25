@@ -45,6 +45,340 @@ defmodule TaskValidatorTest do
     assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/full_references.md")
   end
 
+  test "validate_file/1 validates reference definition format" do
+    # Test that reference definitions must start with ## {{
+    tasklist_path = "#{@temp_dir}/invalid_ref_format.md"
+
+    content = """
+    # Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority |
+    | --- | --- | --- | --- |
+    | TST0001 | Test task | Planned | High |
+
+    ## Task Details
+
+    ### TST0001: Test task
+    **Description**: Test
+    **Simplicity Progression Plan**: Plan
+    **Simplicity Principle**: Simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Test
+    {{test-requirements}}
+    {{error-handling}}
+    {{standard-kpis}}
+    {{def-no-dependencies}}
+    **Status**: Planned
+    **Priority**: High
+
+    # Invalid reference definition (should be ##)
+    # {{test-requirements}}
+    Test content
+
+    ## {{error-handling}}
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+
+    ## {{standard-kpis}}
+    - Functions per module: 5
+
+    ## {{def-no-dependencies}}
+    None
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:error, message} = TaskValidator.validate_file(tasklist_path)
+    assert message =~ "Missing reference definitions"
+    assert message =~ "test-requirements"
+  end
+
+  test "validate_file/1 accepts multiple reference formats" do
+    # Test various valid reference formats like {{name}} and {{def-name}}
+    tasklist_path = "#{@temp_dir}/multi_ref_formats.md"
+
+    content = """
+    # Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority |
+    | --- | --- | --- | --- |
+    | TST0001 | Test task | In Progress | High |
+
+    ## Task Details
+
+    ### TST0001: Test task with multiple reference formats
+    **Description**: Test various reference formats
+    **Simplicity Progression Plan**: Plan
+    **Simplicity Principle**: Simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Test
+    {{test-requirements}}
+    {{typespec-requirements}}
+    {{def-error-handling}}
+    {{standard-kpis}}
+    {{DEF:no-dependencies}}
+    **Architecture Notes**: Simple architecture
+    **Complexity Assessment**: Low complexity
+    **Status**: In Progress
+    **Priority**: High
+
+    #### 1. Subtask (TST0001-1)
+    **Description**: Test subtask
+    {{error-handling}}
+    **Status**: In Progress
+
+    ## {{test-requirements}}
+    **ExUnit Test Requirements**: Tests
+    **Integration Test Scenarios**: Scenarios
+
+    ## {{def-error-handling}}
+    **Error Handling**
+    **Core Principles**
+    - Errors
+    **Error Implementation**
+    - Implementation
+    **Error Examples**
+    - Examples
+    **GenServer Specifics**
+    - GenServer
+    **Task-Specific Approach**
+    - Task approach
+    **Error Reporting**
+    - Reporting
+
+    ## {{error-handling}}
+    **Error Handling**
+    **Task-Specific Approach**
+    - Subtask approach
+    **Error Reporting**
+    - Subtask reporting
+
+    ## {{typespec-requirements}}
+    **Typespec Requirements**: Specs
+    **TypeSpec Documentation**: Docs
+    **TypeSpec Verification**: Verify
+
+    ## {{standard-kpis}}
+    - Functions per module: 5
+
+    ## {{DEF:no-dependencies}}
+    None
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:ok, _message} = TaskValidator.validate_file(tasklist_path)
+  end
+
+  test "validate_file/1 handles reference placeholders in required sections" do
+    # Test that validator accepts references in place of required content
+    tasklist_path = "#{@temp_dir}/ref_in_sections.md"
+
+    content = """
+    # Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority |
+    | --- | --- | --- | --- |
+    | TST0001 | Test task | Planned | High |
+
+    ## Task Details
+
+    ### TST0001: Test references in sections
+    **Description**: Test references replacing entire sections
+    **Simplicity Progression Plan**: Plan
+    **Simplicity Principle**: Simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Test
+    {{test-requirements}}
+    {{typespec-requirements}}
+    {{error-handling}}
+    {{standard-kpis}}
+    {{def-no-dependencies}}
+    **Architecture Notes**: Simple architecture
+    **Complexity Assessment**: Low complexity
+    **Status**: Planned
+    **Priority**: High
+
+    ## {{test-requirements}}
+    **ExUnit Test Requirements**: Unit tests
+    **Integration Test Scenarios**: Integration tests
+
+    ## {{typespec-requirements}}
+    **Typespec Requirements**: Specs
+    **TypeSpec Documentation**: Docs
+    **TypeSpec Verification**: Verify
+
+    ## {{error-handling}}
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    **Error Implementation**
+    - No wrapping
+    **Error Examples**
+    - Examples
+    **GenServer Specifics**
+    - GenServer
+
+    ## {{standard-kpis}}
+    - Functions per module: 5
+    - Lines per function: 15
+    - Call depth: 2
+
+    ## {{def-no-dependencies}}
+    None
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:ok, _message} = TaskValidator.validate_file(tasklist_path)
+  end
+
+  test "validate_file/1 validates reference usage consistency" do
+    # Test that used references must have corresponding definitions
+    tasklist_path = "#{@temp_dir}/ref_consistency.md"
+
+    content = """
+    # Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority |
+    | --- | --- | --- | --- |
+    | TST0001 | Test task | Planned | High |
+
+    ## Task Details
+
+    ### TST0001: Test reference consistency
+    **Description**: Test
+    **Simplicity Progression Plan**: Plan
+    **Simplicity Principle**: Simple
+    **Abstraction Evaluation**: Low
+    **Requirements**: Test
+    {{test-requirements}}
+    {{error-handling}}
+    {{standard-kpis}}
+    {{undefined-ref}}
+    {{another-undefined}}
+    **Status**: Planned
+    **Priority**: High
+
+    ## {{test-requirements}}
+    **ExUnit Test Requirements**: Tests
+    **Integration Test Scenarios**: Tests
+
+    ## {{error-handling}}
+    **Error Handling**
+    **Core Principles**
+    - Errors
+    **Error Implementation**
+    - Implementation
+    **Error Examples**
+    - Examples
+    **GenServer Specifics**
+    - GenServer
+
+    ## {{standard-kpis}}
+    - Functions per module: 5
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:error, message} = TaskValidator.validate_file(tasklist_path)
+    assert message =~ "Missing reference definitions"
+    assert message =~ "undefined-ref"
+    assert message =~ "another-undefined"
+  end
+
+  test "validate_file/1 handles nested reference placeholders correctly" do
+    # Test references within task and subtask content
+    tasklist_path = "#{@temp_dir}/nested_refs.md"
+
+    content = """
+    # Task List
+
+    ## Current Tasks
+    | ID | Description | Status | Priority |
+    | --- | --- | --- | --- |
+    | TST0001 | Test nested refs | In Progress | High |
+
+    ## Task Details
+
+    ### TST0001: Test nested references
+    **Description**: Test references in various locations
+    **Simplicity Progression Plan**: {{simple-plan}}
+    **Simplicity Principle**: {{simple-principle}}
+    **Abstraction Evaluation**: Low
+    **Requirements**: {{requirements}}
+    {{test-requirements}}
+    {{typespec-requirements}}
+    {{error-handling}}
+    {{standard-kpis}}
+    {{def-no-dependencies}}
+    **Architecture Notes**: Simple architecture
+    **Complexity Assessment**: Low complexity
+    **Status**: In Progress
+    **Priority**: High
+
+    #### 1. Subtask with refs (TST0001-1)
+    **Description**: {{subtask-desc}}
+    {{error-handling-subtask}}
+    **Status**: In Progress
+
+    ## {{simple-plan}}
+    Progressive simplicity plan
+
+    ## {{simple-principle}}
+    Keep it simple principle
+
+    ## {{requirements}}
+    - Requirement 1
+    - Requirement 2
+
+    ## {{subtask-desc}}
+    Subtask description content
+
+    ## {{test-requirements}}
+    **ExUnit Test Requirements**: Tests
+    **Integration Test Scenarios**: Scenarios
+
+    ## {{error-handling}}
+    **Error Handling**
+    **Core Principles**
+    - Pass raw errors
+    **Error Implementation**
+    - No wrapping
+    **Error Examples**
+    - Examples
+    **GenServer Specifics**
+    - GenServer
+
+    ## {{error-handling-subtask}}
+    **Error Handling**
+    **Task-Specific Approach**
+    - Approach
+    **Error Reporting**
+    - Reporting
+
+    ## {{typespec-requirements}}
+    **Typespec Requirements**: Specs
+    **TypeSpec Documentation**: Docs
+    **TypeSpec Verification**: Verify
+
+    ## {{standard-kpis}}
+    - Functions per module: 5
+
+    ## {{def-no-dependencies}}
+    None
+    """
+
+    File.write!(tasklist_path, content)
+
+    assert {:ok, _message} = TaskValidator.validate_file(tasklist_path)
+  end
+
   test "validate_file/1 with missing task details" do
     tasklist_path = "#{@temp_dir}/missing_details.md"
 

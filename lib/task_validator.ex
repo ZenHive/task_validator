@@ -510,15 +510,6 @@ defmodule TaskValidator do
 
         # First check if all base required sections are present
         # Some sections can be replaced by references
-        section_to_reference = %{
-          "**ExUnit Test Requirements**" => "test-requirements",
-          "**Integration Test Scenarios**" => "test-requirements",
-          "**Typespec Requirements**" => "typespec-requirements",
-          "**TypeSpec Documentation**" => "typespec-requirements",
-          "**TypeSpec Verification**" => "typespec-requirements",
-          "**Code Quality KPIs**" => "standard-kpis",
-          "**Dependencies**" => "def-no-dependencies"
-        }
 
         missing_sections =
           Enum.filter(required_sections, fn section ->
@@ -529,14 +520,52 @@ defmodule TaskValidator do
               end)
 
             # If not present, check if it has a reference placeholder
-            if !has_section? && Map.has_key?(section_to_reference, section) do
-              ref_name = Map.get(section_to_reference, section)
+            if !has_section? do
+              # Check special cases where one reference covers multiple sections
+              case section do
+                "**ExUnit Test Requirements**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{test-requirements}}")
+                  end)
 
-              Enum.any?(task.content, fn line ->
-                String.contains?(line, "{{#{ref_name}}}")
-              end) == false
+                "**Integration Test Scenarios**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{test-requirements}}")
+                  end)
+
+                "**Typespec Requirements**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{typespec-requirements}}")
+                  end)
+
+                "**TypeSpec Documentation**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{typespec-requirements}}")
+                  end)
+
+                "**TypeSpec Verification**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{typespec-requirements}}")
+                  end)
+
+                "**Code Quality KPIs**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{standard-kpis}}")
+                  end)
+
+                "**Dependencies**" ->
+                  !Enum.any?(task.content, fn line ->
+                    String.contains?(line, "{{def-no-dependencies}}") ||
+                      String.contains?(line, "{{no-dependencies}}") ||
+                      String.contains?(line, "{{DEF:no-dependencies}}")
+                  end)
+
+                _ ->
+                  # For other sections, no reference substitution allowed
+                  true
+              end
             else
-              !has_section?
+              false
             end
           end)
 
