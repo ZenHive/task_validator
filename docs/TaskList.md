@@ -19,7 +19,7 @@
 | VAL0001-2 | ├─ Implement reference validation                   | Completed   | High     |          | 5/5           |
 | VAL0001-3 | ├─ Add tests for reference format                   | Completed   | Medium   |          | 5/5           |
 | VAL0001-4 | └─ Update test fixtures to use content references   | Completed   | High     |          | 5             |
-| VAL0002 | Update Template Generator for New Format              | Planned     | Medium   |          |               |
+| VAL0002 | Update Template Generator for New Format              | Completed   | Medium   | @assistant | 5.0          |
 | VAL0003 | Create Migration Guide for Existing Task Lists        | Planned     | Low      |          |               |
 
 ## Task Details
@@ -194,8 +194,22 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Keep generated files validatable (but not expanded by validator)
 - AI tools handle reference expansion when editing templates
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: Medium
+
+**Implementation Notes**:
+- Updated @reference_definitions module attribute to use ## #{{ref}} format
+- Escaped hash symbols in template strings to prevent Elixir interpolation
+- Templates now include {{standard-kpis}}, {{error-handling-main}}, and {{error-handling-subtask}} references
+- All template categories (core, features, documentation, testing) updated
+- Generated templates pass validation with new reference format
+
+**Maintenance Impact**:
+- Template changes are backward compatible
+- AI tools expanding references will handle both old and new formats
+- No changes needed to existing task lists
+
+**Review Rating**: 5.0
 
 ### VAL0003: Create Migration Guide for Existing Task Lists
 

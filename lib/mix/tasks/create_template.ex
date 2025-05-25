@@ -29,7 +29,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   ## Reference Definitions
 
-  ### error-handling-main
+  ## \#{{error-handling-main}}
   **Error Handling**
   **Core Principles**
   - Pass raw errors
@@ -48,14 +48,14 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Terminate/2 proper usage
   - Process linking considerations
 
-  ### error-handling-subtask
+  ## \#{{error-handling-subtask}}
   **Error Handling**
   **Task-Specific Approach**
   - Error pattern for this task
   **Error Reporting**
   - Monitoring approach
 
-  ### standard-kpis
+  ## \#{{standard-kpis}}
   **Code Quality KPIs**
   - Functions per module: 3
   - Lines per function: 12
