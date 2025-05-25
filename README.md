@@ -71,7 +71,7 @@ The TaskValidator enforces a specific format for task lists with a strong focus 
 
 ### Error Handling Requirements
 
-Main tasks must include the following comprehensive error handling sections (or use the `{{error-handling-main}}` reference):
+Main tasks must include the following comprehensive error handling sections:
 
 ```markdown
 **Error Handling**
@@ -93,8 +93,6 @@ Main tasks must include the following comprehensive error handling sections (or 
 - Process linking considerations
 ```
 
-Or simply use: `{{error-handling-main}}`
-
 Subtasks have a simplified error handling format:
 
 ```markdown
@@ -104,8 +102,6 @@ Subtasks have a simplified error handling format:
 **Error Reporting**
 - Monitoring approach
 ```
-
-Or use: `{{error-handling-subtask}}`
 
 ### Dependencies
 
@@ -147,8 +143,6 @@ All tasks must include code quality metrics that adhere to these limits:
 - Lines per function: 12
 - Call depth: 2
 ```
-
-Or use: `{{standard-kpis}}`
 
 ### Reference Definitions
 

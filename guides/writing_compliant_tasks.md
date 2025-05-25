@@ -149,12 +149,6 @@ In Progress
 **Priority**
 High
 
-**Architecture Notes**
-Modular authentication system design
-
-**Complexity Assessment**
-Medium - Multi-method authentication support
-
 **Dependencies**
 - ERR001 (Error handling framework must be complete)
 - AUTH005 (Authentication interface design)
@@ -163,24 +157,6 @@ Medium - Multi-method authentication support
 - Functions per module: 4
 - Lines per function: 12
 - Call depth: 2
-
-**Error Handling**
-**Core Principles**
-- Pass raw errors
-- Use {:ok, result} | {:error, reason}
-- Let it crash
-**Error Implementation**
-- No wrapping
-- Minimal rescue
-- function/1 & /! versions
-**Error Examples**
-- Raw error passthrough
-- Simple rescue case
-- Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
 
 **Subtasks**
 - [x] Connection setup [SSH0001a]
@@ -390,51 +366,6 @@ Common reference definitions:
 - `{{error-handling-main}}` - Full error handling for main tasks
 - `{{error-handling-subtask}}` - Simplified error handling for subtasks
 - `{{standard-kpis}}` - Standard code quality KPIs
-
-### Complete Example with References
-
-```markdown
-### SSH0001: Implement authentication module
-
-**Description**: Create a secure authentication module for SSH connections
-
-**Simplicity Progression Plan**: Start with basic auth, then add advanced features
-
-**Simplicity Principle**: Clear separation of authentication concerns
-
-**Abstraction Evaluation**: Keep implementation details hidden behind clean API
-
-**Requirements**: Support password and key-based authentication
-
-**ExUnit Test Requirements**: Test all authentication methods
-
-**Integration Test Scenarios**: Test with real SSH connections
-
-**Typespec Requirements**: Define authentication types and response structures
-
-**TypeSpec Documentation**: Document authentication interface contracts
-
-**TypeSpec Verification**: Use Dialyzer to verify authentication types
-
-**Status**: In Progress
-
-**Priority**: High
-
-**Architecture Notes**: Modular authentication system design
-
-**Complexity Assessment**: Medium - Multi-method authentication support
-
-**Dependencies**
-- ERR001 (Error handling framework must be complete)
-
-{{standard-kpis}}
-
-{{error-handling-main}}
-
-**Subtasks**
-- [x] Connection setup [SSH0001a]
-- [ ] Authentication flow [SSH0001b]
-```
 
 ## Common Validation Errors
 

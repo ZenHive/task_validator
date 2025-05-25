@@ -48,39 +48,7 @@ Medium - abstracts authentication mechanisms while maintaining clear and secure 
 - Support for public key authentication
 - Configurability of allowed authentication methods
 - Secure storage of authentication data
-
-**ExUnit Test Requirements**
-
-- Test all authentication methods
-- Test failure scenarios
-- Mock SSH server responses
-
-**Integration Test Scenarios**
-
-- Auth with valid/invalid credentials
-- Multi-factor authentication flow
-- Connection timeout handling
-
-**Typespec Requirements**
-
-- Define auth result types
-- Credential type specifications
-- Connection state types
-
-**TypeSpec Documentation**
-Document all public authentication interfaces
-
-**TypeSpec Verification**
-Use Dialyzer to verify type safety
-
-**Dependencies**
-- ERR001 (Error handling framework required)
-- None (for base functionality)
-
-**Code Quality KPIs**
-- Functions per module: 4
-- Lines per function: 12
-- Call depth: 2
+- Proper error handling for auth failures
 
 **Error Handling**
 **Core Principles**
@@ -95,22 +63,17 @@ Use Dialyzer to verify type safety
 - Raw error passthrough
 - Simple rescue case
 - Supervisor handling
-**GenServer Specifics**
-- Handle_call/3 error pattern
-- Terminate/2 proper usage
-- Process linking considerations
 
-**Status**
-In Progress
+**ExUnit Test Requirements**
 
-**Priority**
-High
+- Test both authentication methods independently
+- Test fallback mechanisms
+- Test with invalid credentials
+- Mock SSH server for integration tests
 
-**Architecture Notes**
-Modular SSH authentication design supporting multiple auth methods
+**Integration Test Scenarios**
 
-**Complexity Assessment**
-Medium - Multiple authentication methods with fallback logic
+- Authentication with valid/invalid password
 - Authentication with valid/invalid key
 - Authentication with disabled methods
 - Fallback behavior when preferred auth fails
