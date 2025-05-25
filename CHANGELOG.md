@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.7.0 (2025-05-25)
+
+### Breaking Changes
+
+- Changed subtask ID format from letter suffixes to numeric suffixes (e.g., `SSH0001a` → `SSH0001-1`)
+- Updated reference syntax from `{{reference-name}}` to `#{{reference-name}}` for better clarity
+
+### Features
+
+- Added checkbox format as the recommended approach for subtasks
+  - `- [x] Completed subtask [TASK0001-1]`
+  - `- [ ] Pending subtask [TASK0001-2]`
+- Both checkbox and numbered formats are now supported, with checkbox being recommended
+
+### Enhancements
+
+- Updated all templates to use the new numeric subtask ID format
+- Enhanced documentation to show both subtask formats with clear recommendations
+- Updated mix help output to display the new checkbox format examples
+- Improved consistency across all documentation files
+
+### Documentation
+
+- Updated `guides/writing_compliant_tasks.md` with new subtask format examples
+- Enhanced README.md to show checkbox format as recommended
+- Added comprehensive subtask format examples to mix task help
+
 ## v0.6.0 (2025-05-23)
 
 ### Features

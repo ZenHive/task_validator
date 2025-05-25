@@ -91,6 +91,28 @@ defmodule Mix.Tasks.ValidateTasklist do
   - If status is "Completed", must have "Review Rating"
   - Review rating format: 1-5 with optional decimal (e.g., 4.5)
   - Review rating can include "(partial)" suffix
+  - Can be organized as checkboxes or numbered entries
+
+  ### Subtask Formats
+  Tasks can organize subtasks in two formats:
+
+  1. **Checkbox Format** (Recommended):
+  ```markdown
+  **Subtasks**
+  - [x] Basic structure implementation [SSH0001-1]
+  - [ ] Essential features [SSH0001-2]
+  - [ ] Integration testing [SSH0001-3]
+  ```
+
+  2. **Numbered Format**:
+  ```markdown
+  #### 1. Basic structure implementation (SSH0001-1)
+  **Status**
+  Completed
+
+  **Review Rating**
+  4.5
+  ```
 
   ### Additional Rules
   - Tasks marked as "In Progress" must have at least one subtask

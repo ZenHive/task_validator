@@ -52,8 +52,8 @@ end
 The TaskValidator enforces a specific format for task lists with a strong focus on error handling:
 
 - Task IDs must follow a consistent pattern: 2-4 uppercase letters followed by 3-4 digits (e.g., SSH0001, SCP0001, ERR001, REF0002)
-- Subtasks can use either numeric suffixes (SSH0001-1) or letter suffixes for checkbox style (SSH0001a)
-- Checkbox subtasks are supported: `- [ ] Subtask description [SSH0001a]`
+- Subtasks use numeric suffixes (SSH0001-1, SSH0001-2, etc.)
+- Checkbox format is recommended for subtasks: `- [x] Completed task [SSH0001-1]` or `- [ ] Pending task [SSH0001-2]`
 - Dependencies field tracks relationships between tasks
 - Code Quality KPIs enforce limits: max 5 functions/module, 15 lines/function, call depth 2
 - Task categories with specific number ranges:
@@ -115,20 +115,32 @@ Tasks can specify dependencies on other tasks using the Dependencies field:
 
 The validator ensures all referenced tasks exist in the task list.
 
-### Checkbox Subtasks
+### Subtask Formats
 
-Subtasks can use checkbox format for better visual tracking:
+Subtasks can be organized in two formats:
 
+**Checkbox Format (Recommended):**
 ```markdown
-## Task Details
-
 ### SSH0001: SSH Session Initialization
 
 **Subtasks**
-- [x] Connection setup [SSH0001a]
-- [ ] Authentication flow [SSH0001b]
-- [ ] Session establishment [SSH0001c]
+- [x] Implement password authentication [SSH0001-1]
+- [ ] Add key-based authentication [SSH0001-2]
+- [ ] Implement host verification [SSH0001-3]
 ```
+
+This format provides immediate visual feedback on task progress and is the recommended approach for new task lists.
+
+**Numbered Format (Alternative):**
+```markdown
+#### 1. Implement password authentication (SSH0001-1)
+**Status**
+Completed
+**Review Rating**
+4.5
+```
+
+Both formats are valid and can be mixed within the same task list.
 
 ### Code Quality KPIs
 

@@ -159,22 +159,9 @@ High
 - Call depth: 2
 
 **Subtasks**
-- [x] Connection setup [SSH0001a]
-- [ ] Authentication flow [SSH0001b]
-- [ ] Session establishment [SSH0001c]
-
-#### 1. Implement password authentication (SSH0001-1)
-
-**Status**
-Completed
-
-**Review Rating**
-4.5
-
-#### 2. Add key-based authentication (SSH0001-2)
-
-**Status**
-In Progress
+- [x] Implement password authentication [SSH0001-1]
+- [ ] Add key-based authentication [SSH0001-2]  
+- [ ] Implement host verification [SSH0001-3]
 
 #### 1. Implement password authentication (SSH0001-1)
 
@@ -292,18 +279,48 @@ These metrics must adhere to the following limits:
 - Maximum lines per function: 15
 - Maximum call depth: 2
 
-## Checkbox Subtasks
+## Subtask Formats
 
-Subtasks can use checkbox format for better visual tracking:
+### Checkbox Format (Recommended)
+
+The checkbox format provides better visual tracking of subtask progress:
 
 ```markdown
 **Subtasks**
-- [x] Connection setup [SSH0001a]
-- [ ] Authentication flow [SSH0001b]
-- [ ] Session establishment [SSH0001c]
+- [x] Implement password authentication [SSH0001-1]
+- [ ] Add key-based authentication [SSH0001-2]
+- [ ] Implement host verification [SSH0001-3]
 ```
 
-Note the letter suffix (a, b, c) instead of numeric suffix (-1, -2, -3).
+This format:
+- Uses standard markdown checkboxes `- [x]` for completed, `- [ ]` for pending
+- Includes descriptive task names followed by task ID in brackets
+- Makes progress immediately visible in the rendered markdown
+
+### Numbered Format (Alternative)
+
+Subtasks can also be documented as numbered entries with full details:
+
+```markdown
+#### 1. Implement password authentication (SSH0001-1)
+
+**Description**
+Initial implementation of password-based authentication.
+
+**Error Handling**
+**Task-Specific Approach**
+- Handle invalid credentials with specific error tuples
+**Error Reporting**  
+- Log auth attempts with appropriate level
+
+**Status**
+Completed
+
+**Review Rating**
+4.5
+```
+
+Note: Both formats are valid. The checkbox format is recommended for better visual tracking.
 
 ## Category-Specific Requirements
 
