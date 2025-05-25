@@ -115,7 +115,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
     assert content =~ "**Priority**"
 
     # Verify subtask format
-    assert content =~ "#### 1. Basic structure implementation"
+    assert content =~ "**Subtasks**"
+    assert content =~ "- [x] Basic structure implementation"
+    assert content =~ "#### PRJ0001-1: Basic structure implementation"
     assert content =~ "**Review Rating**"
   end
 

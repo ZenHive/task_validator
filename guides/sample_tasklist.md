@@ -96,7 +96,13 @@ In Progress
 **Priority**
 High
 
-#### 1. Implement password authentication (SSH0001-1)
+**Subtasks**
+- [x] Implement password authentication [SSH0001-1]
+- [ ] Add key-based authentication [SSH0001-2]
+- [ ] Implement host verification [SSH0001-3]
+- [ ] Add support for auth methods negotiation [SSH0001-4]
+
+#### SSH0001-1: Implement password authentication
 
 **Description**
 Implement basic password authentication with encryption and rate limiting.
@@ -121,7 +127,7 @@ Completed
 **Review Rating**
 4.5
 
-#### 2. Add key-based authentication (SSH0001-2)
+#### SSH0001-2: Add key-based authentication
 
 **Description**
 Support for RSA and ED25519 keys with proper validation.
@@ -203,6 +209,12 @@ Planned
 **Priority**
 Medium
 
+**Subtasks**
+- [ ] Implement basic file uploads [SCP0001-1]
+- [ ] Add download functionality [SCP0001-2]
+- [ ] Add resume capabilities [SCP0001-3]
+- [ ] Add directory synchronization [SCP0001-4]
+
 ---
 
 ### ERR001: Error handling and recovery
@@ -259,7 +271,13 @@ In Progress
 **Priority**
 High
 
-#### 1. Define error taxonomy (ERR001-1)
+**Subtasks**
+- [x] Define error taxonomy [ERR001-1]
+- [ ] Implement basic error handlers [ERR001-2]
+- [ ] Add recovery mechanisms [ERR001-3]
+- [ ] Integrate with logging [ERR001-4]
+
+#### ERR001-1: Define error taxonomy
 
 **Description**
 Create a comprehensive classification of errors in the system.
@@ -284,7 +302,7 @@ Completed
 **Review Rating**
 4.8
 
-#### 2. Implement basic error handlers (ERR001-2)
+#### ERR001-2: Implement basic error handlers
 
 **Description**
 Create handlers for common error scenarios.
@@ -362,7 +380,13 @@ Review
 **Priority**
 Medium
 
-#### 1. Set up basic documentation structure (DOC0001-1)
+**Subtasks**
+- [x] Set up basic documentation structure [DOC0001-1]
+- [x] Add API documentation [DOC0001-2]
+- [x] Add tutorials and examples [DOC0001-3]
+- [ ] Implement search functionality [DOC0001-4]
+
+#### DOC0001-1: Set up basic documentation structure
 
 **Description**
 Create the foundational structure for project documentation.
@@ -387,7 +411,7 @@ Completed
 **Review Rating**
 5
 
-#### 2. Add API documentation (DOC0001-2)
+#### DOC0001-2: Add API documentation
 
 **Description**
 Generate comprehensive API documentation from code comments.
@@ -412,7 +436,7 @@ Completed
 **Review Rating**
 4.3
 
-#### 3. Add tutorials and examples (DOC0001-3)
+#### DOC0001-3: Add tutorials and examples
 
 **Description**
 Create usage tutorials and example code.

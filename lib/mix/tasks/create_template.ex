@@ -150,24 +150,34 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Dependency Analysis**
   No external dependencies
 
-  #### 1. Basic structure implementation (<%= @prefix %><%= @task_number %>-1)
+  **Subtasks**
+  - [x] Basic structure implementation [<%= @prefix %><%= @task_number %>-1]
+  - [ ] Essential features [<%= @prefix %><%= @task_number %>-2]
+  - [ ] Error handling implementation [<%= @prefix %><%= @task_number %>-3]
+  - [ ] Add extensibility points [<%= @prefix %><%= @task_number %>-4]
+
+  #### <%= @prefix %><%= @task_number %>-1: Basic structure implementation
 
   **Description**
   Create the foundational structure and interfaces
 
+  **Status**
+  Completed
+
+  **Review Rating**
+  4.5
+
   {{error-handling-subtask}}
 
-  **Status**: Completed
-  **Review Rating**: 4.5
-
-  #### 2. Essential features (<%= @prefix %><%= @task_number %>-2)
+  #### <%= @prefix %><%= @task_number %>-2: Essential features
 
   **Description**
   Implement core features and functionality
 
-  {{error-handling-subtask}}
+  **Status**
+  Planned
 
-  **Status**: Planned
+  {{error-handling-subtask}}
 
   ### <%= @prefix %>0002: Add documentation framework
 
@@ -321,24 +331,34 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Complexity Assessment**
   Low - Basic structure only
 
-  #### 1. Basic structure implementation (<%= @prefix %><%= @task_number %>-1)
+  **Subtasks**
+  - [x] Basic structure implementation [<%= @prefix %><%= @task_number %>-1]
+  - [ ] Performance optimization [<%= @prefix %><%= @task_number %>-2]
+  - [ ] Add error handling [<%= @prefix %><%= @task_number %>-3]
+  - [ ] Optimize performance [<%= @prefix %><%= @task_number %>-4]
+
+  #### <%= @prefix %><%= @task_number %>-1: Basic structure implementation
 
   **Description**
   Create the foundational architecture and core interfaces
 
+  **Status**
+  Completed
+
+  **Review Rating**
+  4.5
+
   {{error-handling-subtask}}
 
-  **Status**: Completed
-  **Review Rating**: 4.5
-
-  #### 2. Performance optimization (<%= @prefix %><%= @task_number %>-2)
+  #### <%= @prefix %><%= @task_number %>-2: Performance optimization
 
   **Description**
   Implement performance optimizations and monitoring
 
-  {{error-handling-subtask}}
+  **Status**
+  Planned
 
-  **Status**: Planned
+  {{error-handling-subtask}}
 
 
   ### <%= @prefix %>0002: Add documentation framework
@@ -388,6 +408,12 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - <%= @prefix %>0001
 
   {{standard-kpis}}
+
+  **Subtasks**
+  - [ ] Set up documentation tools [<%= @prefix %>0002-1]
+  - [ ] Create basic structure [<%= @prefix %>0002-2]
+  - [ ] Add API documentation [<%= @prefix %>0002-3]
+  - [ ] Create user guides [<%= @prefix %>0002-4]
 
   **Architecture Notes**
   Standard documentation framework
