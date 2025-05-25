@@ -133,10 +133,10 @@ defmodule TaskValidator do
     with {:ok, content} <- File.read(file_path),
          {:ok, lines} <- {:ok, String.split(content, "\n")},
          {:ok, references} <- extract_references(lines),
-         {:ok, resolved_lines} <- resolve_references(lines, references),
-         {:ok, tasks} <- extract_tasks(resolved_lines),
+         :ok <- validate_references(lines, references),
+         {:ok, tasks} <- extract_tasks(lines),
          :ok <- validate_task_ids(tasks),
-         :ok <- validate_task_details(resolved_lines, tasks) do
+         :ok <- validate_task_details(lines, tasks) do
       {:ok, "TaskList.md validation passed!"}
     end
   end
@@ -144,84 +144,73 @@ defmodule TaskValidator do
   @doc """
   Extracts reference definitions from the content.
   Reference definitions are in the format:
-  ## Reference Definitions
-  ### error-handling
-  **Error Handling**
-  **Core Principles**
+  ## {{reference-name}}
+  Content for the reference
   ...
   """
   @spec extract_references(list(String.t())) :: {:ok, map()}
   def extract_references(lines) do
-    # Find the Reference Definitions section
-    ref_start = Enum.find_index(lines, &(&1 == "## Reference Definitions"))
+    # Find all lines that match ## {{reference-name}} pattern
+    references =
+      lines
+      |> Enum.with_index()
+      |> Enum.reduce(%{}, fn {line, idx}, acc ->
+        case Regex.run(~r/^## \{\{([^}]+)\}\}$/, line) do
+          [_, ref_name] ->
+            # Extract content until next ## header
+            content = extract_reference_content(lines, idx + 1)
+            Map.put(acc, ref_name, content)
+          _ ->
+            acc
+        end
+      end)
 
-    if ref_start do
-      references =
-        lines
-        |> Enum.drop(ref_start + 1)
-        |> extract_reference_blocks(%{})
-
-      {:ok, references}
-    else
-      # No reference definitions found, that's OK
-      {:ok, %{}}
-    end
+    {:ok, references}
   end
 
-  defp extract_reference_blocks([], acc), do: acc
-
-  defp extract_reference_blocks(lines, acc) do
-    case lines do
-      ["### " <> ref_name | rest] ->
-        # Extract content until next ### or end
-        {content, remaining} =
-          Enum.split_while(rest, fn line ->
-            !String.starts_with?(line, "### ") && !String.starts_with?(line, "## ")
-          end)
-
-        # Store the reference content
-        updated_acc = Map.put(acc, ref_name, content)
-        extract_reference_blocks(remaining, updated_acc)
-
-      [_ | rest] ->
-        extract_reference_blocks(rest, acc)
-
-      [] ->
-        acc
-    end
+  defp extract_reference_content(lines, start_idx) do
+    lines
+    |> Enum.drop(start_idx)
+    |> Enum.take_while(fn line ->
+      # Stop at next ## header
+      !String.starts_with?(line, "## ")
+    end)
   end
 
   @doc """
-  Resolves references in the content by replacing {{ref-name}} with actual content.
+  Validates that all {{ref-name}} placeholders in the content have corresponding definitions.
+  Does NOT expand references - only validates they exist.
   """
-  @spec resolve_references(list(String.t()), map()) :: {:ok, list(String.t())}
-  def resolve_references(lines, references) do
-    resolved_lines =
-      Enum.map(lines, fn line ->
-        # Check if line contains a reference like {{error-handling}}
-        if String.contains?(line, "{{") && String.contains?(line, "}}") do
-          case Regex.run(~r/\{\{([^}]+)\}\}/, line) do
-            [_full_match, ref_name] ->
-              case Map.get(references, ref_name) do
-                nil ->
-                  # Reference not found, keep as is
-                  line
-
-                ref_content ->
-                  # Replace the line with the reference content
-                  ref_content
-              end
-
-            _ ->
-              line
+  @spec validate_references(list(String.t()), map()) :: :ok | {:error, String.t()}
+  def validate_references(lines, references) do
+    # Find all {{reference}} placeholders in the content
+    missing_refs =
+      lines
+      |> Enum.with_index()
+      |> Enum.reduce([], fn {line, line_num}, acc ->
+        # Find all references in this line
+        refs = Regex.scan(~r/\{\{([^}]+)\}\}/, line)
+        
+        Enum.reduce(refs, acc, fn [_full_match, ref_name], inner_acc ->
+          if Map.has_key?(references, ref_name) do
+            inner_acc
+          else
+            [{ref_name, line_num + 1} | inner_acc]
           end
-        else
-          line
-        end
+        end)
       end)
-      |> List.flatten()
+      |> Enum.reverse()
 
-    {:ok, resolved_lines}
+    if missing_refs == [] do
+      :ok
+    else
+      missing_list =
+        missing_refs
+        |> Enum.map(fn {ref, line} -> "  - '{{#{ref}}}' at line #{line}" end)
+        |> Enum.join("\n")
+
+      {:error, "Missing reference definitions:\n#{missing_list}"}
+    end
   end
 
   @doc """
@@ -519,11 +508,33 @@ defmodule TaskValidator do
         ]
 
         # First check if all base required sections are present
+        # Some sections can be replaced by references
+        section_to_reference = %{
+          "**ExUnit Test Requirements**" => "test-requirements",
+          "**Integration Test Scenarios**" => "test-requirements", 
+          "**Typespec Requirements**" => "typespec-requirements",
+          "**TypeSpec Documentation**" => "typespec-requirements",
+          "**TypeSpec Verification**" => "typespec-requirements",
+          "**Code Quality KPIs**" => "standard-kpis",
+          "**Dependencies**" => "def-no-dependencies"
+        }
+
         missing_sections =
           Enum.filter(required_sections, fn section ->
-            !Enum.any?(task.content, fn line ->
+            # Check if section is present directly
+            has_section? = Enum.any?(task.content, fn line ->
               String.starts_with?(line, section)
             end)
+
+            # If not present, check if it has a reference placeholder
+            if !has_section? && Map.has_key?(section_to_reference, section) do
+              ref_name = Map.get(section_to_reference, section)
+              Enum.any?(task.content, fn line ->
+                String.contains?(line, "{{#{ref_name}}}")
+              end) == false
+            else
+              !has_section?
+            end
           end)
 
         # Extract status to check if task is completed
@@ -556,12 +567,25 @@ defmodule TaskValidator do
           end
 
         # All tasks require error handling guidelines
-        missing_error_handling_sections =
-          Enum.filter(@error_handling_sections, fn section ->
-            !Enum.any?(task.content, fn line ->
-              String.starts_with?(line, section)
-            end)
+        # Check if task has error handling reference placeholder
+        has_error_handling_reference? =
+          Enum.any?(task.content, fn line ->
+            String.contains?(line, "{{error-handling") ||
+            String.contains?(line, "{{def-error-handling")
           end)
+
+        missing_error_handling_sections =
+          if has_error_handling_reference? do
+            # If task uses error handling reference, accept it as valid
+            []
+          else
+            # Otherwise check for all required sections
+            Enum.filter(@error_handling_sections, fn section ->
+              !Enum.any?(task.content, fn line ->
+                String.starts_with?(line, section)
+              end)
+            end)
+          end
 
         missing_sections = missing_sections ++ missing_error_handling_sections
 
@@ -768,23 +792,33 @@ defmodule TaskValidator do
   end
 
   defp validate_code_quality_kpis(task) do
-    # Find the Code Quality KPIs section
-    kpi_section_start =
-      Enum.find_index(task.content, fn line ->
-        String.starts_with?(line, "**Code Quality KPIs**")
+    # Check if task uses KPI reference placeholder
+    has_kpi_reference? =
+      Enum.any?(task.content, fn line ->
+        String.contains?(line, "{{standard-kpis}}")
       end)
 
-    if kpi_section_start == nil do
-      {:error, "Task #{task.id} is missing Code Quality KPIs section"}
+    if has_kpi_reference? do
+      # If task uses KPI reference, accept it as valid
+      :ok
     else
-      # Extract the KPI section content
-      kpi_content =
-        task.content
-        |> Enum.drop(kpi_section_start + 1)
-        |> Enum.take_while(fn line ->
-          !String.match?(line, ~r/^\*\*[^*]+\*\*/) && String.trim(line) != ""
+      # Otherwise, find the Code Quality KPIs section
+      kpi_section_start =
+        Enum.find_index(task.content, fn line ->
+          String.starts_with?(line, "**Code Quality KPIs**")
         end)
-        |> Enum.reject(&(String.trim(&1) == ""))
+
+      if kpi_section_start == nil do
+        {:error, "Task #{task.id} is missing Code Quality KPIs section"}
+      else
+        # Extract the KPI section content
+        kpi_content =
+          task.content
+          |> Enum.drop(kpi_section_start + 1)
+          |> Enum.take_while(fn line ->
+            !String.match?(line, ~r/^\*\*[^*]+\*\*/) && String.trim(line) != ""
+          end)
+          |> Enum.reject(&(String.trim(&1) == ""))
 
       # Parse KPI values
       kpis = %{
@@ -824,6 +858,7 @@ defmodule TaskValidator do
             :ok
         end
       end
+    end
     end
   end
 
@@ -942,10 +977,21 @@ defmodule TaskValidator do
             []
           else
             # Traditional format requires status and error handling sections
+            # Check if subtask has error handling reference placeholder
+            has_error_handling_reference? =
+              Enum.any?(subtask_content, fn line ->
+                String.contains?(line, "{{error-handling") ||
+                String.contains?(line, "{{def-error-handling")
+              end)
+
             required_subtask_sections =
-              [
-                "**Status**"
-              ] ++ @subtask_error_handling_sections
+              if has_error_handling_reference? do
+                # If subtask uses error handling reference, only require Status
+                ["**Status**"]
+              else
+                # Otherwise require all sections
+                ["**Status**"] ++ @subtask_error_handling_sections
+              end
 
             Enum.filter(required_subtask_sections, fn section ->
               !Enum.any?(subtask_content, fn line ->

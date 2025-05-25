@@ -16,7 +16,7 @@
 | ------- | ----------------------------------------------------- | ----------- | -------- | -------- | ------------- |
 | VAL0001 | Support AI-Friendly Content References                | Planned     | High     |          |               |
 | VAL0001-1 | ├─ Update validator to recognize def- sections      | Completed   | High     |          | 5/5           |
-| VAL0001-2 | ├─ Implement reference validation                   | In Progress | High     |          |               |
+| VAL0001-2 | ├─ Implement reference validation                   | Completed   | High     |          | 5/5           |
 | VAL0001-3 | ├─ Add tests for reference format                   | Planned     | Medium   |          |               |
 | VAL0001-4 | └─ Update test fixtures to use content references   | Planned     | High     |          |               |
 | VAL0002 | Update Template Generator for New Format              | Planned     | Medium   |          |               |
@@ -112,7 +112,7 @@ The validator does NOT expand {{reference}} placeholders - that is the responsib
 - Report missing references
 - Show which task uses invalid reference
 
-**Status**: In Progress
+**Status**: Completed
 
 #### 3. Add tests for reference format (VAL0001-3)
 

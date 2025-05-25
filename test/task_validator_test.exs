@@ -34,6 +34,17 @@ defmodule TaskValidatorTest do
     assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/reference_test.md")
   end
 
+  test "validate_file/1 with missing references" do
+    assert {:error, message} = TaskValidator.validate_file("test/fixtures/missing_references.md")
+    assert message =~ "Missing reference definitions"
+    assert message =~ "non-existent-reference"
+    assert message =~ "another-missing-ref"
+  end
+
+  test "validate_file/1 accepts reference placeholders as valid content" do
+    assert {:ok, _message} = TaskValidator.validate_file("test/fixtures/full_references.md")
+  end
+
   test "validate_file/1 with missing task details" do
     tasklist_path = "#{@temp_dir}/missing_details.md"
 
