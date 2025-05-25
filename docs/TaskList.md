@@ -1,6 +1,8 @@
 # Task Validator Development Task List
 
 <!-- AI INSTRUCTION: This document uses content references to reduce repetition -->
+<!-- The TaskValidator library ONLY validates references exist - it does NOT expand them -->
+<!-- AI tools should expand references when editing/processing this file -->
 <!-- When you see "{{error-handling}}", substitute content from #{{error-handling}} -->
 <!-- When you see "{{standard-kpis}}", substitute content from #{{standard-kpis}}-->
 <!-- When you see "{{def-no-dependencies}}", substitute content from #def-no-dependencies -->
@@ -12,9 +14,9 @@
 
 | ID      | Description                                           | Status      | Priority | Assignee | Review Rating |
 | ------- | ----------------------------------------------------- | ----------- | -------- | -------- | ------------- |
-| VAL0001 | Support AI-Friendly Content References                | In Progress | High     |          |               |
-| VAL0001-1 | ├─ Update validator to recognize def- sections      | Planned     | High     |          |               |
-| VAL0001-2 | ├─ Implement reference expansion in validation      | Planned     | High     |          |               |
+| VAL0001 | Support AI-Friendly Content References                | Planned     | High     |          |               |
+| VAL0001-1 | ├─ Update validator to recognize def- sections      | Completed   | High     |          | 5/5           |
+| VAL0001-2 | ├─ Implement reference validation                   | Completed   | High     |          | 5/5           |
 | VAL0001-3 | ├─ Add tests for reference format                   | Planned     | Medium   |          |               |
 | VAL0001-4 | └─ Update test fixtures to use content references   | Planned     | High     |          |               |
 | VAL0002 | Update Template Generator for New Format              | Planned     | Medium   |          |               |
@@ -24,15 +26,21 @@
 
 ### VAL0001: Support AI-Friendly Content References
 
-**Description**: Enhance the task validator to support content references that reduce repetition while remaining AI-editor friendly. This allows task lists to use references like "{{error-handling}}" which AI editors can expand using definitions at the end of the file.
+**Description**: Enhance the task validator to fully support content references that reduce repetition while remaining AI-editor friendly. The validator has three core responsibilities:
+1. Parse definition sections (`## {{reference-name}}`) 
+2. Check that all `{{reference}}` placeholders have corresponding definitions
+3. Accept the placeholders as valid content (not require expansion)
+
+The validator does NOT expand {{reference}} placeholders - that is the responsibility of AI tools and editors.
 
 **Simplicity Progression Plan**:
-1. Parse {{reference}} sections at end of file
+1. Parse `## {{reference-name}}` definition sections at end of file
 2. Build reference map during validation
-3. Expand references when validating sections
-4. No backward compatibility needed
+3. Check all `{{reference}}` placeholders have definitions
+4. Accept placeholders as valid content (no expansion required)
+5. No backward compatibility needed
 
-**Simplicity Principle**: Keep the reference system simple - just string replacement during validation, no complex templating.
+**Simplicity Principle**: Keep the reference system simple - just validate references exist, no expansion or complex templating by the validator.
 
 **Abstraction Evaluation**:
 - **Challenge**: How to reduce repetition without making files unreadable for AI?
@@ -40,8 +48,9 @@
 - **Justification**: Reduces file size by 60-70% while keeping content accessible
 
 **Requirements**:
-- Support #{{reference-name}} section headers
-- Expand references during validation
+- Parse `## {{reference-name}}` definition sections
+- Validate all `{{reference}}` placeholders have corresponding definitions  
+- Accept placeholders as valid content without requiring expansion
 - Maintain human readability
 - Clear AI instructions at top
 
@@ -59,67 +68,91 @@
 **Dependencies**: {{def-no-dependencies}}
 
 **Architecture Notes**:
-- References are expanded during validation only
-- Original file remains unchanged
+- Validator parses `## {{reference-name}}` sections into reference map
+- Validator checks `{{reference}}` placeholders have definitions
+- Validator accepts placeholders as valid content (no expansion)
+- AI tools are responsible for expanding references when editing
+- Original file remains unchanged by validator
 - References can contain any valid markdown
 
-**Status**: In Progress
+**Status**: Planned
 **Priority**: High
 
-#### 1. Update validator to recognize def- sections (VAL0001-1)
+#### 1. Update validator to parse definition sections (VAL0001-1)
 
-**Description**: Modify extract_references/1 to recognize sections with #{{reference-name}} format as reference definitions.
+**Description**: Modify extract_references/1 to parse sections with `## {{reference-name}}` format as reference definitions and build a reference map.
 
 **Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
-- Parse sections starting with ## {{reference-name}}
-- Store content until next section
-- Build reference map
+- Parse sections starting with `## {{reference-name}}`
+- Extract content until next section header
+- Build reference map for validation lookup
+- Store reference names and content locations
 
 **Error Reporting**:
 - Log duplicate reference definitions
 - Report invalid reference names
 
-**Status**: Planned
+**Status**: Completed
 
-#### 2. Implement reference expansion in validation (VAL0001-2)
+#### 2. Implement placeholder validation (VAL0001-2)
 
-**Description**: Update validation logic to expand "{{reference-name}}" references using the reference map.
+**Description**: Update validation logic to check that all `{{reference-name}}` placeholders have corresponding definitions in the reference map, and accept placeholders as valid content.
 
 **Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
-- Pattern match on "{{reference-name}}"
-- Look up in reference map
-- Substitute during validation
+- Pattern match on `{{reference-name}}` placeholders in task content
+- Look up each placeholder in reference map
+- Validate reference definition exists (no expansion/substitution)
+- Accept placeholders as valid content during validation
 
 **Error Reporting**:
 - Report missing references
 - Show which task uses invalid reference
 
-**Status**: Planned
+**Status**: Completed
 
 #### 3. Add tests for reference format (VAL0001-3)
 
-**Description**: Create comprehensive tests for the new reference system.
+**Description**: Create comprehensive tests for the new reference validation system.
 
 **Error Handling**: {{error-handling}}
 
 **Task-Specific Approach**:
 - Test valid reference files
 - Test missing references
-- Test validation with expansion
+- Test validation without expansion (validator only checks existence)
 
 **Error Reporting**:
 - Clear test failure messages
-- Show actual vs expected
+- Show actual vs expected validation results
+
+**Status**: Planned
+
+#### 4. Update test fixtures to use content references (VAL0001-4)
+
+**Description**: Convert all test fixtures in test/fixtures/* to use the new content reference format. This ensures our test cases demonstrate best practices and validate the reference system properly.
+
+**Error Handling**: {{error-handling}}
+
+**Task-Specific Approach**:
+- Identify repetitive content in fixtures
+- Create appropriate references
+- Update fixture files with references
+- Ensure fixtures still test edge cases
+
+**Error Reporting**:
+- Maintain test coverage
+- Keep invalid fixtures invalid
+- Document changes in comments
 
 **Status**: Planned
 
 ### VAL0002: Update Template Generator for New Format
 
-**Description**: Modify mix task create_template to generate task lists using the new reference format, reducing repetition in generated templates.
+**Description**: Modify mix task create_template to generate task lists using the new reference format, reducing repetition in generated templates. The generated templates will be validated by the library but expanded by AI tools.
 
 **Simplicity Progression Plan**:
 1. Update template strings
@@ -157,7 +190,8 @@
 **Architecture Notes**:
 - Templates demonstrate reference best practices
 - Include most common references
-- Keep generated files validatable
+- Keep generated files validatable (but not expanded by validator)
+- AI tools handle reference expansion when editing templates
 
 **Status**: Planned
 **Priority**: Medium
