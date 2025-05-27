@@ -944,6 +944,33 @@ defmodule TaskValidatorTest do
     assert error_message =~ "missing required sections"
   end
 
+  test "all valid fixture files pass validation" do
+    # Get all fixture files that should be valid (not starting with "invalid_", ending with "_mismatch", or containing "missing_")
+    fixture_dir = "test/fixtures"
+    
+    valid_fixtures = 
+      File.ls!(fixture_dir)
+      |> Enum.filter(&String.ends_with?(&1, ".md"))
+      |> Enum.reject(&String.starts_with?(&1, "invalid_"))
+      |> Enum.reject(&String.ends_with?(&1, "_mismatch.md"))
+      |> Enum.reject(&String.contains?(&1, "missing_"))
+      |> Enum.map(&Path.join(fixture_dir, &1))
+    
+    # Ensure we have some valid fixtures to test
+    assert length(valid_fixtures) > 0, "No valid fixture files found"
+    
+    # Test each valid fixture file
+    for fixture_path <- valid_fixtures do
+      case TaskValidator.validate_file(fixture_path) do
+        {:ok, _message} -> 
+          # Test passed, continue
+          :ok
+        {:error, error_message} ->
+          flunk("Valid fixture file #{fixture_path} failed validation: #{error_message}")
+      end
+    end
+  end
+
   defp valid_tasklist_content do
     """
     # SSHForge Task List
