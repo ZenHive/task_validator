@@ -1,3 +1,22 @@
+<!-- REFERENCE USAGE EXAMPLE: This file demonstrates proper use of content references -->
+<!-- References reduce file size by 60-70% while maintaining consistency -->
+<!-- The TaskValidator library ONLY validates references exist - it does NOT expand them -->
+<!-- AI tools should expand references when editing/processing this file -->
+
+<!-- COMMON REFERENCES USED IN THIS FILE: -->
+<!-- {{error-handling}} - Main task error handling (expands from #{{error-handling}}) -->
+<!-- {{error-handling-subtask}} - Subtask error handling -->
+<!-- {{standard-kpis}} - Code quality metrics (expands from #{{standard-kpis}}) -->
+<!-- {{def-no-dependencies}} - Standard "None" for dependencies -->
+<!-- {{test-requirements}} - All test-related sections -->
+<!-- {{typespec-requirements}} - All TypeSpec sections -->
+
+<!-- HOW IT WORKS: -->
+<!-- 1. References are defined at the bottom with format: ## #{{reference-name}} -->
+<!-- 2. References are used in tasks with format: {{reference-name}} -->
+<!-- 3. The validator checks references exist but doesn't expand them -->
+<!-- 4. AI tools expand references when processing the file -->
+
 # Task List
 
 ## Current Tasks
@@ -65,7 +84,9 @@ Test subtask
 **Status**
 In Progress
 
-## {{error-handling-main}}
+<!-- CONTENT DEFINITIONS - DO NOT MODIFY SECTION HEADERS -->
+
+## #{{error-handling-main}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
@@ -84,7 +105,7 @@ In Progress
 - Terminate/2 proper usage
 - Process linking considerations
 
-## {{standard-kpis}}
+## #{{standard-kpis}}
 **Code Quality KPIs**
 - Functions per module: 3
 - Lines per function: 12
@@ -92,7 +113,7 @@ In Progress
 
 <!-- Note: Missing definitions for:
   - {{test-requirements}}
-  - {{integration-scenarios}} 
+  - {{integration-scenarios}}
   - {{typespec-documentation}}
   - {{typespec-verification}}
   - {{error-handling-subtask}}

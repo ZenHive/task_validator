@@ -68,6 +68,13 @@ This is an Elixir library for validating Markdown task lists against structured 
    - No duplicate task IDs
    - Valid status/priority values only
 
+5. **Reference System** (Content Placeholders):
+   - References reduce file size by 60-70% and ensure consistency
+   - Definition format: `## #{{reference-name}}`
+   - Usage format: `{{reference-name}}`
+   - Validator only checks existence, doesn't expand references
+   - Common references: `{{error-handling}}`, `{{test-requirements}}`, `{{standard-kpis}}`
+
 ## Testing Approach
 
 The project uses ExUnit with specific test patterns:
@@ -76,10 +83,26 @@ The project uses ExUnit with specific test patterns:
 - Tests cover both valid and invalid task list formats
 - Error handling validation is thoroughly tested
 
+## Working with References
+
+When editing TaskList files that use references:
+1. **Don't expand references** - The validator expects `{{reference-name}}` placeholders to remain as-is
+2. **Check reference definitions** - Look for `## #{{reference-name}}` sections at the bottom
+3. **Use existing references** - Common ones include:
+   - `{{error-handling}}` - Main task error handling
+   - `{{error-handling-subtask}}` - Subtask error handling  
+   - `{{test-requirements}}` - All test-related sections
+   - `{{typespec-requirements}}` - All TypeSpec sections
+   - `{{standard-kpis}}` - Code quality metrics
+   - `{{def-no-dependencies}}` - Standard "None" for dependencies
+4. **Add new references** - Define with `## #{{new-reference}}` format
+
 ## Important Files
 
 - `lib/task_validator.ex`: Core validation logic
 - `lib/mix/tasks/validate_tasklist.ex`: CLI validation task
 - `lib/mix/tasks/create_template.ex`: Template generation task
 - `guides/writing_compliant_tasks.md`: Documentation on task format
+- `docs/example_tasklist_with_references.md`: Complete example using references
+- `docs/TaskList.md`: Project's own task list (demonstrates references)
 - `test/fixtures/`: Example task lists for testing

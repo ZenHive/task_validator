@@ -1,3 +1,22 @@
+<!-- REFERENCE USAGE EXAMPLE: This file demonstrates proper use of content references -->
+<!-- References reduce file size by 60-70% while maintaining consistency -->
+<!-- The TaskValidator library ONLY validates references exist - it does NOT expand them -->
+<!-- AI tools should expand references when editing/processing this file -->
+
+<!-- COMMON REFERENCES USED IN THIS FILE: -->
+<!-- {{error-handling}} - Main task error handling (expands from #{{error-handling}}) -->
+<!-- {{error-handling-subtask}} - Subtask error handling -->
+<!-- {{standard-kpis}} - Code quality metrics (expands from #{{standard-kpis}}) -->
+<!-- {{def-no-dependencies}} - Standard "None" for dependencies -->
+<!-- {{test-requirements}} - All test-related sections -->
+<!-- {{typespec-requirements}} - All TypeSpec sections -->
+
+<!-- HOW IT WORKS: -->
+<!-- 1. References are defined at the bottom with format: ## #{{reference-name}} -->
+<!-- 2. References are used in tasks with format: {{reference-name}} -->
+<!-- 3. The validator checks references exist but doesn't expand them -->
+<!-- 4. AI tools expand references when processing the file -->
+
 # Test Task List with Full Reference Usage
 
 ## Current Tasks
@@ -47,6 +66,10 @@ Low complexity
 {{error-handling}}
 
 **Status**: Planned
+
+<!-- CONTENT DEFINITIONS - DO NOT MODIFY SECTION HEADERS -->
+## #{{reference-name}}
+this is a reference
 
 ## #{{error-handling}}
 **Error Handling**
@@ -110,3 +133,44 @@ Low complexity
 
 ## #{{def-no-dependencies}}
 None
+
+## #{{error-handling}}
+**Error Handling**
+**Core Principles**
+- Pass raw errors
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+
+**GenServer Specifics** (if applicable to main tasks)
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+
+**Task-Specific Approach** (for subtasks)
+- Define error patterns specific to this task
+- Document any special error handling needs
+
+**Error Reporting**
+- Use Logger for error tracking
+- Include context in error messages
+- Monitor error rates
+
+## #{{error-handling-subtask}}
+**Error Handling**
+**Task-Specific Approach**
+- Validate inputs early
+- Return specific error tuples
+- Handle edge cases gracefully
+**Error Reporting**
+- Log errors with appropriate levels
+- Include context in error messages

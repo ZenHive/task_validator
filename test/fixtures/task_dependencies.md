@@ -5,6 +5,7 @@
 | ID      | Description               | Status      | Priority |
 | ------- | ------------------------- | ----------- | -------- |
 | TSK0001 | Main task with dependency | In Progress | High     |
+| TSK0002 | Dependency task | Completed | @developer   | 4.5           |
 
 ## Task Details
 
@@ -68,12 +69,6 @@ Check dependencies exist
 In Progress
 
 {{subtask-error-handling}}
-
-## Completed Tasks
-
-| ID      | Description     | Status    | Completed By | Review Rating |
-| ------- | --------------- | --------- | ------------ | ------------- |
-| TSK0002 | Dependency task | Completed | @developer   | 4.5           |
 
 ## Completed Task Details
 

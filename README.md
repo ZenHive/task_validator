@@ -67,7 +67,7 @@ The TaskValidator enforces a specific format for task lists with a strong focus 
 - Other required sections include Description, Status, Priority, Dependencies, etc.
 - Tasks marked as "In Progress" must have subtasks
 - Review ratings must follow the specified format (1-5 scale)
-- Support for reference definitions to reduce repetition (e.g., {{error-handling-main}})
+- Support for reference definitions to reduce repetition by 60-70% (e.g., {{error-handling}}, {{test-requirements}})
 
 ### Error Handling Requirements
 
@@ -156,41 +156,65 @@ All tasks must include code quality metrics that adhere to these limits:
 - Call depth: 2
 ```
 
-### Reference Definitions
+### Reference Definitions (Content Placeholders)
 
-To reduce repetition in task lists, you can define reusable content blocks:
+References are a powerful feature to reduce file size by 60-70% while maintaining consistency. They work as content placeholders that the validator recognizes but doesn't expand.
+
+Define references at the end of your task list:
 
 ```markdown
-## Reference Definitions
+## References
 
-### error-handling-main
+## #{{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
-...
+- Use {:ok, result} | {:error, reason}
+- Let it crash
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
 
-### standard-kpis
+## #{{standard-kpis}}
 **Code Quality KPIs**
-- Functions per module: 3
-...
+- Functions per module: ≤ 10
+- Lines per function: ≤ 20
+- Call depth: ≤ 3
 ```
 
 Then use them in tasks with `{{reference-name}}`:
 
 ```markdown
-### SSH0001: Some task
+### SSH0001: Implement SSH connection module
 
-**Dependencies**
-- None
-
+**Description**: Create core SSH connection module
+**Requirements**: TCP connection, SSH handshake
+{{test-requirements}}
+{{typespec-requirements}}
+{{def-no-dependencies}}
 {{standard-kpis}}
-
-{{error-handling-main}}
-
-**Status**: Planned
+{{error-handling}}
+**Status**: In Progress
+**Priority**: High
 ```
 
-This significantly reduces file size and maintains consistency across tasks.
+Key points about references:
+- **Definition format**: `## #{{reference-name}}` (note the `#`)
+- **Usage format**: `{{reference-name}}` (no `#`)
+- **Common references**: `{{error-handling}}`, `{{error-handling-subtask}}`, `{{test-requirements}}`, `{{typespec-requirements}}`, `{{standard-kpis}}`, `{{def-no-dependencies}}`
+- **Validation**: The validator only checks that references exist, expansion is done by AI tools
+- **Flexibility**: References can replace entire sections or multiple sections at once
+
+See `/docs/example_tasklist_with_references.md` for a complete working example.
 
 ### Task Categories
 

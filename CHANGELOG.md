@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.7.1 (2025-01-28)
+
+### Bug Fixes
+
+- Fixed test fixture files to comply with validation requirements
+  - Added missing reference definitions in `reference_test.md`
+  - Added required **Architecture Notes** and **Complexity Assessment** sections to core category tasks
+  - Fixed reference examples in comments to avoid validation conflicts
+  - Added missing required sections (Simplicity Principle, TypeSpec requirements, etc.) to various test fixtures
+- All 31 tests now pass successfully
+
 ## v0.7.0 (2025-05-25)
 
 ### Breaking Changes

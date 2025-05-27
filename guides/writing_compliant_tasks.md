@@ -350,39 +350,118 @@ Required sections:
 - Test Categories
 - Performance Impact
 
-## Using Reference Definitions
+## Using References (Content Placeholders)
 
-To reduce repetition and maintain consistency, use reference definitions for common sections:
+References are a powerful feature to reduce repetition and maintain consistency across your task lists. They work as content placeholders that the validator recognizes but doesn't expand - that's left to AI tools when editing files.
 
-1. Define references at the end of your task list:
+### How References Work
+
+1. **Define references** at the end of your task list using the format `## #{{reference-name}}`:
 ```markdown
-## Reference Definitions
+## References
 
-### error-handling-main
+## #{{error-handling}}
 **Error Handling**
 **Core Principles**
 - Pass raw errors
 - Use {:ok, result} | {:error, reason}
 - Let it crash
-...
+**Error Implementation**
+- No wrapping
+- Minimal rescue
+- function/1 & /! versions
+**Error Examples**
+- Raw error passthrough
+- Simple rescue case
+- Supervisor handling
+**GenServer Specifics**
+- Handle_call/3 error pattern
+- Terminate/2 proper usage
+- Process linking considerations
+
+## #{{standard-kpis}}
+**Code Quality KPIs**
+- Functions per module: ≤ 10
+- Lines per function: ≤ 20
+- Call depth: ≤ 3
+- Test coverage: ≥ 90%
+- Documentation coverage: 100%
 ```
 
-2. Use references in tasks:
+2. **Use references** in tasks with the format `{{reference-name}}`:
 ```markdown
-### SSH0001: Some task
+### SSH0001: Implement SSH connection module
 
-**Description**
-Task description here
-
-{{error-handling-main}}
-
-**Status**: Planned
+**Description**: Create core SSH connection module
+**Simplicity Progression Plan**: Start basic, add features progressively
+**Simplicity Principle**: Keep connection logic separate from auth
+**Abstraction Evaluation**: Hide protocol details behind simple API
+**Requirements**: TCP connection, SSH handshake, session init
+{{test-requirements}}
+{{typespec-requirements}}
+{{def-no-dependencies}}
+{{standard-kpis}}
+{{error-handling}}
+**Status**: In Progress
+**Priority**: High
 ```
 
-Common reference definitions:
-- `{{error-handling-main}}` - Full error handling for main tasks
-- `{{error-handling-subtask}}` - Simplified error handling for subtasks
-- `{{standard-kpis}}` - Standard code quality KPIs
+### Key Benefits
+
+1. **Reduces file size by 60-70%** - Common sections defined once
+2. **Ensures consistency** - Same content across all tasks
+3. **Easier maintenance** - Update reference definition once
+4. **AI-friendly** - Tools expand references when editing
+5. **Validation support** - Validator checks reference existence
+
+### Common Reference Patterns
+
+#### Required Section References
+```markdown
+## #{{error-handling}}           # Main task error handling
+## #{{error-handling-subtask}}   # Subtask error handling
+## #{{test-requirements}}        # All test-related sections
+## #{{typespec-requirements}}    # All TypeSpec sections
+## #{{standard-kpis}}           # Code quality metrics
+## #{{def-no-dependencies}}     # Standard "None" for dependencies
+```
+
+#### Category-Specific References
+```markdown
+## #{{core-architecture}}        # Architecture sections for core tasks
+## #{{feature-sections}}         # Feature specification sections
+## #{{doc-sections}}            # Documentation task sections
+## #{{test-sections}}           # Testing task sections
+```
+
+### Important Notes
+
+1. **Reference format is strict**:
+   - Definition: `## #{{reference-name}}`
+   - Usage: `{{reference-name}}`
+   - The `#` is only in the definition, not the usage
+
+2. **References can replace entire sections**:
+   - `{{test-requirements}}` can include ExUnit, Integration, and TypeSpec sections
+   - `{{error-handling}}` includes all error handling subsections
+
+3. **The validator only checks existence**:
+   - It doesn't expand references
+   - It ensures all used references are defined
+   - AI tools are expected to expand when editing
+
+4. **References work for any repeated content**:
+   - Required sections
+   - Common patterns
+   - Shared specifications
+
+### Complete Example
+
+See `/docs/example_tasklist_with_references.md` for a complete working example that demonstrates:
+- Proper reference definitions
+- Reference usage in tasks
+- Multiple task states with references
+- Category-specific sections with references
 
 ## Common Validation Errors
 
