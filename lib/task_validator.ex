@@ -65,25 +65,8 @@ defmodule TaskValidator do
       end
   """
 
-  @valid_statuses ["Planned", "In Progress", "Review", "Completed", "Blocked"]
-  @valid_priorities ["Critical", "High", "Medium", "Low"]
-  # Support various prefixes (2-4 uppercase letters) followed by digits
-  # Also support letter suffix for checkbox-style subtasks (e.g., WNX0019a)
-  @id_regex ~r/^[A-Z]{2,4}\d{3,4}(-\d+|[a-z])?$/
-  @rating_regex ~r/^([1-5](\.\d)?)\s*(\(partial\))?$/
-
-  # Code quality KPI limits
-  @max_functions_per_module 5
-  @max_lines_per_function 15
-  @max_call_depth 2
-
-  # Task category ranges
-  @category_ranges %{
-    "core" => {1, 99},
-    "features" => {100, 199},
-    "documentation" => {200, 299},
-    "testing" => {300, 399}
-  }
+  # Module attributes for error handling sections remain hardcoded
+  # as they are part of the validation logic, not configuration
 
   # Required sections for error handling - machine-readable, token-optimized format
   @error_handling_sections [
@@ -294,7 +277,7 @@ defmodule TaskValidator do
     # Check for ID format compliance
     invalid_format_ids =
       Enum.filter(tasks, fn %{id: id} ->
-        !Regex.match?(@id_regex, id)
+        !Regex.match?(TaskValidator.Config.get(:id_regex), id)
       end)
 
     if invalid_format_ids == [] do
@@ -647,7 +630,8 @@ defmodule TaskValidator do
                 "MISSING"
             end
 
-          if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
+          if status != "MISSING" &&
+               !Enum.member?(TaskValidator.Config.get(:valid_statuses), status) do
             {:error, "Task #{task.id} has invalid status: #{status}"}
           else
             # Extract priority and validate
@@ -677,7 +661,8 @@ defmodule TaskValidator do
                   "MISSING"
               end
 
-            if priority != "MISSING" && !Enum.member?(@valid_priorities, priority) do
+            if priority != "MISSING" &&
+                 !Enum.member?(TaskValidator.Config.get(:valid_priorities), priority) do
               {:error, "Task #{task.id} has invalid priority: #{priority}"}
             else
               # Extract and validate dependencies
@@ -769,7 +754,7 @@ defmodule TaskValidator do
 
         # Find which category this number belongs to
         category =
-          Enum.find(@category_ranges, fn {_category, {min, max}} ->
+          Enum.find(TaskValidator.Config.get(:category_ranges), fn {_category, {min, max}} ->
             number >= min && number <= max
           end)
 
@@ -875,17 +860,17 @@ defmodule TaskValidator do
         else
           # Validate KPI values are within limits
           cond do
-            kpis.functions_per_module > @max_functions_per_module ->
+            kpis.functions_per_module > TaskValidator.Config.get(:max_functions_per_module) ->
               {:error,
-               "Task #{task.id} exceeds max functions per module: #{kpis.functions_per_module} > #{@max_functions_per_module}"}
+               "Task #{task.id} exceeds max functions per module: #{kpis.functions_per_module} > #{TaskValidator.Config.get(:max_functions_per_module)}"}
 
-            kpis.lines_per_function > @max_lines_per_function ->
+            kpis.lines_per_function > TaskValidator.Config.get(:max_lines_per_function) ->
               {:error,
-               "Task #{task.id} exceeds max lines per function: #{kpis.lines_per_function} > #{@max_lines_per_function}"}
+               "Task #{task.id} exceeds max lines per function: #{kpis.lines_per_function} > #{TaskValidator.Config.get(:max_lines_per_function)}"}
 
-            kpis.call_depth > @max_call_depth ->
+            kpis.call_depth > TaskValidator.Config.get(:max_call_depth) ->
               {:error,
-               "Task #{task.id} exceeds max call depth: #{kpis.call_depth} > #{@max_call_depth}"}
+               "Task #{task.id} exceeds max call depth: #{kpis.call_depth} > #{TaskValidator.Config.get(:max_call_depth)}"}
 
             true ->
               :ok
@@ -999,7 +984,7 @@ defmodule TaskValidator do
         end
 
       # Check if status is valid
-      if status != "MISSING" && !Enum.member?(@valid_statuses, status) do
+      if status != "MISSING" && !Enum.member?(TaskValidator.Config.get(:valid_statuses), status) do
         {:halt, {:error, "Subtask #{subtask.id} has invalid status: #{status}"}}
       else
         # Check if subtask has required sections
@@ -1049,7 +1034,7 @@ defmodule TaskValidator do
                 |> String.replace("**Review Rating**", "")
                 |> String.trim()
 
-              if Regex.match?(@rating_regex, rating) do
+              if Regex.match?(TaskValidator.Config.get(:rating_regex), rating) do
                 {:cont, :ok}
               else
                 {:halt,

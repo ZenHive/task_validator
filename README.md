@@ -47,6 +47,19 @@ case TaskValidator.validate_file("path/to/tasklist.md") do
 end
 ```
 
+## Configuration
+
+TaskValidator supports extensive configuration options. You can customize validation rules by adding settings to your `config/config.exs`:
+
+```elixir
+config :task_validator,
+  valid_statuses: ["Todo", "Doing", "Done"],
+  max_functions_per_module: 7,
+  max_lines_per_function: 20
+```
+
+See the [Configuration Guide](guides/configuration.md) for all available options.
+
 ## Format Specification
 
 The TaskValidator enforces a specific format for task lists with a strong focus on error handling:

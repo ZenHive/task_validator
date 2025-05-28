@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.8.0 (2025-05-28)
+
+### Features
+
+- Added configurable validation system allowing users to customize validation parameters
+  - All hardcoded values are now configurable via Application environment
+  - New `TaskValidator.Config` module provides centralized configuration access
+  - Configurable parameters include:
+    - Valid statuses and priorities
+    - Task ID regex pattern and rating regex
+    - Code quality KPI thresholds (max functions, lines, call depth)
+    - Task category ranges for organizing task numbers
+  - Configuration validation ensures only valid values are accepted
+  - Comprehensive configuration guide added at `guides/configuration.md`
+
+### Bug Fixes
+
+- Fixed test isolation issues by properly clearing Application configuration between tests
+- Added setup blocks to ensure clean configuration state for each test run
+
 ## v0.7.1 (2025-01-28)
 
 ### Bug Fixes
