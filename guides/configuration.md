@@ -1,225 +1,171 @@
 # Configuration Guide
 
-The TaskValidator library supports extensive configuration options to customize validation rules according to your project's needs.
+The TaskValidator library provides a flexible configuration system that allows you to customize validation parameters to match your project's specific requirements.
 
-## Setting Up Configuration
+## Overview
 
-Configuration is managed through Elixir's application environment. Add your custom settings to your `config/config.exs` file:
+All configuration is managed through Elixir's Application environment. The `TaskValidator.Config` module provides centralized access to all configuration values with sensible defaults.
+
+## Configuration Options
+
+### Basic Configuration
 
 ```elixir
 # config/config.exs
 config :task_validator,
-  valid_statuses: ["Planning", "Active", "Done", "Paused"],
-  max_functions_per_module: 7,
-  category_ranges: %{
-    "infrastructure" => {1, 50},
-    "business_logic" => {51, 150},
-    "ui" => {151, 250},
-    "testing" => {251, 350}
-  }
+  valid_statuses: ["Not Started", "Planned", "In Progress", "Completed", "On Hold"],
+  valid_priorities: ["High", "Medium", "Low"]
 ```
 
-## Available Configuration Options
+### Task ID Format
 
-### Validation Rules
+Customize the regex pattern for task IDs:
 
-#### `:valid_statuses`
-- **Type**: List of strings
-- **Default**: `["Planned", "In Progress", "Review", "Completed", "Blocked"]`
-- **Description**: Defines the allowed status values for tasks
-
-Example:
 ```elixir
 config :task_validator,
-  valid_statuses: ["Todo", "Doing", "Done", "Cancelled"]
+  task_id_regex: ~r/^[A-Z]{2,4}\d{3,4}(-\d+)?$/
 ```
 
-#### `:valid_priorities`
-- **Type**: List of strings
-- **Default**: `["Critical", "High", "Medium", "Low"]`
-- **Description**: Defines the allowed priority values for tasks
+This default pattern matches:
+- Main tasks: `SSH0001`, `ERR001`, `SCP0005`
+- Subtasks: `SSH0001-1`, `ERR001-2`
 
-Example:
+### Review Ratings
+
+Configure the valid review rating format:
+
 ```elixir
 config :task_validator,
-  valid_priorities: ["P0", "P1", "P2", "P3", "P4"]
+  rating_regex: ~r/^\d+\.\d+\/10$/
 ```
-
-#### `:id_regex`
-- **Type**: Regular expression
-- **Default**: `~r/^[A-Z]{2,4}\d{3,4}(-\d+|[a-z])?$/`
-- **Description**: Pattern for validating task IDs
-
-Example:
-```elixir
-config :task_validator,
-  id_regex: ~r/^PROJ-\d{4}(-\d+)?$/  # Matches PROJ-0001, PROJ-0001-1
-```
-
-#### `:rating_regex`
-- **Type**: Regular expression
-- **Default**: `~r/^([1-5](\.\d)?)\s*(\(partial\))?$/`
-- **Description**: Pattern for validating review ratings
 
 ### Code Quality KPIs
 
-#### `:max_functions_per_module`
-- **Type**: Positive integer
-- **Default**: `5`
-- **Description**: Maximum allowed functions per module
+Set thresholds for code quality metrics:
 
-#### `:max_lines_per_function`
-- **Type**: Positive integer
-- **Default**: `15`
-- **Description**: Maximum allowed lines per function
-
-#### `:max_call_depth`
-- **Type**: Positive integer
-- **Default**: `2`
-- **Description**: Maximum allowed call depth
-
-Example:
 ```elixir
 config :task_validator,
-  max_functions_per_module: 10,
-  max_lines_per_function: 20,
-  max_call_depth: 3
+  kpis: %{
+    max_functions_per_module: 5,
+    max_lines_per_function: 15,
+    max_call_depth: 2
+  }
 ```
 
 ### Task Categories
 
-#### `:category_ranges`
-- **Type**: Map of string keys to `{min, max}` integer tuples
-- **Default**: 
-  ```elixir
-  %{
-    "core" => {1, 99},
-    "features" => {100, 199},
-    "documentation" => {200, 299},
-    "testing" => {300, 399}
-  }
-  ```
-- **Description**: Defines number ranges for task categories
+Define task number ranges for different categories:
 
-Example:
 ```elixir
 config :task_validator,
-  category_ranges: %{
-    "backend" => {1000, 1999},
-    "frontend" => {2000, 2999},
-    "devops" => {3000, 3999},
-    "qa" => {4000, 4999}
+  task_categories: %{
+    "core" => 1..99,
+    "features" => 100..199,
+    "documentation" => 200..299,
+    "testing" => 300..399
   }
 ```
 
-## Advanced Usage
+## Complete Example
 
-### Runtime Configuration
-
-You can access configuration values programmatically:
+Here's a complete configuration example:
 
 ```elixir
-# Get a specific configuration value
-statuses = TaskValidator.Config.get(:valid_statuses)
-
-# Get all configuration as a map
-all_config = TaskValidator.Config.get_all()
-```
-
-### Validation
-
-The configuration module validates all settings when accessed:
-
-```elixir
-# This will raise if the configuration is invalid
-TaskValidator.Config.get(:max_functions_per_module)
-```
-
-### Testing with Different Configurations
-
-You can override configuration in your test environment:
-
-```elixir
-# config/test.exs
+# config/config.exs
 config :task_validator,
-  max_functions_per_module: 3,
-  max_lines_per_function: 10
-```
-
-## Common Configuration Scenarios
-
-### Strict Quality Standards
-
-```elixir
-config :task_validator,
-  max_functions_per_module: 3,
-  max_lines_per_function: 10,
-  max_call_depth: 1
-```
-
-### Enterprise Project Structure
-
-```elixir
-config :task_validator,
-  id_regex: ~r/^[A-Z]{2,6}-\d{6}(-\d+)?$/,  # DEV-202401, INFRA-202402-1
-  valid_statuses: ["Backlog", "Sprint", "In Progress", "Code Review", "QA", "Done"],
-  valid_priorities: ["Blocker", "Critical", "Major", "Minor", "Trivial"],
-  category_ranges: %{
-    "architecture" => {100000, 199999},
-    "implementation" => {200000, 299999},
-    "optimization" => {300000, 399999},
-    "maintenance" => {400000, 499999}
+  valid_statuses: ["Not Started", "Planned", "In Progress", "Completed", "On Hold", "Cancelled"],
+  valid_priorities: ["Critical", "High", "Medium", "Low"],
+  task_id_regex: ~r/^[A-Z]{3}\d{4}(-\d+)?$/,
+  rating_regex: ~r/^\d+\.\d+\/10$/,
+  kpis: %{
+    max_functions_per_module: 7,
+    max_lines_per_function: 20,
+    max_call_depth: 3
+  },
+  task_categories: %{
+    "infrastructure" => 1..99,
+    "api" => 100..199,
+    "ui" => 200..299,
+    "testing" => 300..399,
+    "documentation" => 400..499
   }
 ```
 
-### Agile Team Workflow
+## Runtime Configuration
+
+You can also configure values at runtime:
 
 ```elixir
-config :task_validator,
-  valid_statuses: ["Icebox", "Ready", "In Dev", "In Review", "Deployed"],
-  valid_priorities: ["Must Have", "Should Have", "Could Have", "Won't Have"]
+# Set a single value
+Application.put_env(:task_validator, :valid_statuses, ["Draft", "Active", "Done"])
+
+# Set multiple values
+Application.put_all_env([
+  {:task_validator, :valid_priorities, ["P0", "P1", "P2", "P3"]},
+  {:task_validator, :kpis, %{max_functions_per_module: 10}}
+])
 ```
 
-## Best Practices
+## Configuration Validation
 
-1. **Start with defaults**: Only configure what differs from the standard behavior
-2. **Document your choices**: Add comments explaining why certain limits were chosen
-3. **Be consistent**: Use configuration that aligns with your team's workflow
-4. **Version control**: Always commit configuration changes with clear messages
-5. **Test configuration**: Verify that your custom configuration works as expected
+The `TaskValidator.Config` module validates configuration values when accessed:
 
-## Troubleshooting
+- Status and priority lists must be non-empty lists of strings
+- KPI values must be positive integers
+- Task categories must be non-overlapping ranges
 
-### Invalid Configuration Errors
+Invalid configurations will raise an error with a descriptive message.
 
-If you see errors like:
-```
-** (ArgumentError) Invalid configuration for max_functions_per_module: must be a positive integer
-```
+## Testing with Configuration
 
-Check that:
-- The value type matches the expected type
-- Numeric values are positive integers where required
-- Regular expressions are properly formatted
-- Maps have the correct structure
-
-### Configuration Not Taking Effect
-
-Ensure you:
-1. Have recompiled your project after configuration changes
-2. Are setting configuration in the correct environment file
-3. Haven't accidentally overridden configuration elsewhere
-
-### Performance Considerations
-
-Configuration values are validated on access. For performance-critical code, consider caching configuration values:
+When testing, you may want to temporarily override configuration:
 
 ```elixir
-defmodule MyModule do
-  @statuses TaskValidator.Config.get(:valid_statuses)
+defmodule MyTest do
+  use ExUnit.Case
+
+  setup do
+    # Store original config
+    original_statuses = Application.get_env(:task_validator, :valid_statuses)
+    
+    # Set test config
+    Application.put_env(:task_validator, :valid_statuses, ["Test Status"])
+    
+    on_exit(fn ->
+      # Restore original config
+      Application.put_env(:task_validator, :valid_statuses, original_statuses)
+    end)
+    
+    :ok
+  end
   
-  def validate_status(status) do
-    status in @statuses
+  test "validates with custom status" do
+    # Your test here
   end
 end
 ```
+
+## Default Values
+
+If no configuration is provided, the following defaults are used:
+
+- **Valid Statuses**: "Not Started", "Planned", "In Progress", "Completed", "On Hold"
+- **Valid Priorities**: "High", "Medium", "Low"
+- **Task ID Regex**: `^[A-Z]{2,4}\d{3,4}(-\d+)?$`
+- **Rating Regex**: `^\d+\.\d+\/10$`
+- **Max Functions per Module**: 5
+- **Max Lines per Function**: 15
+- **Max Call Depth**: 2
+- **Task Categories**:
+  - core: 1-99
+  - features: 100-199
+  - documentation: 200-299
+  - testing: 300-399
+
+## Best Practices
+
+1. **Use config files** for environment-specific settings
+2. **Document your custom configuration** in your project's README
+3. **Validate early** by checking configuration at application startup
+4. **Keep defaults sensible** to minimize required configuration
+5. **Test with different configurations** to ensure flexibility

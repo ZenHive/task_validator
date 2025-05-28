@@ -57,7 +57,8 @@ defmodule TaskValidator.MixProject do
         "README.md",
         "CHANGELOG.md",
         "guides/writing_compliant_tasks.md",
-        "guides/sample_tasklist.md"
+        "guides/sample_tasklist.md",
+        "guides/configuration.md"
       ],
       source_url: "https://github.com/ZenHive/task_validator",
       groups_for_extras: [
