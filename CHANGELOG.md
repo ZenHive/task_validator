@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.8.1 (2025-05-28)
+
+### Documentation
+
+- Added missing `guides/configuration.md` file that was referenced in README
+- Fixed hex docs warning about missing file reference
+- Added configuration guide to mix.exs docs extras list
+
 ## v0.8.0 (2025-05-28)
 
 ### Features
