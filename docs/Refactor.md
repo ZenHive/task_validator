@@ -514,8 +514,264 @@ Public routes with redirect logic for authenticated users.
 - Reference system remains unchanged
 - Validation rules can be extended, not replaced
 
+## Implementation Roadmap: Actionable Tasks
+
+### Phase 1: Foundation Refactoring (Weeks 1-2)
+
+#### REF001: Extract Core Domain Models ✅ COMPLETED
+**Description**: Create foundational domain models to replace primitive data structures
+**Priority**: Critical
+**Estimated Effort**: 5 days
+**Actual Effort**: 3 days
+**Status**: ✅ Completed
+
+**Tasks:**
+- [x] Create `TaskValidator.Core.Task` struct with proper typespecs
+- [x] Create `TaskValidator.Core.ValidationResult` with error aggregation
+- [x] Create `TaskValidator.Core.ValidationError` with structured error types
+- [x] Create `TaskValidator.Core.TaskList` aggregate model (added)
+- [x] Update existing code to use new models
+- [x] Ensure all tests pass with new models
+
+**Acceptance Criteria:** ✅ ALL MET
+- ✅ All validation logic uses structured domain models
+- ✅ Backward compatibility maintained for public API
+- ✅ Test suite passes without modification (50/50 tests passing)
+
+**Implementation Notes:**
+- Created comprehensive domain models with full TypeSpec coverage
+- Added 28 error type variants covering all validation scenarios
+- ValidationResult includes statistics tracking and error aggregation
+- Task model includes automatic categorization and prefix extraction
+- TaskList aggregate provides querying and statistics capabilities
+- All modules follow Elixir conventions with proper documentation
+
+#### REF002: Extract Parsing Logic
+**Description**: Separate parsing concerns from validation logic
+**Priority**: High  
+**Estimated Effort**: 4 days
+
+**Tasks:**
+- [ ] Create `TaskValidator.Parsers.MarkdownParser` module
+- [ ] Extract table parsing logic to `TaskValidator.Parsers.TaskExtractor`
+- [ ] Move reference resolution to `TaskValidator.Parsers.ReferenceResolver`
+- [ ] Update main validator to use new parsers
+- [ ] Add parser-specific tests
+
+**Acceptance Criteria:**
+- Parsing logic is completely separated from validation
+- Each parser has focused responsibility
+- Reference resolution is isolated and testable
+
+### Phase 2: Validator Modularization (Weeks 3-4)
+
+#### REF003: Create Validator Behaviour and Base Validators
+**Description**: Implement validator behaviour pattern for extensibility
+**Priority**: High
+**Estimated Effort**: 6 days
+
+**Tasks:**
+- [ ] Define `TaskValidator.Validators.ValidatorBehaviour`
+- [ ] Create `TaskValidator.Validators.IdValidator`
+- [ ] Create `TaskValidator.Validators.StatusValidator`
+- [ ] Create `TaskValidator.Validators.SectionValidator`
+- [ ] Add comprehensive tests for each validator
+- [ ] Update main validator to use new validators
+
+**Acceptance Criteria:**
+- Each validator follows the behaviour contract
+- Validators can be tested in isolation
+- Clear error messages for each validation type
+
+#### REF004: Extract Complex Validators
+**Description**: Break down complex validation logic into focused modules
+**Priority**: High
+**Estimated Effort**: 8 days
+
+**Tasks:**
+- [ ] Create `TaskValidator.Validators.ErrorHandlingValidator`
+- [ ] Create `TaskValidator.Validators.SubtaskValidator`
+- [ ] Create `TaskValidator.Validators.DependencyValidator`
+- [ ] Create `TaskValidator.Validators.KpiValidator`
+- [ ] Move category-specific validation to `TaskValidator.Validators.CategoryValidator`
+- [ ] Ensure all validation logic is modularized
+
+**Acceptance Criteria:**
+- No validation logic remains in the main module
+- Each validator handles a single concern
+- Error messages are consistent and helpful
+
+### Phase 3: Rule Engine and Configuration (Week 5)
+
+#### REF005: Implement Configurable Rule Engine
+**Description**: Create a rule engine that allows customizable validation pipelines
+**Priority**: Medium
+**Estimated Effort**: 5 days
+
+**Tasks:**
+- [ ] Create `TaskValidator.Rules.RuleEngine` module
+- [ ] Define rule configuration format
+- [ ] Implement rule pipeline execution
+- [ ] Add support for custom validator plugins
+- [ ] Create rule configuration documentation
+- [ ] Add tests for rule engine functionality
+
+**Acceptance Criteria:**
+- Users can configure custom validation rules
+- Rule pipeline is extensible and performant
+- Clear documentation for adding custom validators
+
+### Phase 4: Elixir/Phoenix Format Enhancements (Weeks 6-7)
+
+#### FMT001: Implement Elixir-Specific Task Categories
+**Description**: Add support for Elixir/Phoenix-specific task categories and validation
+**Priority**: High
+**Estimated Effort**: 4 days
+
+**Tasks:**
+- [ ] Update `TaskValidator.Config` with new category ranges
+- [ ] Create Elixir/Phoenix category validators
+- [ ] Update task templates in `CreateTemplate` mix task
+- [ ] Add OTP/GenServer specific validation rules
+- [ ] Update documentation with new categories
+
+**Acceptance Criteria:**
+- New categories (OTP, Phoenix, Context, Ecto, etc.) are supported
+- Category-specific validation works correctly
+- Templates generate appropriate category examples
+
+#### FMT002: Enhanced Error Handling Templates
+**Description**: Create Elixir/Phoenix-specific error handling templates and validation
+**Priority**: High
+**Estimated Effort**: 3 days
+
+**Tasks:**
+- [ ] Create `{{otp-error-handling}}` reference template
+- [ ] Create `{{phoenix-error-handling}}` reference template
+- [ ] Create `{{context-error-handling}}` reference template
+- [ ] Update error handling validator to support new templates
+- [ ] Add validation for OTP supervision patterns
+
+**Acceptance Criteria:**
+- New error handling templates are available
+- Templates include OTP and Phoenix best practices
+- Validation enforces appropriate error handling per task type
+
+#### FMT003: Elixir-Specific Code Quality KPIs
+**Description**: Update code quality validation for Elixir best practices
+**Priority**: Medium
+**Estimated Effort**: 3 days
+
+**Tasks:**
+- [ ] Update default KPI values for Elixir projects
+- [ ] Add pattern match depth validation
+- [ ] Add Dialyzer warnings validation
+- [ ] Add Credo score requirements
+- [ ] Update KPI validator with new metrics
+
+**Acceptance Criteria:**
+- KPIs reflect Elixir/Phoenix best practices
+- New metrics (pattern depth, Dialyzer) are validated
+- Default values are appropriate for BEAM ecosystem
+
+#### FMT004: Phoenix-Specific Required Sections
+**Description**: Add Phoenix/LiveView/Ecto specific required sections and validation
+**Priority**: Medium
+**Estimated Effort**: 4 days
+
+**Tasks:**
+- [ ] Create LiveView requirement templates
+- [ ] Create Context requirement templates  
+- [ ] Create Migration requirement templates
+- [ ] Update section validator for Phoenix-specific sections
+- [ ] Add Mix task integration sections
+
+**Acceptance Criteria:**
+- Phoenix tasks have appropriate required sections
+- LiveView, Context, and Ecto patterns are enforced
+- Mix task integration is documented
+
+### Phase 5: Updated Task ID Patterns (Week 8)
+
+#### FMT005: Implement New Task ID Patterns
+**Description**: Support new task ID patterns that reflect Elixir/Phoenix architecture
+**Priority**: Low
+**Estimated Effort**: 3 days
+
+**Tasks:**
+- [ ] Update ID regex to support new patterns (OTP, PHX, LV, CTX, etc.)
+- [ ] Create mapping between prefixes and categories
+- [ ] Update CreateTemplate to use new patterns
+- [ ] Add validation for prefix-category consistency
+- [ ] Update documentation with new patterns
+
+**Acceptance Criteria:**
+- New ID patterns (OTP001, PHX001, LV001) are supported
+- Prefixes automatically map to appropriate categories
+- Templates use new patterns
+
+### Phase 6: Integration and Documentation (Week 9)
+
+#### REF006: Final Integration and Backward Compatibility
+**Description**: Ensure all refactored components work together and maintain compatibility
+**Priority**: Critical
+**Estimated Effort**: 4 days
+
+**Tasks:**
+- [ ] Integrate all new modules in main TaskValidator
+- [ ] Ensure 100% backward compatibility for existing APIs
+- [ ] Run full test suite and fix any integration issues
+- [ ] Performance testing and optimization
+- [ ] Update all documentation
+
+**Acceptance Criteria:**
+- All existing functionality works without changes
+- Performance is maintained or improved
+- Documentation is complete and accurate
+
+#### FMT006: Create Elixir/Phoenix Example Templates
+**Description**: Provide complete examples of improved TaskList format
+**Priority**: Medium
+**Estimated Effort**: 2 days
+
+**Tasks:**
+- [ ] Create Phoenix web application example TaskList
+- [ ] Create OTP application example TaskList  
+- [ ] Create Ecto schema/migration example TaskList
+- [ ] Add examples to documentation
+- [ ] Update guides with new format examples
+
+**Acceptance Criteria:**
+- Examples demonstrate all new features
+- Examples pass validation with new rules
+- Clear migration guide from old to new format
+
+### Implementation Timeline
+
+**Total Estimated Effort**: 41 days (~8-9 weeks)
+**Current Progress**: 1/11 tasks completed (9%)
+**Time Saved**: 2 days (REF001 completed in 3 days vs estimated 5)
+
+**Completed:**
+- ✅ REF001: Extract Core Domain Models (3 days, 2 days ahead of schedule)
+
+**Critical Path Dependencies:**
+1. REF001 → REF002 → REF003 → REF004 → REF005 → REF006
+2. FMT001 → FMT002 → FMT003 → FMT004 → FMT005 → FMT006
+
+**Parallel Tracks:**
+- Phase 4-5 (Format enhancements) can run parallel to Phase 3 (Rule engine)
+- Documentation updates can happen throughout
+
+**Risk Mitigation:**
+- Maintain backward compatibility at each phase
+- Comprehensive test coverage before major changes
+- Feature flags for new functionality during transition
+
 ## Conclusion
 
 This refactoring addresses the core architectural issues while maintaining the library's comprehensive validation capabilities. The modular approach will significantly improve maintainability, testability, and extensibility while reducing complexity. The phased migration strategy ensures minimal disruption to existing users while providing a clear path to a more robust architecture.
 
 The enhanced TaskList format specifically tailored for Elixir/Phoenix projects will provide better guidance for teams working in the BEAM ecosystem, with more relevant validation rules, error handling patterns, and code quality metrics.
+
+The actionable task breakdown provides a clear 9-week implementation roadmap with specific deliverables, acceptance criteria, and effort estimates. This approach ensures the refactoring can be completed systematically while maintaining production stability.
