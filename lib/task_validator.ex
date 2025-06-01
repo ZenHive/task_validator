@@ -114,14 +114,141 @@ defmodule TaskValidator do
   @spec validate_file(String.t()) :: :ok | {:error, String.t()}
   def validate_file(file_path) do
     with {:ok, content} <- File.read(file_path),
-         {:ok, lines} <- {:ok, String.split(content, "\n")},
-         {:ok, references} <- extract_references(lines),
-         :ok <- validate_references(lines, references),
-         {:ok, tasks} <- extract_tasks(lines),
-         :ok <- validate_task_ids(tasks),
-         :ok <- validate_task_details(lines, tasks) do
+         {:ok, task_list} <- TaskValidator.Parsers.MarkdownParser.parse(content),
+         :ok <- validate_references_new(task_list),
+         :ok <- validate_task_ids_new(task_list.tasks),
+         :ok <- validate_task_details_new(task_list) do
       {:ok, "TaskList.md validation passed!"}
     end
+  end
+
+  # New validation functions using the parser modules
+
+  defp validate_references_new(task_list) do
+    case TaskValidator.Parsers.ReferenceResolver.validate_reference_integrity(
+           extract_lines_from_task_list(task_list),
+           task_list.references
+         ) do
+      :ok -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp extract_lines_from_task_list(task_list) do
+    # Reconstruct lines from the task list for reference validation
+    # This is a simplified approach - in practice, we might store original lines
+    task_list.tasks
+    |> Enum.flat_map(fn task -> task.content end)
+  end
+
+  defp validate_task_ids_new(tasks) do
+    # Check for ID format compliance
+    invalid_format_ids =
+      Enum.filter(tasks, fn task ->
+        !Regex.match?(TaskValidator.Config.get(:id_regex), task.id)
+      end)
+
+    if invalid_format_ids == [] do
+      # Check for duplicate IDs
+      {_, duplicates} =
+        tasks
+        |> Enum.map(fn task -> task.id end)
+        |> Enum.reduce({MapSet.new(), MapSet.new()}, fn id, {seen, dupes} ->
+          if MapSet.member?(seen, id) do
+            {seen, MapSet.put(dupes, id)}
+          else
+            {MapSet.put(seen, id), dupes}
+          end
+        end)
+
+      if MapSet.size(duplicates) > 0 do
+        dupes_list = duplicates |> MapSet.to_list() |> Enum.join(", ")
+        {:error, "Duplicate task IDs found: #{dupes_list}"}
+      else
+        :ok
+      end
+    else
+      task_lines =
+        Enum.map_join(invalid_format_ids, "\n", fn task ->
+          "  Line #{task.line_number}: #{task.id} (invalid format)"
+        end)
+
+      {:error, "Invalid task ID format:\n#{task_lines}"}
+    end
+  end
+
+  defp validate_task_details_new(task_list) do
+    # Check if all ACTIVE (non-completed) tasks have detailed entries
+    active_tasks =
+      task_list.tasks
+      |> Enum.filter(fn task -> task.status != "Completed" end)
+
+    missing_details =
+      Enum.filter(active_tasks, fn task ->
+        # Only check main task IDs (not subtasks) that don't have detailed content
+        is_main_task = !is_subtask_id?(task.id)
+        has_no_details = Enum.empty?(task.content)
+        is_main_task && has_no_details
+      end)
+
+    if missing_details == [] do
+      # Only validate tasks that have detailed sections (non-empty content)
+      detailed_tasks = Enum.filter(task_list.tasks, fn task -> !Enum.empty?(task.content) end)
+      validate_detailed_tasks_new(detailed_tasks)
+    else
+      missing_ids = Enum.map_join(missing_details, ", ", & &1.id)
+      {:error, "Non-completed tasks missing detailed entries: #{missing_ids}"}
+    end
+  end
+
+  defp validate_detailed_tasks_new(tasks) do
+    # First, collect all valid task IDs for dependency validation
+    all_task_ids =
+      tasks
+      |> Enum.flat_map(fn task ->
+        [task.id | Enum.map(task.subtasks, & &1.id)]
+      end)
+      |> MapSet.new()
+
+    # Validate each detailed task
+    Enum.reduce_while(tasks, :ok, fn task, _acc ->
+      case validate_task_structure_new(task, all_task_ids) do
+        :ok -> {:cont, :ok}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp validate_task_structure_new(task, all_task_ids) do
+    # Use the existing task structure validation but work with Task structs
+    validate_task_structure(convert_task_to_old_format(task), all_task_ids)
+  end
+
+  defp convert_task_to_old_format(task) do
+    %{
+      id: task.id,
+      content: task.content,
+      subtasks: Enum.map(task.subtasks, &convert_subtask_to_old_format/1)
+    }
+  end
+
+  defp convert_subtask_to_old_format(subtask) do
+    format_type = if String.contains?(subtask.id, "-"), do: :numbered, else: :checkbox
+    checked = subtask.status == "Completed"
+
+    %{
+      id: subtask.id,
+      line: subtask.line_number,
+      format: format_type,
+      checked: checked
+    }
+  end
+
+  # Helper function to distinguish subtask IDs from main task IDs with dashes
+  defp is_subtask_id?(id) do
+    # Subtask IDs follow the pattern: PREFIX###-# (e.g., SSH001-1, VAL0004-2)
+    # Main task IDs with dashes have different patterns (e.g., PROJ-001, CORE-123)
+    String.match?(id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/)
   end
 
   @doc """
@@ -748,7 +875,8 @@ defmodule TaskValidator do
 
   defp validate_task_category(task) do
     # Extract numeric part from task ID to determine category
-    case Regex.run(~r/^[A-Z]{2,4}(\d{3,4})/, task.id) do
+    # Handle both formats: SSH0001 and PROJ-0001
+    case Regex.run(~r/^[A-Z]{2,4}-?(\d{3,4})/, task.id) do
       [_, number_str] ->
         number = String.to_integer(number_str)
 
