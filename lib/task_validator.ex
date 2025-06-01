@@ -116,13 +116,52 @@ defmodule TaskValidator do
     with {:ok, content} <- File.read(file_path),
          {:ok, task_list} <- TaskValidator.Parsers.MarkdownParser.parse(content),
          :ok <- validate_references_new(task_list),
-         :ok <- validate_task_ids_new(task_list.tasks),
-         :ok <- validate_task_details_new(task_list) do
-      {:ok, "TaskList.md validation passed!"}
+         result <- validate_tasks_with_new_validators(task_list) do
+      case result do
+        %TaskValidator.Core.ValidationResult{valid?: true} ->
+          {:ok, "TaskList.md validation passed!"}
+
+        %TaskValidator.Core.ValidationResult{valid?: false, errors: errors} ->
+          error_messages = Enum.map(errors, &TaskValidator.Core.ValidationError.format/1)
+          {:error, Enum.join(error_messages, "\n")}
+      end
     end
   end
 
-  # New validation functions using the parser modules
+  @doc """
+  Alternative validation function that returns detailed ValidationResult.
+
+  This provides more detailed validation information including warnings
+  and structured error data for programmatic use.
+  """
+  @spec validate_file_detailed(String.t()) ::
+          {:ok, TaskValidator.Core.ValidationResult.t()} | {:error, String.t()}
+  def validate_file_detailed(file_path) do
+    with {:ok, content} <- File.read(file_path),
+         {:ok, task_list} <- TaskValidator.Parsers.MarkdownParser.parse(content),
+         :ok <- validate_references_new(task_list) do
+      result = validate_tasks_with_new_validators(task_list)
+      {:ok, result}
+    end
+  end
+
+  # New validation functions using the parser modules and validator pipeline
+
+  defp validate_tasks_with_new_validators(task_list) do
+    context = %{
+      config: TaskValidator.Config.get_all(),
+      all_tasks: task_list.tasks,
+      references: task_list.references,
+      task_list: task_list
+    }
+
+    # Use the new validator pipeline
+    TaskValidator.Validators.ValidatorPipeline.validate_tasks(
+      task_list.tasks,
+      TaskValidator.Validators.ValidatorPipeline.default_validators(),
+      context
+    )
+  end
 
   defp validate_references_new(task_list) do
     case TaskValidator.Parsers.ReferenceResolver.validate_reference_integrity(

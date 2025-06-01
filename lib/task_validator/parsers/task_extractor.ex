@@ -156,7 +156,8 @@ defmodule TaskValidator.Parsers.TaskExtractor do
           type: determine_task_type(id),
           prefix: extract_prefix(id),
           category: nil,
-          parent_id: extract_parent_id(id)
+          parent_id: extract_parent_id(id),
+          review_rating: extract_review_rating(fields)
         }
       end
     else
@@ -237,7 +238,8 @@ defmodule TaskValidator.Parsers.TaskExtractor do
           priority: "",
           content: [],
           subtasks: [],
-          category: nil
+          category: nil,
+          review_rating: nil
         }
 
       _ ->
@@ -252,7 +254,8 @@ defmodule TaskValidator.Parsers.TaskExtractor do
           priority: "",
           content: [],
           subtasks: [],
-          category: nil
+          category: nil,
+          review_rating: nil
         }
     end
   end
@@ -272,7 +275,8 @@ defmodule TaskValidator.Parsers.TaskExtractor do
       priority: "",
       content: [],
       subtasks: [],
-      category: nil
+      category: nil,
+      review_rating: nil
     }
   end
 
@@ -317,7 +321,8 @@ defmodule TaskValidator.Parsers.TaskExtractor do
         type: determine_task_type(detailed.id),
         prefix: extract_prefix(detailed.id),
         category: nil,
-        parent_id: extract_parent_id(detailed.id)
+        parent_id: extract_parent_id(detailed.id),
+        review_rating: nil
       }
     end)
   end
@@ -392,5 +397,15 @@ defmodule TaskValidator.Parsers.TaskExtractor do
     # Subtask IDs follow the pattern: PREFIX###-# (e.g., SSH001-1, VAL0004-2)
     # Main task IDs with dashes have different patterns (e.g., PROJ-001, CORE-123)
     String.match?(id, ~r/^[A-Z]{2,4}\d{3,4}-\d+$/)
+  end
+
+  # Extract review rating from table row (usually the last column for completed tasks)
+  defp extract_review_rating(fields) do
+    if length(fields) >= 6 do
+      rating = List.last(fields)
+      if rating != "-" && rating != "", do: rating, else: nil
+    else
+      nil
+    end
   end
 end

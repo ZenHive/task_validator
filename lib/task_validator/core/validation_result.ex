@@ -82,7 +82,7 @@ defmodule TaskValidator.Core.ValidationResult do
   def combine(results) when is_list(results) do
     all_errors = results |> Enum.flat_map(& &1.errors)
     all_warnings = results |> Enum.flat_map(& &1.warnings)
-    total_task_count = results |> Enum.map(& &1.task_count) |> Enum.sum()
+    total_task_count = results |> Enum.map(&(&1.task_count || 0)) |> Enum.sum()
 
     %__MODULE__{
       valid?: Enum.empty?(all_errors),

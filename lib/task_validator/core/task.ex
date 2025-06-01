@@ -19,7 +19,8 @@ defmodule TaskValidator.Core.Task do
           type: task_type(),
           prefix: String.t() | nil,
           category: atom() | nil,
-          parent_id: String.t() | nil
+          parent_id: String.t() | nil,
+          review_rating: String.t() | nil
         }
 
   defstruct [
@@ -33,7 +34,8 @@ defmodule TaskValidator.Core.Task do
     :type,
     :prefix,
     :category,
-    :parent_id
+    :parent_id,
+    :review_rating
   ]
 
   @doc """
@@ -59,7 +61,8 @@ defmodule TaskValidator.Core.Task do
       type: :main,
       prefix: extract_prefix(id),
       category: determine_category(id),
-      parent_id: nil
+      parent_id: nil,
+      review_rating: nil
     }
   end
 
@@ -86,7 +89,8 @@ defmodule TaskValidator.Core.Task do
       type: :subtask,
       prefix: extract_prefix(id),
       category: determine_category(id),
-      parent_id: parent_id
+      parent_id: parent_id,
+      review_rating: nil
     }
   end
 

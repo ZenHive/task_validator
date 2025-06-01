@@ -26,8 +26,15 @@ defmodule TaskValidator.Core.ValidationError do
           | :duplicate_task_id
           | :invalid_table_format
           | :unknown_error
+          | :missing_required_section
+          | :invalid_section_format
+          | :missing_subtasks_for_in_progress
+          | :invalid_subtask_id
+          | :mixed_prefixes
+          | :invalid_review_rating
+          | :incomplete_completed_task
 
-  @type severity :: :error | :warning
+  @type severity :: :error | :warning | :critical
 
   @type t :: %__MODULE__{
           type: error_type(),
@@ -257,6 +264,7 @@ defmodule TaskValidator.Core.ValidationError do
       case error.severity do
         :error -> "ERROR"
         :warning -> "WARNING"
+        :critical -> "CRITICAL"
       end
 
     "#{severity_prefix}#{location}: #{error.message}"
