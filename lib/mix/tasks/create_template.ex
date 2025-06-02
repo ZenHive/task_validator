@@ -14,13 +14,13 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
       --path       Path where to create the TaskList.md file (default: ./TaskList.md)
       --prefix     Project prefix for example tasks (default: PRJ)
-      --category   Task category to generate template for: core, features, documentation, testing (default: features)
+      --category   Task category to generate template for: otp_genserver, phoenix_web, business_logic, data_layer, infrastructure, testing (default: phoenix_web)
 
   ## Example
 
       mix task_validator.create_template
-      mix task_validator.create_template --path ./docs/TaskList.md --prefix SSH --category core
-      mix task_validator.create_template --category documentation
+      mix task_validator.create_template --path ./docs/TaskList.md --prefix SSH --category otp_genserver
+      mix task_validator.create_template --category testing
   """
 
   use Mix.Task
@@ -29,24 +29,54 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   ## Reference Definitions
 
-  ## \#{{error-handling-main}}
+  ## \#{{otp-error-handling}}
   **Error Handling**
-  **Core Principles**
-  - Pass raw errors
-  - Use {:ok, result} | {:error, reason}
-  - Let it crash
-  **Error Implementation**
-  - No wrapping
-  - Minimal rescue
-  - function/1 & /! versions
-  **Error Examples**
-  - Raw error passthrough
-  - Simple rescue case
-  - Supervisor handling
+  **OTP Principles**
+  - Let it crash with supervisor restart
+  - Use {:ok, result} | {:error, reason} for client functions
+  - Handle_call/3 returns for synchronous operations
+  **Supervision Strategy**
+  - Define restart strategy (permanent/temporary/transient)
+  - Set max_restarts and max_seconds appropriately
+  - Consider escalation to parent supervisor
   **GenServer Specifics**
-  - Handle_call/3 error pattern
-  - Terminate/2 proper usage
-  - Process linking considerations
+  - Handle unexpected messages gracefully
+  - Use terminate/2 for cleanup when needed
+  - Proper state validation in handle_cast/2
+  **Error Examples**
+  - Client timeout: {:error, :timeout}
+  - Invalid state: {:error, :invalid_state}
+  - Resource unavailable: {:error, :unavailable}
+
+  ## \#{{phoenix-error-handling}}
+  **Error Handling**
+  **Phoenix Principles**
+  - Use action_fallback for controller error handling
+  - Leverage Plug.ErrorHandler for global error handling
+  - Return appropriate HTTP status codes
+  **LiveView Error Handling**
+  - Handle socket disconnects gracefully
+  - Validate assigns before rendering
+  - Use handle_info for async error recovery
+  **Context Layer**
+  - Return structured errors from contexts
+  - Use Ecto.Multi for transaction error handling
+  - Validate input at context boundaries
+  **Error Examples**
+  - Validation errors: {:error, %Ecto.Changeset{}}
+  - Not found: {:error, :not_found}
+  - Unauthorized: {:error, :unauthorized}
+
+  ## \#{{context-error-handling}}
+  **Error Handling**
+  **Context Principles**
+  - Return structured errors with clear reasons
+  - Use Ecto.Multi for complex transactions
+  - Validate input at context boundaries
+  **Error Examples**
+  - Validation: {:error, %Ecto.Changeset{}}
+  - Not found: {:error, :not_found}
+  - Constraint violation: {:error, :constraint_violation}
 
   ## \#{{error-handling-subtask}}
   **Error Handling**
@@ -55,22 +85,27 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Error Reporting**
   - Monitoring approach
 
-  ## \#{{standard-kpis}}
+  ## \#{{elixir-kpis}}
   **Code Quality KPIs**
-  - Functions per module: 3
-  - Lines per function: 12
-  - Call depth: 2
+  - Functions per module: ≤ 8 (Elixir modules tend to be focused)
+  - Lines per function: ≤ 12 (functional style favors small functions)
+  - Pattern match depth: ≤ 3 (avoid deeply nested patterns)
+  - GenServer state complexity: Simple maps/structs preferred
+  - Dialyzer warnings: Zero warnings required
+  - Credo score: Minimum A grade
+  - Test coverage: ≥ 95% line coverage
+  - Documentation coverage: 100% for public functions
   """
 
-  @features_template """
+  @otp_genserver_template """
   # Project Task List
 
   ## Current Tasks
 
   | ID | Description | Status | Priority | Assignee | Review Rating |
   | --- | --- | --- | --- | --- | --- |
-  | <%= @prefix %><%= @task_number %> | Implement core functionality | In Progress | High | - | - |
-  | <%= @prefix %>0002 | Add documentation framework | Planned | Medium | - | - |
+  | <%= @prefix %><%= @task_number %> | Implement GenServer worker | Planned | High | - | - |
+  | <%= @prefix %>0002 | Add supervision tree | Planned | Medium | - | - |
 
   ## Completed Tasks
 
@@ -80,499 +115,428 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   ## Active Task Details
 
-  ### <%= @prefix %><%= @task_number %>: Implement core functionality
+  ### <%= @prefix %><%= @task_number %>: Implement GenServer worker
 
   **Description**
-  Develop and implement the core functionality with a focus on maintainability and extensibility.
+  Develop a GenServer-based worker process with proper OTP patterns, state management, and supervision integration.
+
+  **Process Design**
+  GenServer chosen for stateful process with synchronous and asynchronous operations. State-based message handling with proper timeout management.
+
+  **State Management**
+  Simple map-based state with version tracking and periodic cleanup. Clear state transitions with validation on each update.
+
+  **Supervision Strategy**
+  Permanent restart strategy with exponential backoff. Parent supervisor escalation after 3 restarts in 60 seconds.
 
   **Simplicity Progression Plan**
-  1. Create basic structure
-  2. Add essential features
-  3. Implement error handling
-  4. Add extensibility points
+  1. Define GenServer callbacks and state structure
+  2. Implement basic client API functions
+  3. Add state validation and error handling
+  4. Integrate with supervision tree
 
   **Simplicity Principle**
-  Design with simplicity and clarity as primary goals. Start with minimal functionality
-  and add features incrementally based on validated needs.
+  Follow OTP conventions with minimal state and clear separation between client and server functions.
 
   **Abstraction Evaluation**
-  Medium - provides necessary abstractions while keeping interfaces clear and intuitive
+  Low-level GenServer implementation with clear API boundaries and minimal abstraction layers.
 
   **Requirements**
-  - Core functionality implementation
-  - Error handling
-  - Performance considerations
-  - Documentation
-  - Tests coverage
+  - GenServer implementation with proper callbacks
+  - Client API with {:ok, result} | {:error, reason} patterns
+  - State validation and transition management
+  - Integration with supervision tree
+  - Comprehensive test coverage
 
   **ExUnit Test Requirements**
-  - Unit tests for core functions
-  - Integration tests for key workflows
-  - Performance benchmarks
-  - Error condition tests
+  - Unit tests for client API functions
+  - GenServer callback tests with different scenarios
+  - State transition and validation tests
+  - Error condition and timeout tests
+  - Supervision integration tests
 
   **Integration Test Scenarios**
-  - Happy path workflows
-  - Error handling cases
-  - Edge case scenarios
-  - Performance under load
+  - Normal operation workflows
+  - Error recovery and restart scenarios
+  - High load and concurrent access patterns
+  - Supervisor escalation testing
 
   **Typespec Requirements**
-  - Define types for core functions
-  - Document type constraints
-  - Ensure proper type coverage
+  - Full type coverage for state structure
+  - Client API function specifications
+  - GenServer callback return types
 
   **TypeSpec Documentation**
-  Types should be clearly documented with examples and usage patterns
+  Complete documentation of state types, API contracts, and error conditions
 
   **TypeSpec Verification**
-  Use Dialyzer to verify type correctness
+  Dialyzer verification with zero warnings required
 
   **Dependencies**
   - None
 
-  {{standard-kpis}}
+  {{elixir-kpis}}
 
-  {{error-handling-main}}
+  {{otp-error-handling}}
 
   **Status**: Planned
   **Priority**: High
 
-  **Architecture Notes**
-  Core system component design
-
-  **Complexity Assessment**
-  Medium - Requires careful design but implementation is straightforward
-
-  **System Impact**
-  Foundation for other modules
-
-  **Dependency Analysis**
-  No external dependencies
-
   **Subtasks**
-  - [x] Basic structure implementation [<%= @prefix %><%= @task_number %>-1]
-  - [ ] Essential features [<%= @prefix %><%= @task_number %>-2]
-  - [ ] Error handling implementation [<%= @prefix %><%= @task_number %>-3]
-  - [ ] Add extensibility points [<%= @prefix %><%= @task_number %>-4]
+  - [ ] Define state structure and types [<%= @prefix %><%= @task_number %>-1]
+  - [ ] Implement client API functions [<%= @prefix %><%= @task_number %>-2]
+  - [ ] Add GenServer callbacks [<%= @prefix %><%= @task_number %>-3]
+  - [ ] Integration with supervision tree [<%= @prefix %><%= @task_number %>-4]
 
-  #### <%= @prefix %><%= @task_number %>-1: Basic structure implementation
-
-  **Description**
-  Create the foundational structure and interfaces
-
-  **Status**
-  Completed
-
-  **Review Rating**
-  4.5
-
-  {{error-handling-subtask}}
-
-  #### <%= @prefix %><%= @task_number %>-2: Essential features
+  #### <%= @prefix %><%= @task_number %>-1: Define state structure and types
 
   **Description**
-  Implement core features and functionality
+  Create comprehensive type definitions and state management patterns
 
   **Status**
   Planned
 
   {{error-handling-subtask}}
 
-  ### <%= @prefix %>0002: Add documentation framework
+  ### <%= @prefix %>0002: Add supervision tree
 
   **Description**
-  Set up and implement the documentation framework for the project.
+  Design and implement supervision tree with proper restart strategies and escalation patterns.
+
+  **Process Design**
+  Supervisor with one_for_one strategy managing worker processes. Dynamic child management with proper shutdown procedures.
+
+  **State Management**
+  Supervisor state tracking child processes with health monitoring and restart statistics.
+
+  **Supervision Strategy**
+  One_for_one restart with max_restarts: 3, max_seconds: 60. Escalate to parent supervisor on repeated failures.
 
   **Simplicity Progression Plan**
-  1. Set up documentation tools
-  2. Create basic structure
-  3. Add API documentation
-  4. Create user guides
+  1. Design supervision tree structure
+  2. Implement supervisor with restart strategies
+  3. Add dynamic child management
+  4. Integrate health monitoring
 
   **Simplicity Principle**
-  Keep documentation clear, concise, and maintainable
+  Standard OTP supervision patterns with minimal configuration and clear escalation paths.
 
   **Abstraction Evaluation**
-  Low - straightforward documentation structure
+  Direct supervision implementation following OTP best practices
 
   **Requirements**
-  - Documentation tool setup
-  - API documentation
-  - User guides
-  - Example code
+  - Supervisor implementation with proper strategies
+  - Dynamic child process management
+  - Health monitoring and metrics
+  - Graceful shutdown handling
 
   **ExUnit Test Requirements**
-  - Documentation generation tests
-  - Link validation
-  - Code example tests
+  - Supervisor startup and shutdown tests
+  - Child restart and escalation scenarios
+  - Dynamic child management tests
 
   **Integration Test Scenarios**
-  - Documentation generation
-  - Format validation
-  - Cross-reference checks
+  - Full supervision tree integration
+  - Failure recovery and escalation
+  - System-wide restart scenarios
 
   **Typespec Requirements**
-  - Document type specifications
-  - Include type examples
+  - Supervisor specification types
+  - Child specification documentation
 
   **TypeSpec Documentation**
-  Clear documentation of all public types
+  Clear supervision tree structure and child management contracts
 
   **TypeSpec Verification**
-  Regular verification of documentation accuracy
+  Full type coverage with Dialyzer validation
 
   **Dependencies**
-  - None
+  - <%= @prefix %><%= @task_number %>
 
-  {{standard-kpis}}
+  {{elixir-kpis}}
 
-  {{error-handling-main}}
+  {{otp-error-handling}}
 
   **Status**: Planned
   **Priority**: Medium
-
-  **Architecture Notes**
-  Documentation framework choice
-
-  **Complexity Assessment**
-  Low - Standard documentation setup
-
-  **System Impact**
-  Developer experience improvement
-
-  **Dependency Analysis**
-  Depends on core module
   """
 
-  @core_template """
+  @phoenix_web_template """
   # Project Task List
 
   ## Current Tasks
 
   | ID | Description | Status | Priority | Assignee | Review Rating |
   | --- | --- | --- | --- | --- | --- |
-  | <%= @prefix %>0001 | Core architecture implementation | Planned | High | - | - |
-  | <%= @prefix %>0002 | Add documentation framework | Planned | Medium | - | - |
+  | <%= @prefix %><%= @task_number %> | Implement user authentication LiveView | Planned | High | - | - |
+  | <%= @prefix %>0102 | Add product catalog controller | Planned | Medium | - | - |
 
   ## Completed Tasks
 
   | ID | Description | Status | Completed By | Review Rating |
   | --- | --- | --- | ------------ | ------------- |
-  | <%= @prefix %>0003 | Project setup | Completed | @developer | 4.5 |
+  | <%= @prefix %>0103 | Phoenix project setup | Completed | @developer | 4.5 |
 
   ## Active Task Details
 
-  ### <%= @prefix %><%= @task_number %>: Core architecture implementation
+  ### <%= @prefix %><%= @task_number %>: Implement user authentication LiveView
 
   **Description**
-  Implement core system architecture with focus on performance and reliability.
+  Create a LiveView-based authentication system with real-time validation and smooth UX.
+
+  **Route Design**
+  RESTful routes: GET /login, POST /session, DELETE /session with proper path helpers and redirects.
+
+  **Context Integration**
+  Integrate with Accounts context for user validation, session management, and role-based access control.
+
+  **Template/Component Strategy**
+  Stateful LiveView component with reusable form components and real-time validation feedback.
 
   **Simplicity Progression Plan**
-  1. Design core interfaces
-  2. Implement basic functionality
-  3. Add error handling
-  4. Optimize performance
+  1. Design route structure and controller actions
+  2. Implement LiveView component with form handling
+  3. Add real-time validation and error feedback
+  4. Integrate with authentication context
 
   **Simplicity Principle**
-  Focus on essential functionality with minimal complexity and maximum reliability.
+  Clean separation between web layer and business logic with intuitive user experience.
 
   **Abstraction Evaluation**
-  Low-level implementation with clear separation of concerns
+  Medium - Phoenix conventions with LiveView abstraction for rich interactions.
 
   **Requirements**
-  - High performance architecture
-  - Robust error handling
-  - Scalable design patterns
-  - Comprehensive testing
+  - LiveView authentication form with real-time validation
+  - Session management and secure token handling
+  - Flash messages and error feedback
+  - Responsive design and accessibility
 
   **ExUnit Test Requirements**
-  - Performance benchmarks
-  - Load testing
-  - Failure scenario testing
+  - LiveView mount and event handling tests
+  - Authentication flow integration tests
+  - Form validation and error display tests
+  - Session management tests
 
   **Integration Test Scenarios**
-  - System integration tests
-  - Performance under load
-  - Failure recovery testing
+  - Complete authentication workflow
+  - Invalid credentials handling
+  - Session timeout and renewal
+  - Multiple concurrent sessions
 
   **Typespec Requirements**
-  - Core type definitions
-  - Interface specifications
+  - LiveView assign types and validation
+  - Authentication event specifications
+  - Session data type definitions
 
   **TypeSpec Documentation**
-  Complete documentation of all core types and interfaces
+  Clear documentation of LiveView state, events, and authentication contracts
 
   **TypeSpec Verification**
-  Strict type checking with Dialyzer
+  Dialyzer verification of LiveView callbacks and type safety
 
   **Dependencies**
   - None
 
-  **Code Quality KPIs**
-  - Functions per module: 3
-  - Lines per function: 12
-  - Call depth: 2
+  {{elixir-kpis}}
 
-  **Architecture Notes**
-  Core system design using proven patterns and minimal dependencies
-
-  **Complexity Assessment**
-  Medium complexity focused on correctness and performance
-
-  {{error-handling-main}}
+  {{phoenix-error-handling}}
 
   **Status**: Planned
   **Priority**: High
 
-  **Architecture Notes**
-  Simple initial design
-
-  **Complexity Assessment**
-  Low - Basic structure only
-
   **Subtasks**
-  - [x] Basic structure implementation [<%= @prefix %><%= @task_number %>-1]
-  - [ ] Performance optimization [<%= @prefix %><%= @task_number %>-2]
-  - [ ] Add error handling [<%= @prefix %><%= @task_number %>-3]
-  - [ ] Optimize performance [<%= @prefix %><%= @task_number %>-4]
+  - [ ] Design LiveView component structure [<%= @prefix %><%= @task_number %>-1]
+  - [ ] Implement form validation [<%= @prefix %><%= @task_number %>-2]
+  - [ ] Add session management [<%= @prefix %><%= @task_number %>-3]
+  - [ ] Style and UX polish [<%= @prefix %><%= @task_number %>-4]
 
-  #### <%= @prefix %><%= @task_number %>-1: Basic structure implementation
-
-  **Description**
-  Create the foundational architecture and core interfaces
-
-  **Status**
-  Completed
-
-  **Review Rating**
-  4.5
-
-  {{error-handling-subtask}}
-
-  #### <%= @prefix %><%= @task_number %>-2: Performance optimization
+  #### <%= @prefix %><%= @task_number %>-1: Design LiveView component structure
 
   **Description**
-  Implement performance optimizations and monitoring
+  Create the foundational LiveView component with proper mount and event handling
 
   **Status**
   Planned
 
   {{error-handling-subtask}}
 
-
-  ### <%= @prefix %>0002: Add documentation framework
-
-  **Description**
-  Set up and implement the documentation framework for the project.
-
-  **Simplicity Progression Plan**
-  1. Set up documentation tools
-  2. Create basic structure
-  3. Add API documentation
-  4. Create user guides
-
-  **Simplicity Principle**
-  Keep documentation clear, concise, and maintainable
-
-  **Abstraction Evaluation**
-  Low - straightforward documentation structure
-
-  **Requirements**
-  - Documentation tool setup
-  - API documentation
-  - User guides
-  - Example code
-
-  **ExUnit Test Requirements**
-  - Documentation generation tests
-  - Link validation
-  - Code example tests
-
-  **Integration Test Scenarios**
-  - Documentation generation
-  - Format validation
-  - Cross-reference checks
-
-  **Typespec Requirements**
-  - Document type specifications
-  - Include type examples
-
-  **TypeSpec Documentation**
-  Clear documentation of all public types
-
-  **TypeSpec Verification**
-  Regular verification of documentation accuracy
-
-  **Dependencies**
-  - <%= @prefix %>0001
-
-  {{standard-kpis}}
-
-  **Subtasks**
-  - [ ] Set up documentation tools [<%= @prefix %>0002-1]
-  - [ ] Create basic structure [<%= @prefix %>0002-2]
-  - [ ] Add API documentation [<%= @prefix %>0002-3]
-  - [ ] Create user guides [<%= @prefix %>0002-4]
-
-  **Architecture Notes**
-  Standard documentation framework
-
-  **Complexity Assessment**
-  Low - Standard tooling
-
-  {{error-handling-main}}
-
-  **Status**: Planned
-  **Priority**: Medium
-
-  ## Completed Task Details
-
-  ### <%= @prefix %>0003: Project setup
+  ### <%= @prefix %>0102: Add product catalog controller
 
   **Description**
-  Initial project setup and structure implementation
+  Implement RESTful product catalog with pagination, search, and filtering capabilities.
+
+  **Route Design**
+  Standard RESTful routes with nested resources and query parameter handling for search and filters.
+
+  **Context Integration**
+  Integration with Products context for data access, search indexing, and inventory management.
+
+  **Template/Component Strategy**
+  Server-rendered templates with Phoenix components for product cards and pagination.
 
   **Simplicity Progression Plan**
-  1. Create directory structure
-  2. Set up build configuration
-  3. Initialize version control
+  1. Create controller actions and route definitions
+  2. Implement basic product listing and pagination
+  3. Add search and filtering functionality
+  4. Optimize database queries and caching
 
   **Simplicity Principle**
-  Standard project layout with minimal configuration
+  Standard Phoenix patterns with efficient database access and clean template organization.
 
   **Abstraction Evaluation**
-  Low - Direct implementation
+  Low - Direct Phoenix controller implementation with minimal abstractions.
 
   **Requirements**
-  - Directory structure
-  - Build configuration
-  - Initial documentation
+  - RESTful product CRUD operations
+  - Pagination and search functionality
+  - Image upload and management
+  - Performance optimization for large catalogs
 
   **ExUnit Test Requirements**
-  - Verify build process
-  - Test configuration loading
+  - Controller action tests for all routes
+  - Integration tests for search and filtering
+  - Performance tests for large datasets
 
   **Integration Test Scenarios**
-  - Full project build and test
+  - Product catalog browsing workflows
+  - Search and filter combinations
+  - Image upload and display
+  - Admin product management
 
   **Typespec Requirements**
-  - Basic type definitions
-  - Module specifications
+  - Product schema type definitions
+  - Controller parameter specifications
+  - Search and filter option types
 
   **TypeSpec Documentation**
-  Document core type specifications
+  Complete API documentation for product catalog endpoints
 
   **TypeSpec Verification**
-  Initial Dialyzer setup and verification
+  Type safety for all controller actions and business logic integration
 
   **Dependencies**
   - None
 
-  {{standard-kpis}}
+  {{elixir-kpis}}
 
-  **Architecture Notes**
-  Simple standard structure
+  {{phoenix-error-handling}}
 
-  **Complexity Assessment**
-  Low - Basic setup only
-
-  {{error-handling-main}}
-
-  **Error Handling Implementation**
-  Standard error patterns
-
-  **Status**: Completed
-  **Priority**: High
-
-  **Implementation Notes**
-  Basic project structure created
-
-  **Maintenance Impact**
-  Minimal - standard structure
-
-  **Review Rating**: 4.5
-
+  **Status**: Planned
+  **Priority**: Medium
   """
 
-  @documentation_template """
+  @business_logic_template """
   # Project Task List
 
   ## Current Tasks
 
   | ID | Description | Status | Priority | Assignee | Review Rating |
   | --- | --- | --- | --- | --- | --- |
-  | <%= @prefix %><%= @task_number %> | Create comprehensive documentation | Planned | Medium | - | - |
-
-  ## Completed Tasks
-
-  | ID | Description | Status | Completed By | Review Rating |
-  | --- | --- | --- | ------------ | ------------- |
+  | <%= @prefix %><%= @task_number %> | Implement user management context | Planned | High | - | - |
 
   ## Active Task Details
 
-  ### <%= @prefix %><%= @task_number %>: Create comprehensive documentation
+  ### <%= @prefix %><%= @task_number %>: Implement user management context
 
   **Description**
-  Develop user-focused documentation with clear examples and usage patterns.
+  Create a comprehensive user management context with proper business logic separation.
 
-  **Simplicity Progression Plan**
-  1. Analyze target audience
-  2. Create content structure
-  3. Write core documentation
-  4. Add examples and tutorials
+  **API Design**
+  Clear function contracts: create_user/1, update_user/2, authenticate_user/2 with proper documentation.
 
-  **Simplicity Principle**
-  Clear, concise documentation that enables users to succeed quickly.
+  **Data Access**
+  Proper Repo usage with optimized queries, preloading strategies, and transaction management.
 
-  **Abstraction Evaluation**
-  Documentation structure that hides complexity while providing necessary details
+  **Validation Strategy**
+  Comprehensive changeset validation with custom validators and error message internationalization.
 
   **Requirements**
-  - User-focused content
-  - Clear examples
-  - Comprehensive API documentation
-  - Getting started guides
+  - Context module with clear API boundaries
+  - Comprehensive changesets and validations
+  - Optimized database queries
+  - Business rule enforcement
 
-  **ExUnit Test Requirements**
-  - Documentation example tests
-  - Link validation
-  - Code snippet verification
-
-  **Integration Test Scenarios**
-  - Documentation build process
-  - Cross-reference validation
-  - Example code execution
-
-  **Typespec Requirements**
-  - Documented type examples
-  - Usage pattern documentation
-
-  **TypeSpec Documentation**
-  Clear examples of type usage in documentation
-
-  **TypeSpec Verification**
-  Ensure all documented types are valid
-
-  **Dependencies**
-  - None
-
-  **Code Quality KPIs**
-  - Functions per module: 3
-  - Lines per function: 12
-  - Call depth: 2
-
-  **Content Strategy**
-  User-focused approach with progressive disclosure and practical examples
-
-  **Audience Analysis**
-  Target developers with varying experience levels, prioritize clarity over completeness
-
-  {{error-handling-main}}
+  {{elixir-kpis}}
+  {{context-error-handling}}
 
   **Status**: Planned
-  **Priority**: Medium
-  **Dependencies**: None
+  **Priority**: High
+  """
+
+  @data_layer_template """
+  # Project Task List
+
+  ## Current Tasks
+
+  | ID | Description | Status | Priority | Assignee | Review Rating |
+  | --- | --- | --- | --- | --- | --- |
+  | <%= @prefix %><%= @task_number %> | Design user schema and migration | Planned | High | - | - |
+
+  ## Active Task Details
+
+  ### <%= @prefix %><%= @task_number %>: Design user schema and migration
+
+  **Description**
+  Create comprehensive user schema with proper database design and migration strategy.
+
+  **Schema Design**
+  Well-normalized schema with proper constraints, indexes, and relationships.
+
+  **Migration Strategy**
+  Rollback-safe migrations with data integrity checks and zero-downtime deployment patterns.
+
+  **Query Optimization**
+  Strategic indexes, query analysis, and performance monitoring for critical paths.
+
+  **Requirements**
+  - Ecto schema with proper types and validations
+  - Safe database migrations
+  - Optimized query patterns
+  - Constraint and index strategy
+
+  {{elixir-kpis}}
+  {{context-error-handling}}
+
+  **Status**: Planned
+  **Priority**: High
+  """
+
+  @infrastructure_template """
+  # Project Task List
+
+  ## Current Tasks
+
+  | ID | Description | Status | Priority | Assignee | Review Rating |
+  | --- | --- | --- | --- | --- | --- |
+  | <%= @prefix %><%= @task_number %> | Configure production release | Planned | High | - | - |
+
+  ## Active Task Details
+
+  ### <%= @prefix %><%= @task_number %>: Configure production release
+
+  **Description**
+  Set up production release configuration with proper deployment and monitoring.
+
+  **Release Configuration**
+  Elixir release with proper runtime configuration, clustering, and resource limits.
+
+  **Environment Variables**
+  Secure configuration management with runtime.exs and environment-specific settings.
+
+  **Deployment Strategy**
+  Blue-green deployment with health checks, rollback procedures, and monitoring integration.
+
+  **Requirements**
+  - Production-ready release configuration
+  - Secure secret management
+  - Monitoring and observability
+  - Deployment automation
+
+  {{elixir-kpis}}
+  {{context-error-handling}}
+
+  **Status**: Planned
+  **Priority**: High
   """
 
   @testing_template """
@@ -666,10 +630,17 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
     path = options[:path] || "TaskList.md"
     prefix = options[:prefix] || "PRJ"
-    category = options[:category] || "features"
+    category = options[:category] || "phoenix_web"
 
     # Validate category
-    valid_categories = ["core", "features", "documentation", "testing"]
+    valid_categories = [
+      "otp_genserver",
+      "phoenix_web",
+      "business_logic",
+      "data_layer",
+      "infrastructure",
+      "testing"
+    ]
 
     unless category in valid_categories do
       Mix.shell().error(
@@ -705,18 +676,22 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   defp get_category_task_number(category) do
     case category do
-      "core" -> "0001"
-      "features" -> "0101"
-      "documentation" -> "0201"
-      "testing" -> "0301"
+      "otp_genserver" -> "0001"
+      "phoenix_web" -> "0101"
+      "business_logic" -> "0201"
+      "data_layer" -> "0301"
+      "infrastructure" -> "0401"
+      "testing" -> "0501"
     end
   end
 
   defp get_template_for_category(category) do
     case category do
-      "core" -> @core_template
-      "features" -> @features_template
-      "documentation" -> @documentation_template
+      "otp_genserver" -> @otp_genserver_template
+      "phoenix_web" -> @phoenix_web_template
+      "business_logic" -> @business_logic_template
+      "data_layer" -> @data_layer_template
+      "infrastructure" -> @infrastructure_template
       "testing" -> @testing_template
     end
   end

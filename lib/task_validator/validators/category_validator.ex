@@ -74,10 +74,42 @@ defmodule TaskValidator.Validators.CategoryValidator do
 
   # Default category-specific required sections
   @category_sections %{
+    # Original generic categories (preserve backward compatibility)
     "core" => ["**Architecture Notes**", "**Complexity Assessment**"],
     "features" => ["**Abstraction Evaluation**", "**Simplicity Progression Plan**"],
     "documentation" => ["**Content Strategy**", "**Audience Analysis**"],
-    "testing" => ["**Test Strategy**", "**Coverage Requirements**"]
+    "testing" => ["**Test Strategy**", "**Coverage Requirements**"],
+    # New Elixir/Phoenix-specific categories
+    "otp_genserver" => [
+      "**Process Design**",
+      "**State Management**",
+      "**Supervision Strategy**"
+    ],
+    "phoenix_web" => [
+      "**Route Design**",
+      "**Context Integration**",
+      "**Template/Component Strategy**"
+    ],
+    "business_logic" => [
+      "**API Design**",
+      "**Data Access**",
+      "**Validation Strategy**"
+    ],
+    "data_layer" => [
+      "**Schema Design**",
+      "**Migration Strategy**",
+      "**Query Optimization**"
+    ],
+    "infrastructure" => [
+      "**Release Configuration**",
+      "**Environment Variables**",
+      "**Deployment Strategy**"
+    ],
+    "elixir_testing" => [
+      "**Test Strategy**",
+      "**Coverage Requirements**",
+      "**Property-Based Testing**"
+    ]
   }
 
   @doc """

@@ -107,9 +107,51 @@ defmodule TaskValidator do
   ]
 
   @doc """
+  Validates a TaskList.md file using configurable validation pipeline.
+
+  This method supports different validator configurations for flexible validation.
+
+  ## Options
+  - `:validators` - Custom validator list (defaults to :default)
+  - `:validator_set` - Preset validator set (:default, :minimal, :strict)
+
+  ## Examples
+
+      # Use default validators
+      TaskValidator.validate_file_with_pipeline("TaskList.md")
+
+      # Use minimal validator set
+      TaskValidator.validate_file_with_pipeline("TaskList.md", validator_set: :minimal)
+
+      # Use custom validators
+      validators = [{IdValidator, %{}}, {StatusValidator, %{}}]
+      TaskValidator.validate_file_with_pipeline("TaskList.md", validators: validators)
+  """
+  @spec validate_file_with_pipeline(String.t(), keyword()) ::
+          {:ok, String.t()} | {:error, String.t()}
+  def validate_file_with_pipeline(file_path, options \\ []) do
+    with {:ok, content} <- File.read(file_path),
+         {:ok, task_list} <- TaskValidator.Parsers.MarkdownParser.parse(content),
+         :ok <- validate_references_new(task_list),
+         result <- validate_with_pipeline(task_list, options) do
+      case result do
+        %TaskValidator.Core.ValidationResult{valid?: true} ->
+          {:ok, "TaskList.md validation passed!"}
+
+        %TaskValidator.Core.ValidationResult{valid?: false, errors: errors} ->
+          error_messages = Enum.map(errors, &TaskValidator.Core.ValidationError.format/1)
+          {:error, Enum.join(error_messages, "\n")}
+      end
+    end
+  end
+
+  @doc """
   Validates a TaskList.md file against the specified format requirements.
 
   Returns `:ok` if validation passes, or `{:error, reason}` if it fails.
+
+  Note: This is the legacy validation method. For new projects, consider using
+  `validate_file_with_rules/2` which provides more flexibility and features.
   """
   @spec validate_file(String.t()) :: :ok | {:error, String.t()}
   def validate_file(file_path) do
@@ -155,12 +197,8 @@ defmodule TaskValidator do
       task_list: task_list
     }
 
-    # Use the new validator pipeline
-    TaskValidator.Validators.ValidatorPipeline.validate_tasks(
-      task_list.tasks,
-      TaskValidator.Validators.ValidatorPipeline.default_validators(),
-      context
-    )
+    # Use the new validation pipeline
+    TaskValidator.ValidationPipeline.run_many(task_list.tasks, context)
   end
 
   defp validate_references_new(task_list) do
@@ -179,6 +217,50 @@ defmodule TaskValidator do
     task_list.tasks
     |> Enum.flat_map(fn task -> task.content end)
   end
+
+  # Validation pipeline integration functions
+
+  defp validate_with_pipeline(task_list, options) do
+    context = %{
+      config: TaskValidator.Config.get_all(),
+      all_tasks: task_list.tasks,
+      references: task_list.references,
+      task_list: task_list
+    }
+
+    validators = get_validators_from_options(options)
+    TaskValidator.ValidationPipeline.run_many(task_list.tasks, context, validators)
+  end
+
+  defp get_validators_from_options(options) do
+    case Keyword.get(options, :validators) do
+      nil ->
+        # Use validator set
+        validator_set = Keyword.get(options, :validator_set, :default)
+
+        case validator_set do
+          :default ->
+            TaskValidator.ValidationPipeline.default_validators()
+
+          :minimal ->
+            TaskValidator.ValidationPipeline.minimal_validators()
+
+          :strict ->
+            preset_options = Keyword.get(options, :preset_options, %{})
+            TaskValidator.ValidationPipeline.strict_validators(preset_options)
+
+          _ ->
+            # Unknown validator set, use default
+            TaskValidator.ValidationPipeline.default_validators()
+        end
+
+      validators when is_list(validators) ->
+        # Use provided validator list
+        validators
+    end
+  end
+
+  # Legacy validation functions (kept for backward compatibility)
 
   defp validate_task_ids_new(tasks) do
     # Check for ID format compliance

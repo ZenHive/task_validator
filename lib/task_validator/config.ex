@@ -104,10 +104,18 @@ defmodule TaskValidator.Config do
 
   defp get_default(:category_ranges) do
     %{
+      # Original generic categories (preserve backward compatibility)
       "core" => {1, 99},
       "features" => {100, 199},
       "documentation" => {200, 299},
-      "testing" => {300, 399}
+      "testing" => {300, 399},
+      # New Elixir/Phoenix-specific categories
+      "otp_genserver" => {601, 699},
+      "phoenix_web" => {701, 799},
+      "business_logic" => {801, 899},
+      "data_layer" => {901, 999},
+      "infrastructure" => {1001, 1099},
+      "elixir_testing" => {1101, 1199}
     }
   end
 
