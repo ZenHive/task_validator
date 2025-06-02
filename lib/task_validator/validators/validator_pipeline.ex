@@ -102,13 +102,27 @@ defmodule TaskValidator.Validators.ValidatorPipeline do
   Gets the default set of validators for task validation.
 
   Returns the core validators that should be run for most validation scenarios.
+  The validators are automatically sorted by priority when used in validate_task/3.
   """
   @spec default_validators() :: [module()]
   def default_validators do
     [
+      # Priority 90 - ID format and uniqueness
       TaskValidator.Validators.IdValidator,
+      # Priority 60 - Status and priority validation
       TaskValidator.Validators.StatusValidator,
-      TaskValidator.Validators.SectionValidator
+      # Priority 55 - Error handling requirements
+      TaskValidator.Validators.ErrorHandlingValidator,
+      # Priority 50 - Required sections
+      TaskValidator.Validators.SectionValidator,
+      # Priority 45 - Subtask consistency
+      TaskValidator.Validators.SubtaskValidator,
+      # Priority 40 - Dependency validation
+      TaskValidator.Validators.DependencyValidator,
+      # Priority 35 - Category-specific requirements
+      TaskValidator.Validators.CategoryValidator,
+      # Priority 30 - Code quality KPIs
+      TaskValidator.Validators.KpiValidator
     ]
   end
 
