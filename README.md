@@ -1,6 +1,6 @@
 # TaskValidator
 
-A library for validating Markdown task lists against a structured format specification.
+A library for validating Markdown task lists against a structured format specification, with enhanced support for Elixir/Phoenix projects.
 
 ## Installation
 
@@ -9,7 +9,7 @@ Add `task_validator` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:task_validator, "~> 0.6.0"}
+    {:task_validator, "~> 0.9.0"}
   ]
 end
 ```
@@ -26,22 +26,42 @@ mix validate_tasklist
 mix validate_tasklist --path ./path/to/custom/TaskList.md
 
 # Create a new task list template
-mix create_template
+mix task_validator.create_template
 
 # Create a template with custom prefix
-mix create_template --prefix SSH
+mix task_validator.create_template --prefix SSH
 
-# Create a template for a specific category
-mix create_template --category features
-mix create_template --category documentation
+# Create a template for a specific category (Elixir/Phoenix categories)
+mix task_validator.create_template --category otp_genserver
+mix task_validator.create_template --category phoenix_web
+mix task_validator.create_template --category testing
+
+# Use semantic prefixes automatically
+mix task_validator.create_template --semantic --category phoenix_web
 ```
 
 ### Programmatic
 
 ```elixir
+# Simple validation
 case TaskValidator.validate_file("path/to/tasklist.md") do
   {:ok, message} ->
     IO.puts("Success: #{message}")
+  {:error, reason} ->
+    IO.puts("Error: #{reason}")
+end
+
+# Detailed validation with custom validators
+validators = [
+  TaskValidator.Validators.IdValidator,
+  TaskValidator.Validators.StatusValidator,
+  TaskValidator.Validators.KpiValidator
+]
+
+case TaskValidator.validate_file_with_pipeline("path/to/tasklist.md", validators) do
+  {:ok, result} ->
+    IO.puts("Valid: #{result.valid?}")
+    IO.puts("Warnings: #{length(result.warnings)}")
   {:error, reason} ->
     IO.puts("Error: #{reason}")
 end
@@ -68,12 +88,17 @@ The TaskValidator enforces a specific format for task lists with a strong focus 
 - Subtasks use numeric suffixes (SSH0001-1, SSH0001-2, etc.)
 - Checkbox format is recommended for subtasks: `- [x] Completed task [SSH0001-1]` or `- [ ] Pending task [SSH0001-2]`
 - Dependencies field tracks relationships between tasks
-- Code Quality KPIs enforce limits: max 5 functions/module, 15 lines/function, call depth 2
-- Task categories with specific number ranges:
-  * Core infrastructure: 1-99
-  * Features: 100-199
-  * Documentation: 200-299
-  * Testing: 300-399
+- Code Quality KPIs with complexity-based limits:
+  * Base limits: max 8 functions/module, 15 lines/function, call depth 3
+  * Complexity multipliers: Simple (1x), Medium (1.5x), Complex (2x), Critical (3x)
+  * Categories have default complexity levels (e.g., Testing: Complex)
+- Task categories for Elixir/Phoenix projects:
+  * OTP/GenServer: 1-99 (OTP, GEN, SUP prefixes)
+  * Phoenix Web: 100-199 (PHX, WEB, LV prefixes)
+  * Business Logic: 200-299 (CTX, BIZ, DOM prefixes)
+  * Data Layer: 300-399 (DB, ECT, MIG prefixes)
+  * Infrastructure: 400-499 (INF, DEP, ENV prefixes)
+  * Testing: 500-599 (TST, TES, INT prefixes)
 - Main tasks and subtasks have different error handling section requirements:
   * Main tasks: Comprehensive error handling documentation including GenServer specifics
   * Subtasks: Simplified error handling focused on task-specific approaches

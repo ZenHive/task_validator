@@ -46,8 +46,10 @@ defmodule TaskValidator.Validators.IdValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates task ID format, uniqueness, and subtask relationships.
@@ -69,7 +71,8 @@ defmodule TaskValidator.Validators.IdValidator do
       &validate_id_format/3,
       &validate_uniqueness/3,
       &validate_subtask_parent/3,
-      &check_prefix_consistency/3
+      &check_prefix_consistency/3,
+      &validate_semantic_prefix/3
     ]
 
     validators
@@ -135,8 +138,7 @@ defmodule TaskValidator.Validators.IdValidator do
     else
       error = %ValidationError{
         type: :invalid_id_format,
-        message:
-          "Subtask ID '#{id}' does not match expected subtask format. Expected: PARENT-N or PARENTL",
+        message: "Subtask ID '#{id}' does not match expected subtask format. Expected: PARENT-N or PARENTL",
         task_id: id,
         severity: :error,
         context: %{
@@ -258,6 +260,83 @@ defmodule TaskValidator.Validators.IdValidator do
       true ->
         nil
     end
+  end
+
+  # Validates semantic prefix mapping and suggests appropriate category
+  defp validate_semantic_prefix(%Task{id: task_id, category: task_category} = task, _all_tasks, config) do
+    enable_semantic = Map.get(config, :enable_semantic_prefixes, true)
+    semantic_prefixes = Map.get(config, :semantic_prefixes, %{})
+
+    if enable_semantic and map_size(semantic_prefixes) > 0 do
+      prefix = extract_prefix(task_id)
+      suggested_category = Map.get(semantic_prefixes, prefix)
+
+      cond do
+        # If prefix maps to a category but task has wrong/no category
+        suggested_category != nil and task_category != suggested_category ->
+          create_category_mismatch_warning(task, prefix, suggested_category, task_category)
+
+        # If prefix is semantic but not recognized
+        suggested_category == nil and is_semantic_prefix?(prefix) ->
+          create_unrecognized_prefix_warning(task, prefix)
+
+        true ->
+          ValidationResult.success()
+      end
+    else
+      ValidationResult.success()
+    end
+  end
+
+  # Creates warning for category mismatch
+  defp create_category_mismatch_warning(task, prefix, suggested_category, current_category) do
+    message =
+      case current_category do
+        nil ->
+          "Task '#{task.id}' uses semantic prefix '#{prefix}' which suggests category '#{suggested_category}', but task has no category assigned"
+
+        _ ->
+          "Task '#{task.id}' uses semantic prefix '#{prefix}' which suggests category '#{suggested_category}', but task is categorized as '#{current_category}'"
+      end
+
+    warning = %ValidationError{
+      type: :semantic_prefix_mismatch,
+      message: message,
+      task_id: task.id,
+      severity: :warning,
+      context: %{
+        prefix: prefix,
+        suggested_category: suggested_category,
+        current_category: current_category
+      }
+    }
+
+    ValidationResult.success(warnings: [warning])
+  end
+
+  # Creates warning for unrecognized semantic prefix
+  defp create_unrecognized_prefix_warning(task, prefix) do
+    warning = %ValidationError{
+      type: :unrecognized_semantic_prefix,
+      message:
+        "Task '#{task.id}' uses prefix '#{prefix}' which appears to be semantic but is not recognized. Consider adding it to semantic_prefixes configuration.",
+      task_id: task.id,
+      severity: :warning,
+      context: %{
+        prefix: prefix,
+        suggestion: "Add '#{prefix}' to semantic_prefixes configuration"
+      }
+    }
+
+    ValidationResult.success(warnings: [warning])
+  end
+
+  # Checks if a prefix looks semantic (3+ characters, common patterns)
+  defp is_semantic_prefix?(prefix) do
+    semantic_patterns =
+      ~w(OTP GEN SUP APP PHX WEB LV LVC CTX BIZ DOM DB ECT MIG SCH INF DEP ENV REL TST TES INT E2E)
+
+    prefix in semantic_patterns or String.length(prefix) >= 3
   end
 
   # Extracts the prefix from a task ID

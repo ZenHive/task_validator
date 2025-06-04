@@ -68,7 +68,7 @@ defmodule TaskValidator.Parsers.TaskExtractor do
   """
   @spec merge_table_with_details(list(Task.t()), list(map())) :: list(Task.t())
   def merge_table_with_details(table_tasks, detailed_tasks) do
-    detailed_map = Enum.into(detailed_tasks, %{}, fn task -> {task.id, task} end)
+    detailed_map = Map.new(detailed_tasks, fn task -> {task.id, task} end)
 
     merged_tasks =
       Enum.map(table_tasks, fn task ->
@@ -160,8 +160,6 @@ defmodule TaskValidator.Parsers.TaskExtractor do
           review_rating: extract_review_rating(fields)
         }
       end
-    else
-      nil
     end
   end
 
@@ -294,7 +292,7 @@ defmodule TaskValidator.Parsers.TaskExtractor do
   end
 
   defp merge_task_with_details(task, detailed) do
-    %Task{
+    %{
       task
       | content: detailed.content,
         subtasks: detailed.subtasks,
@@ -369,9 +367,7 @@ defmodule TaskValidator.Parsers.TaskExtractor do
           field_idx = Enum.find_index(content, &(&1 == field_line))
 
           if field_idx && field_idx + 1 < length(content) do
-            Enum.at(content, field_idx + 1) |> String.trim()
-          else
-            nil
+            content |> Enum.at(field_idx + 1) |> String.trim()
           end
         end
     end
@@ -403,9 +399,7 @@ defmodule TaskValidator.Parsers.TaskExtractor do
   defp extract_review_rating(fields) do
     if length(fields) >= 6 do
       rating = List.last(fields)
-      if rating != "-" && rating != "", do: rating, else: nil
-    else
-      nil
+      if rating != "-" && rating != "", do: rating
     end
   end
 end

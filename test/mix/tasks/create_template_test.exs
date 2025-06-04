@@ -1,5 +1,6 @@
 defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
   use ExUnit.Case, async: true
+
   alias Mix.Tasks.TaskValidator.CreateTemplate
 
   setup do
@@ -12,8 +13,8 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
   test "creates a valid task list with default prefix", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "default_prefix.md")
 
-    # Run the task with core category for expected numbers
-    CreateTemplate.run(["--path", path, "--category", "core"])
+    # Run the task with otp_genserver category for expected numbers
+    CreateTemplate.run(["--path", path, "--category", "otp_genserver"])
 
     # Verify file was created
     assert File.exists?(path)
@@ -32,8 +33,8 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
   test "creates a valid task list with custom prefix", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "custom_prefix.md")
 
-    # Run the task with custom prefix and core category
-    CreateTemplate.run(["--path", path, "--prefix", "TST", "--category", "core"])
+    # Run the task with custom prefix and otp_genserver category
+    CreateTemplate.run(["--path", path, "--prefix", "TST", "--category", "otp_genserver"])
 
     # Verify file was created
     assert File.exists?(path)
@@ -59,8 +60,8 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
     Mix.shell(Mix.Shell.Process)
     send(self(), {:mix_shell_input, :yes?, true})
 
-    # Run the task with core category
-    CreateTemplate.run(["--path", path, "--category", "core"])
+    # Run the task with otp_genserver category
+    CreateTemplate.run(["--path", path, "--category", "otp_genserver"])
 
     # Verify file was overwritten
     content = File.read!(path)
@@ -97,8 +98,8 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
   test "validates generated template structure", %{tmp_dir: tmp_dir} do
     path = Path.join(tmp_dir, "structure.md")
 
-    # Run the task with core category
-    CreateTemplate.run(["--path", path, "--category", "core"])
+    # Run the task with otp_genserver category
+    CreateTemplate.run(["--path", path, "--category", "otp_genserver"])
 
     # Read the content
     content = File.read!(path)
@@ -114,11 +115,11 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplateTest do
     assert content =~ "**Status**"
     assert content =~ "**Priority**"
 
-    # Verify subtask format
-    assert content =~ "**Subtasks**"
-    assert content =~ "- [x] Basic structure implementation"
-    assert content =~ "#### PRJ0001-1: Basic structure implementation"
-    assert content =~ "**Review Rating**"
+    # Verify OTP-specific sections
+    assert content =~ "**Process Design**"
+    assert content =~ "**State Management**"
+    assert content =~ "**Supervision Strategy**"
+    assert content =~ "{{otp-error-handling}}"
   end
 
   @tag :tmp_dir

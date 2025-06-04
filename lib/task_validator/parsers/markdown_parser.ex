@@ -7,7 +7,8 @@ defmodule TaskValidator.Parsers.MarkdownParser do
   concerns from validation logic.
   """
 
-  alias TaskValidator.Core.{Task, TaskList}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.TaskList
 
   @doc """
   Parses markdown content into a structured TaskList.
@@ -107,9 +108,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
       :ok
     else
       missing_list =
-        missing_refs
-        |> Enum.map(fn {ref, line} -> "  - '{{#{ref}}}' at line #{line}" end)
-        |> Enum.join("\n")
+        Enum.map_join(missing_refs, "\n", fn {ref, line} -> "  - '{{#{ref}}}' at line #{line}" end)
 
       {:error, "Missing reference definitions:\n#{missing_list}"}
     end
@@ -131,7 +130,10 @@ defmodule TaskValidator.Parsers.MarkdownParser do
     if section_index do
       table_start = section_index + 3
 
-      Enum.reduce_while(Enum.with_index(Enum.drop(lines, table_start)), [], fn {line, idx}, acc ->
+      lines
+      |> Enum.drop(table_start)
+      |> Enum.with_index()
+      |> Enum.reduce_while([], fn {line, idx}, acc ->
         actual_idx = table_start + idx
 
         cond do
@@ -164,7 +166,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
                 subtasks: [],
                 type: determine_task_type(id),
                 prefix: extract_task_prefix(id),
-                category: nil,
+                category: Task.determine_category(id),
                 parent_id: extract_parent_id(id)
               }
 
@@ -203,15 +205,18 @@ defmodule TaskValidator.Parsers.MarkdownParser do
         |> Enum.drop(start_line + 1)
         |> Enum.with_index()
         |> Enum.find(fn {line, _} ->
-          String.match?(line, ~r/^###\s/)
+          # Stop at next task header (###) or reference definition (## #{{) or major section (##)
+          String.match?(line, ~r/^###\s/) or
+            String.match?(line, ~r/^## #?\{\{/) or
+            String.match?(line, ~r/^## [A-Z]/)
         end)
         |> case do
           nil -> length(lines)
           {_, idx} -> start_line + 1 + idx
         end
 
-      content = Enum.slice(lines, start_line..end_line)
-      subtasks = extract_subtasks(content)
+      content = Enum.slice(lines, start_line..(end_line - 1))
+      subtasks = extract_subtasks(content, start_line)
 
       %{
         id: id,
@@ -224,20 +229,23 @@ defmodule TaskValidator.Parsers.MarkdownParser do
     end)
   end
 
-  defp extract_subtasks(task_content) do
+  defp extract_subtasks(task_content, base_line_number) do
     task_content
     |> Enum.with_index()
     |> Enum.filter(fn {line, _} ->
       String.match?(line, ~r/^#### \d+\./) || String.match?(line, ~r/^- \[[x\s]\]/)
     end)
     |> Enum.map(fn {line, idx} ->
+      # Adjust line number to be relative to full document
+      actual_line_number = base_line_number + idx
+
       cond do
         String.match?(line, ~r/^#### \d+\./) ->
           case Regex.run(~r/\(([A-Z]{2,4}\d{3,4}-\d+)\)/, line) do
             [_, subtask_id] ->
               %Task{
                 id: subtask_id,
-                line_number: idx,
+                line_number: actual_line_number,
                 type: :subtask,
                 prefix: extract_task_prefix(subtask_id),
                 parent_id: extract_parent_id(subtask_id),
@@ -246,13 +254,13 @@ defmodule TaskValidator.Parsers.MarkdownParser do
                 priority: "",
                 content: [],
                 subtasks: [],
-                category: nil
+                category: Task.determine_category(subtask_id)
               }
 
             _ ->
               %Task{
                 id: "INVALID_FORMAT",
-                line_number: idx,
+                line_number: actual_line_number,
                 type: :subtask,
                 prefix: nil,
                 parent_id: nil,
@@ -267,12 +275,12 @@ defmodule TaskValidator.Parsers.MarkdownParser do
 
         String.match?(line, ~r/^- \[[x\s]\]/) ->
           subtask_id =
-            case Regex.run(~r/\[([A-Z]{2,4}\d{3,4}[a-z]?)\]$/, line) do
+            case Regex.run(~r/\[([A-Z]{2,4}\d{3,4}(?:-\d+)?[a-z]?)\]$/, line) do
               [_, id] ->
                 id
 
               _ ->
-                case Regex.run(~r/\*\*([A-Z]{2,4}\d{3,4}[a-z]?)\*\*/, line) do
+                case Regex.run(~r/\*\*([A-Z]{2,4}\d{3,4}(?:-\d+)?[a-z]?)\*\*/, line) do
                   [_, id] -> id
                   _ -> "INVALID_FORMAT"
                 end
@@ -282,7 +290,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
 
           %Task{
             id: subtask_id,
-            line_number: idx,
+            line_number: actual_line_number,
             type: :subtask,
             prefix: extract_task_prefix(subtask_id),
             parent_id: extract_parent_id(subtask_id),
@@ -291,7 +299,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
             priority: "",
             content: [],
             subtasks: [],
-            category: nil
+            category: Task.determine_category(subtask_id)
           }
       end
     end)
@@ -299,7 +307,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
 
   defp merge_tasks_with_details(table_tasks, detailed_tasks) do
     # Create a map of detailed tasks for easy lookup
-    detailed_map = Enum.into(detailed_tasks, %{}, fn task -> {task.id, task} end)
+    detailed_map = Map.new(detailed_tasks, fn task -> {task.id, task} end)
 
     # Merge table tasks with their detailed information
     merged_tasks =
@@ -309,7 +317,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
             task
 
           detailed ->
-            %Task{
+            %{
               task
               | content: detailed.content,
                 subtasks: detailed.subtasks,
@@ -335,7 +343,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
           line_number: 0,
           type: determine_task_type(detailed.id),
           prefix: extract_task_prefix(detailed.id),
-          category: nil,
+          category: Task.determine_category(detailed.id),
           parent_id: extract_parent_id(detailed.id)
         }
       end)
@@ -345,8 +353,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
 
   # Helper functions for task attribute extraction
 
-  defp determine_task_status(:active, table_status) when table_status != "",
-    do: table_status
+  defp determine_task_status(:active, table_status) when table_status != "", do: table_status
 
   defp determine_task_status(:active, _), do: "Planned"
   defp determine_task_status(:completed, _), do: "Completed"
@@ -393,7 +400,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
           desc_idx = Enum.find_index(content, &(&1 == desc_line))
 
           if desc_idx && desc_idx + 1 < length(content) do
-            Enum.at(content, desc_idx + 1) |> String.trim()
+            content |> Enum.at(desc_idx + 1) |> String.trim()
           else
             ""
           end
@@ -413,9 +420,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
           status_idx = Enum.find_index(content, &(&1 == status_line))
 
           if status_idx && status_idx + 1 < length(content) do
-            Enum.at(content, status_idx + 1) |> String.trim()
-          else
-            nil
+            content |> Enum.at(status_idx + 1) |> String.trim()
           end
         end
     end
@@ -433,9 +438,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
           priority_idx = Enum.find_index(content, &(&1 == priority_line))
 
           if priority_idx && priority_idx + 1 < length(content) do
-            Enum.at(content, priority_idx + 1) |> String.trim()
-          else
-            nil
+            content |> Enum.at(priority_idx + 1) |> String.trim()
           end
         end
     end

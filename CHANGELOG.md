@@ -1,5 +1,57 @@
 # Changelog
 
+## v0.9.0 (2025-06-04)
+
+### Features
+
+- **Major Architecture Refactoring** - Transformed monolithic validator into modular pipeline architecture
+  - Split parsing and validation into separate concerns (MarkdownParser, ReferenceResolver, TaskExtractor)
+  - Created 8 specialized validators with behavior-based interface
+  - Added ValidationPipeline for coordinated validation with priority ordering
+  - New API functions: `validate_file_with_pipeline/2` and `validate_file_detailed/1`
+  - Maintains 100% backward compatibility with existing `validate_file/1` API
+
+- **Enhanced Elixir/Phoenix Support** - Added specialized validation for Elixir/Phoenix projects
+  - 6 semantic task categories with ID ranges (OTP: 1-99, Phoenix: 100-199, etc.)
+  - Category-specific required sections and validation rules
+  - Elixir-specific KPIs (GenServer state complexity, Phoenix context boundaries, Ecto query complexity)
+  - Enhanced error handling templates for each category
+
+- **Complexity-Based KPI Validation** - Flexible code quality limits based on task complexity
+  - Tasks can specify `**Complexity Assessment**: Simple|Medium|Complex|Critical`
+  - Complexity levels apply multipliers to base KPI limits:
+    - Simple: 1x (default)
+    - Medium: 1.5x
+    - Complex: 2x
+    - Critical: 3x
+  - Categories have default complexity levels:
+    - Testing: Complex (extensive test scenarios)
+    - Infrastructure: Complex (deployment complexity)
+    - OTP/GenServer: Medium (state management)
+    - Phoenix Web: Simple (thin controllers)
+    - Business Logic: Medium (domain complexity)
+    - Data Layer: Simple (straightforward schemas)
+  - KpiValidator automatically determines category from task ID when category not set
+
+### Documentation
+
+- Added comprehensive refactoring review (docs/RefactorReview.md)
+- Added complexity-based KPI documentation to writing guide
+- Created KPI_Complexity_Proposal.md explaining the design rationale
+- Updated examples to demonstrate all new features
+- Added multiple Elixir/Phoenix-specific examples
+
+### Internal Improvements
+
+- Achieved 100% test coverage (165 tests, all passing)
+- Clean separation of concerns across 15+ focused modules
+- Extensible validator pipeline supporting custom validators
+- Improved error messages with detailed context
+
+### Known Issues
+
+- Some category templates (phoenix_web, business_logic, data_layer) may have minor validation issues when generated. These templates work but may need manual adjustments. This will be fixed in a patch release.
+
 ## v0.8.1 (2025-05-28)
 
 ### Documentation

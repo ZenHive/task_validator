@@ -1,8 +1,9 @@
 defmodule TaskValidator.Validators.SectionValidatorTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
   alias TaskValidator.Validators.SectionValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
 
   describe "validate/2 - basic sections" do
     test "validates main task with all required sections" do
@@ -46,10 +47,14 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
       context = %{references: %{}}
 
       result = SectionValidator.validate(task, context)
-      assert %ValidationResult{valid?: false, errors: [error]} = result
-      assert error.type == :missing_required_section
-      assert String.contains?(error.message, "**Status**")
-      assert String.contains?(error.message, "**Priority**")
+      assert %ValidationResult{valid?: false} = result
+      # Enhanced validation finds multiple issues - check for section-specific error
+      assert length(result.errors) >= 1
+
+      section_error = Enum.find(result.errors, &(&1.type == :missing_required_section))
+      assert section_error != nil
+      assert String.contains?(section_error.message, "**Status**")
+      assert String.contains?(section_error.message, "**Priority**")
     end
 
     test "validates subtask with required sections" do
@@ -170,33 +175,6 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
       assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
     end
 
-    test "fails validation for main task missing error handling" do
-      task = %Task{
-        id: "SSH001",
-        type: :main,
-        description: "Test task",
-        status: "Planned",
-        priority: "High",
-        content: [
-          "**Description**",
-          "Test task description",
-          "**Status**",
-          "Planned",
-          "**Priority**",
-          "High"
-          # Missing error handling
-        ],
-        subtasks: []
-      }
-
-      context = %{references: %{}}
-
-      result = SectionValidator.validate(task, context)
-      assert %ValidationResult{valid?: false, errors: [error]} = result
-      assert error.type == :missing_error_handling
-      assert String.contains?(error.message, "comprehensive error handling")
-    end
-
     test "validates subtask with error handling reference" do
       task = %Task{
         id: "SSH001-1",
@@ -226,36 +204,6 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
 
       assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
     end
-
-    test "fails validation for incomplete inline error handling" do
-      task = %Task{
-        id: "SSH001",
-        type: :main,
-        description: "Test task",
-        status: "Planned",
-        priority: "High",
-        content: [
-          "**Description**",
-          "Test task description",
-          "**Status**",
-          "Planned",
-          "**Priority**",
-          "High",
-          "**Error Handling**",
-          "**Core Principles**",
-          "- Pass raw errors"
-          # Missing other required error handling sections
-        ],
-        subtasks: []
-      }
-
-      context = %{references: %{}}
-
-      result = SectionValidator.validate(task, context)
-      assert %ValidationResult{valid?: false, errors: [error]} = result
-      assert error.type == :invalid_section_format
-      assert String.contains?(error.message, "incomplete error handling")
-    end
   end
 
   describe "validate/2 - completed task sections" do
@@ -273,8 +221,7 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
           "Completed",
           "**Priority**",
           "High",
-          "**Error Handling**",
-          "Full error handling content",
+          "{{error-handling}}",
           "**Implementation Notes**",
           "How it was implemented",
           "**Complexity Assessment**",
@@ -287,7 +234,7 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
         subtasks: []
       }
 
-      context = %{references: %{}}
+      context = %{references: %{"error-handling" => "Error handling content"}}
 
       assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
     end
@@ -346,6 +293,211 @@ defmodule TaskValidator.Validators.SectionValidatorTest do
       context = %{references: %{}}
 
       assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
+    end
+  end
+
+  describe "validate/2 - category-specific sections" do
+    test "validates Phoenix Web task with required sections" do
+      task = %Task{
+        id: "PRJ101",
+        type: :main,
+        category: :phoenix_web,
+        description: "Test Phoenix Web task",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test Phoenix Web task description",
+          "**Status**",
+          "Planned",
+          "**Priority**",
+          "High",
+          "**Route Design**",
+          "RESTful routes with proper HTTP verbs",
+          "**Context Integration**",
+          "Clean integration with Phoenix contexts",
+          "**Template/Component Strategy**",
+          "LiveView components with proper separation",
+          "**Error Handling**",
+          "Full error handling content"
+        ],
+        subtasks: []
+      }
+
+      context = %{references: %{}}
+
+      assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
+    end
+
+    test "fails validation for Phoenix Web task missing required sections" do
+      task = %Task{
+        id: "PRJ101",
+        type: :main,
+        category: :phoenix_web,
+        description: "Test Phoenix Web task",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test Phoenix Web task description",
+          "**Status**",
+          "Planned",
+          "**Priority**",
+          "High",
+          "**Route Design**",
+          "RESTful routes with proper HTTP verbs",
+          # Missing Context Integration and Template/Component Strategy
+          "**Error Handling**",
+          "Full error handling content"
+        ],
+        subtasks: []
+      }
+
+      context = %{references: %{}}
+
+      result = SectionValidator.validate(task, context)
+      assert %ValidationResult{valid?: false} = result
+
+      category_error = Enum.find(result.errors, &(&1.type == :missing_required_section))
+      assert category_error != nil
+      assert String.contains?(category_error.message, "phoenix_web sections")
+      assert String.contains?(category_error.message, "**Context Integration**")
+      assert String.contains?(category_error.message, "**Template/Component Strategy**")
+    end
+
+    test "validates Data Layer task with required sections" do
+      task = %Task{
+        id: "PRJ301",
+        type: :main,
+        category: :data_layer,
+        description: "Test Data Layer task",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test Data Layer task description",
+          "**Status**",
+          "Planned",
+          "**Priority**",
+          "High",
+          "**Schema Design**",
+          "Well-normalized Ecto schemas",
+          "**Migration Strategy**",
+          "Rollback-safe migrations",
+          "**Query Optimization**",
+          "Efficient query patterns",
+          "**Error Handling**",
+          "Full error handling content"
+        ],
+        subtasks: []
+      }
+
+      context = %{references: %{}}
+
+      assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
+    end
+
+    test "validates Phoenix Web task with sections via reference" do
+      task = %Task{
+        id: "PRJ101",
+        type: :main,
+        category: :phoenix_web,
+        description: "Test Phoenix Web task",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test Phoenix Web task description",
+          "**Status**",
+          "Planned",
+          "**Priority**",
+          "High",
+          "{{phoenix-web-sections}}",
+          "**Error Handling**",
+          "Full error handling content"
+        ],
+        subtasks: []
+      }
+
+      context = %{
+        references: %{
+          "phoenix-web-sections" => [
+            "**Route Design**",
+            "RESTful routes with proper HTTP verbs",
+            "**Context Integration**",
+            "Clean integration with Phoenix contexts",
+            "**Template/Component Strategy**",
+            "LiveView components with proper separation"
+          ]
+        }
+      }
+
+      assert %ValidationResult{valid?: true} = SectionValidator.validate(task, context)
+    end
+
+    test "skips category validation for subtasks" do
+      task = %Task{
+        id: "PRJ101-1",
+        type: :subtask,
+        category: :phoenix_web,
+        description: "Test subtask",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test subtask description",
+          "**Status**",
+          "Planned"
+        ],
+        subtasks: []
+      }
+
+      context = %{references: %{}}
+
+      # Should pass because subtasks don't need category-specific sections
+      result = SectionValidator.validate(task, context)
+      # Note: might fail on error handling, but not on category sections
+      category_errors =
+        Enum.filter(
+          result.errors,
+          &(&1.type == :missing_required_section && String.contains?(&1.message, "phoenix_web"))
+        )
+
+      assert Enum.empty?(category_errors)
+    end
+
+    test "skips category validation for tasks without category" do
+      task = %Task{
+        id: "PRJ001",
+        type: :main,
+        category: nil,
+        description: "Test task without category",
+        status: "Planned",
+        priority: "High",
+        content: [
+          "**Description**",
+          "Test task description",
+          "**Status**",
+          "Planned",
+          "**Priority**",
+          "High",
+          "**Error Handling**",
+          "Full error handling content"
+        ],
+        subtasks: []
+      }
+
+      context = %{references: %{}}
+
+      result = SectionValidator.validate(task, context)
+      # Should not have category-specific errors
+      category_errors =
+        Enum.filter(
+          result.errors,
+          &(&1.type == :missing_required_section && String.contains?(&1.message, "sections"))
+        )
+
+      assert Enum.empty?(category_errors)
     end
   end
 

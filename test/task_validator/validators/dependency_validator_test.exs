@@ -1,8 +1,8 @@
 defmodule TaskValidator.Validators.DependencyValidatorTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
   alias TaskValidator.Validators.DependencyValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
 
   describe "validate/2" do
     test "validates task with no dependencies" do
@@ -256,8 +256,7 @@ defmodule TaskValidator.Validators.DependencyValidatorTest do
 
       # At least one should detect the cycle
       cycle_detected =
-        [result1, result2, result3]
-        |> Enum.any?(fn result ->
+        Enum.any?([result1, result2, result3], fn result ->
           !result.valid? &&
             Enum.any?(result.errors, fn error ->
               error.type == :circular_dependency

@@ -4,7 +4,7 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.8.1",
+      version: "0.9.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -27,7 +27,8 @@ defmodule TaskValidator.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:ex_doc, "~> 0.30", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+      {:styler, "~> 1.4", only: [:dev, :test], runtime: false}
     ]
   end
 

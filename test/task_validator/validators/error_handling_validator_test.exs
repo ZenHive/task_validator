@@ -1,8 +1,8 @@
 defmodule TaskValidator.Validators.ErrorHandlingValidatorTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
   alias TaskValidator.Validators.ErrorHandlingValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
 
   describe "validate/2" do
     test "validates main task with explicit error handling sections" do

@@ -1,116 +1,55 @@
 defmodule TaskValidator.Validators.CategoryValidator do
   @moduledoc """
-  Validates task categories and category-specific requirements.
+  Validates task category assignment based on task ID numbers.
 
   This validator ensures that tasks are properly categorized based on their
-  task ID numbers and that they include the required sections for their
-  specific category. It supports both standard categories and custom
-  category configurations.
+  task ID numbers. It supports both standard categories and custom
+  category configurations. Category-specific section validation is handled
+  by the SectionValidator.
 
   ## Validation Rules
 
-  1. **Category Assignment**: Tasks are categorized based on ID number ranges
-     - Core (001-099): Architecture, system design, fundamental components
-     - Features (100-199): User-facing functionality, feature development
-     - Documentation (200-299): Documentation, guides, API docs
-     - Testing (300-399): Test implementation, test infrastructure
+  1. **Category Assignment**: Tasks are categorized based on ID number ranges (Elixir/Phoenix-specific)
+     - OTP/GenServer (001-099): Supervision trees, GenServers, Agents
+     - Phoenix Web (100-199): Controllers, views, LiveView, channels
+     - Business Logic (200-299): Contexts, schemas, core logic
+     - Data Layer (300-399): Ecto schemas, migrations, repos
+     - Infrastructure (400-499): Releases, deployment, monitoring
+     - Testing (500-599): Unit, integration, property-based tests
 
-  2. **Category-Specific Sections**: Each category has required sections
-     - Core: **Architecture Notes**, **Complexity Assessment**
-     - Features: **Abstraction Evaluation**, **Simplicity Progression Plan**
-     - Documentation: **Content Strategy**, **Audience Analysis**
-     - Testing: **Test Strategy**, **Coverage Requirements**
-
-  3. **ID Format Support**: Handles multiple ID formats
+  2. **ID Format Support**: Handles multiple ID formats
      - Standard format: SSH001, VAL0004 (extracts number for categorization)
      - Custom format: PROJ-001, CORE-123 (extracts number after dash)
 
-  4. **Configurable Categories**: Category ranges and requirements configurable
+  3. **Configurable Categories**: Category ranges configurable
      - Default ranges can be overridden in configuration
-     - Custom categories can be defined with specific requirements
+     - Custom categories can be defined with specific ranges
 
   ## Error Types
 
   - `:invalid_category_range` - Task ID number doesn't fit any category
-  - `:missing_category_sections` - Required category sections missing
   - `:invalid_id_for_categorization` - Cannot extract number for categorization
-  - `:unknown_category` - Category not defined in configuration
 
   ## Examples
 
-      # Valid core task (SSH001)
-      **Architecture Notes**
-      Details about system architecture considerations...
-      
-      **Complexity Assessment**  
-      Assessment of implementation complexity...
+      # Task ID OTP001 -> Category :otp_genserver (range 1-99)
+      # Task ID PHX101 -> Category :phoenix_web (range 100-199)
+      # Task ID CTX201 -> Category :business_logic (range 200-299)
+      # Task ID DB301 -> Category :data_layer (range 300-399)
+      # Task ID INF401 -> Category :infrastructure (range 400-499)
+      # Task ID TST501 -> Category :testing (range 500-599)
 
-      # Valid features task (SSH101)
-      **Abstraction Evaluation**
-      Analysis of abstraction layers...
-      
-      **Simplicity Progression Plan**
-      Plan for maintaining simplicity...
-
-      # Valid documentation task (SSH201)
-      **Content Strategy**
-      Strategy for content organization...
-      
-      **Audience Analysis**
-      Target audience and their needs...
-
-      # Valid testing task (SSH301)
-      **Test Strategy**
-      Overall testing approach...
-      
-      **Coverage Requirements**
-      Required test coverage metrics...
+      # Also supports custom formats:
+      # Task ID PROJ-001 -> Category :otp_genserver
+      # Task ID CORE-123 -> Category :phoenix_web
   """
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
-
-  # Default category-specific required sections
-  @category_sections %{
-    # Original generic categories (preserve backward compatibility)
-    "core" => ["**Architecture Notes**", "**Complexity Assessment**"],
-    "features" => ["**Abstraction Evaluation**", "**Simplicity Progression Plan**"],
-    "documentation" => ["**Content Strategy**", "**Audience Analysis**"],
-    "testing" => ["**Test Strategy**", "**Coverage Requirements**"],
-    # New Elixir/Phoenix-specific categories
-    "otp_genserver" => [
-      "**Process Design**",
-      "**State Management**",
-      "**Supervision Strategy**"
-    ],
-    "phoenix_web" => [
-      "**Route Design**",
-      "**Context Integration**",
-      "**Template/Component Strategy**"
-    ],
-    "business_logic" => [
-      "**API Design**",
-      "**Data Access**",
-      "**Validation Strategy**"
-    ],
-    "data_layer" => [
-      "**Schema Design**",
-      "**Migration Strategy**",
-      "**Query Optimization**"
-    ],
-    "infrastructure" => [
-      "**Release Configuration**",
-      "**Environment Variables**",
-      "**Deployment Strategy**"
-    ],
-    "elixir_testing" => [
-      "**Test Strategy**",
-      "**Coverage Requirements**",
-      "**Property-Based Testing**"
-    ]
-  }
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates task category assignment and category-specific requirements.
@@ -127,8 +66,7 @@ defmodule TaskValidator.Validators.CategoryValidator do
     config = Map.get(context, :config, Config.get_all())
 
     validators = [
-      &validate_category_assignment/2,
-      &validate_category_sections/2
+      &validate_category_assignment/2
     ]
 
     validators
@@ -187,60 +125,6 @@ defmodule TaskValidator.Validators.CategoryValidator do
     end
   end
 
-  # Validates that task has required sections for its category
-  defp validate_category_sections(%Task{id: id, content: content}, config) do
-    case extract_task_number(id) do
-      {:ok, number} ->
-        category_ranges = Map.get(config, :category_ranges, Config.get(:category_ranges))
-
-        case find_category_for_number(number, category_ranges) do
-          {category_name, _range} ->
-            validate_sections_for_category(id, content, category_name, config)
-
-          nil ->
-            # Category assignment error, already handled in validate_category_assignment
-            ValidationResult.success()
-        end
-
-      {:error, _reason} ->
-        # ID format error, already handled in validate_category_assignment
-        ValidationResult.success()
-    end
-  end
-
-  # Validates that all required sections for a category are present
-  defp validate_sections_for_category(task_id, content, category_name, config) do
-    # Get category sections from config or use defaults
-    all_category_sections = Map.get(config, :category_sections, @category_sections)
-    required_sections = Map.get(all_category_sections, category_name, [])
-
-    if Enum.empty?(required_sections) do
-      # No specific requirements for this category
-      ValidationResult.success()
-    else
-      missing_sections = find_missing_sections(content, required_sections)
-
-      if Enum.empty?(missing_sections) do
-        ValidationResult.success()
-      else
-        error = %ValidationError{
-          type: :missing_category_sections,
-          message:
-            "Task '#{task_id}' (#{category_name} category) is missing required sections: #{Enum.join(missing_sections, ", ")}",
-          task_id: task_id,
-          severity: :error,
-          context: %{
-            category: category_name,
-            missing_sections: missing_sections,
-            required_sections: required_sections
-          }
-        }
-
-        ValidationResult.failure(error)
-      end
-    end
-  end
-
   # Extracts the numeric part from a task ID for categorization
   defp extract_task_number(task_id) do
     cond do
@@ -281,21 +165,10 @@ defmodule TaskValidator.Validators.CategoryValidator do
     end)
   end
 
-  # Finds sections that are missing from the content
-  defp find_missing_sections(content, required_sections) do
-    Enum.reject(required_sections, fn section ->
-      Enum.any?(content, fn line ->
-        String.starts_with?(line, section)
-      end)
-    end)
-  end
-
   # Formats category ranges for error messages
   defp format_category_ranges(category_ranges) do
-    category_ranges
-    |> Enum.map(fn {category, {min, max}} ->
+    Enum.map_join(category_ranges, ", ", fn {category, {min, max}} ->
       "#{category} (#{min}-#{max})"
     end)
-    |> Enum.join(", ")
   end
 end

@@ -1,54 +1,76 @@
 # Writing Compliant Task Lists
 
-This guide explains how to create task lists that comply with the `TaskValidator` specifications.
+This guide explains how to create task lists that comply with the enhanced `TaskValidator` specifications for Elixir/Phoenix projects.
 
-## Task List Structure
+## Enhanced Task List Structure
 
-A compliant task list has two main sections:
+A compliant task list has two main sections with enhanced features:
 
 ```markdown
 ## Current Tasks
 
-| ID      | Description          | Status      | Priority |
-| ------- | -------------------- | ----------- | -------- |
-| SSH0001 | SSH authentication   | In Progress | High     |
-| SCP0001 | File transfer module | Planned     | Medium   |
-| ERR001  | Error handling       | In Progress | High     |
+| ID      | Description                    | Status      | Priority | Assignee | Review Rating |
+| ------- | ------------------------------ | ----------- | -------- | -------- | ------------- |
+| PHX101  | User authentication LiveView   | In Progress | High     | @alice   | -             |
+| OTP001  | TaskWorker GenServer           | Planned     | Critical | @bob     | -             |
+| DB301   | User schema design             | Planned     | High     | @charlie | -             |
 
 ## Completed Tasks
 
-| ID      | Description    | Status    | Completed By | Review Rating |
-| ------- | -------------- | --------- | ------------ | ------------- |
-| SSH0002 | Key generation | Completed | @developer1  | 4.5           |
+| ID      | Description        | Status    | Completed By | Review Rating |
+| ------- | ------------------ | --------- | ------------ | ------------- |
+| PHX105  | Phoenix setup      | Completed | @alice       | 4.8           |
+| OTP005  | Application setup  | Completed | @bob         | 4.9           |
 ```
 
-## Task ID Format
+## Enhanced Task ID Format
 
-Task IDs must follow this pattern:
-
+### Traditional Format (Still Supported)
 - 2-4 uppercase letters as a prefix (representing a component or module)
 - 3-4 digits as a sequential number
+- Examples: `SSH001`, `VAL0004`, `PROJ-001`
+
+### Semantic Prefixes (Recommended for Elixir/Phoenix)
+Use meaningful semantic prefixes that automatically map to categories:
+
+- **OTP001-099**: OTP/GenServer tasks (`OTP`, `GEN`, `SUP`, `APP`)
+- **PHX100-199**: Phoenix Web tasks (`PHX`, `WEB`, `LV`, `LVC`) 
+- **CTX200-299**: Business Logic tasks (`CTX`, `BIZ`, `DOM`)
+- **DB300-399**: Data Layer tasks (`DB`, `ECT`, `MIG`, `SCH`)
+- **INF400-499**: Infrastructure tasks (`INF`, `DEP`, `ENV`, `REL`)
+- **TST500-599**: Testing tasks (`TST`, `TES`, `INT`, `E2E`)
 - Optional suffix for subtasks:
   - Numeric: `-1`, `-2` (e.g., SSH0001-1)
   - Letter: `a`, `b`, `c` for checkbox style (e.g., SSH0001a)
 
 Examples:
 
-- `SSH0001` - Main task for SSH component
-- `SSH0001-1` - First subtask of SSH0001 (numeric style)
-- `SSH0001a` - First subtask of SSH0001 (checkbox style)
-- `ERR001` - Error handling task (3-digit IDs allowed)
-- `SCP0005` - File transfer task
+- `PHX101` - Phoenix LiveView authentication task
+- `OTP001` - GenServer implementation task
+- `DB301` - Database schema design task
+- `TST501` - Integration testing task
+- `PHX101-1` - First subtask of PHX101 (numeric style)
+- `OTP001a` - First subtask of OTP001 (checkbox style)
 
-### Task Categories
+### Elixir/Phoenix Task Categories
 
-Task numbers fall into specific categories:
-- **Core Infrastructure (1-99)**: Essential system components
-- **Features (100-199)**: User-facing functionality
-- **Documentation (200-299)**: Documentation tasks
-- **Testing (300-399)**: Test implementation
+Tasks are organized into Elixir/Phoenix-specific categories with enforced number ranges:
 
-Each category has specific required sections (see Category-Specific Requirements below).
+- **OTP/GenServer (1-99)**: GenServers, Supervisors, Applications
+- **Phoenix Web (100-199)**: Controllers, LiveView, Templates, Routes
+- **Business Logic (200-299)**: Contexts, Domain Logic, APIs
+- **Data Layer (300-399)**: Ecto Schemas, Migrations, Queries
+- **Infrastructure (400-499)**: Deployment, Configuration, Monitoring
+- **Testing (500-599)**: Unit Tests, Integration Tests, Property Tests
+
+Each category has specific required sections and validation rules (see Category-Specific Requirements below).
+
+### Semantic Prefix Benefits
+
+- **Automatic categorization**: Prefixes map to appropriate categories
+- **Clear organization**: Easy to identify task types at a glance
+- **Validation assistance**: Helpful warnings for prefix-category mismatches
+- **Team clarity**: Semantic meaning improves team communication
 
 ## Error Handling Requirements
 
@@ -275,9 +297,37 @@ All tasks must include code quality metrics:
 ```
 
 These metrics must adhere to the following limits:
-- Maximum functions per module: 5
+- Maximum functions per module: 8
 - Maximum lines per function: 15
-- Maximum call depth: 2
+- Maximum call depth: 3
+
+### Complexity-Based KPI Limits
+
+For complex tasks, you can specify a complexity assessment to allow higher KPI limits:
+
+```markdown
+**Complexity Assessment**: Complex
+Rationale: Extensive test scenarios and mock setups require more functions.
+
+**Code Quality KPIs**
+- Functions per module: 16  # Complex: 2x base limit
+- Lines per function: 30    # Complex: 2x base limit
+- Call depth: 6             # Complex: 2x base limit
+```
+
+Complexity levels and their multipliers:
+- **Simple**: 1x base limits (default)
+- **Medium**: 1.5x base limits
+- **Complex**: 2x base limits
+- **Critical**: 3x base limits
+
+Categories have default complexity levels:
+- **Testing tasks (500-599)**: Complex (many test scenarios)
+- **Infrastructure tasks (400-499)**: Complex (deployment complexity)
+- **OTP/GenServer tasks (1-99)**: Medium (state management)
+- **Phoenix Web tasks (100-199)**: Simple (thin controllers)
+- **Business Logic tasks (200-299)**: Medium (domain complexity)
+- **Data Layer tasks (300-399)**: Simple (straightforward schemas)
 
 ## Subtask Formats
 
@@ -478,3 +528,140 @@ See `/docs/example_tasklist_with_references.md` for a complete working example t
 11. **KPI violations** - Code quality metrics exceed maximum limits
 12. **Invalid task category** - Task number doesn't match prefix category
 13. **Missing category-specific sections** - Required sections based on task category are missing
+
+## Enhanced Features for Elixir/Phoenix Projects
+
+### Category-Specific Required Sections
+
+Different task categories require specific sections to ensure proper documentation:
+
+#### Phoenix Web Tasks (PHX, WEB, LV, LVC)
+```markdown
+**Route Design**
+RESTful routes with proper HTTP verbs and path helpers
+
+**Context Integration**  
+Clean integration with Phoenix contexts following domain boundaries
+
+**Template/Component Strategy**
+LiveView components or templates with proper separation of concerns
+```
+
+#### Data Layer Tasks (DB, ECT, MIG, SCH)
+```markdown
+**Schema Design**
+Well-normalized schemas with proper constraints and relationships
+
+**Migration Strategy**
+Rollback-safe migrations with zero-downtime considerations
+
+**Query Optimization**
+Efficient query patterns with proper indexing
+```
+
+#### Business Logic Tasks (CTX, BIZ, DOM)
+```markdown
+**Context Boundaries**
+Clear domain boundaries with focused contexts
+
+**Business Rules**
+Explicit business rule validation and enforcement
+```
+
+### Enhanced Error Handling Templates
+
+Category-specific error handling patterns are available:
+
+#### Phoenix Error Handling
+```markdown
+{{phoenix-error-handling}}
+```
+Expands to Phoenix-specific patterns including LiveView errors, form validation, and authentication handling.
+
+#### OTP Error Handling
+```markdown
+{{otp-error-handling}}
+```
+Expands to OTP patterns including GenServer error handling, supervision strategies, and process isolation.
+
+#### Ecto Error Handling
+```markdown
+{{ecto-error-handling}}
+```
+Expands to database patterns including changeset validation, constraint handling, and migration safety.
+
+### Elixir-Specific Code Quality KPIs
+
+Enhanced KPI metrics tailored for Elixir/Phoenix:
+
+```markdown
+**Code Quality KPIs**
+- Functions per module: 8
+- Lines per function: 15
+- Call depth: 3
+- Pattern match depth: 4
+- Dialyzer warnings: 0
+- Credo score: 8.0
+- GenServer state complexity: 5    # OTP tasks only
+- Phoenix context boundaries: 3    # Phoenix tasks only
+- Ecto query complexity: 4         # Data layer tasks only
+```
+
+### Reference System
+
+Use references for efficient template reuse:
+
+```markdown
+{{phoenix-kpis}}           # Phoenix-specific KPIs
+{{otp-kpis}}              # OTP-specific KPIs
+{{ecto-kpis}}             # Ecto-specific KPIs
+{{phoenix-web-sections}}   # Phoenix required sections
+{{data-layer-sections}}    # Data layer required sections
+{{business-logic-sections}} # Business logic required sections
+```
+
+### Template Generation with Semantic Prefixes
+
+Generate new task lists with semantic prefixes:
+
+```bash
+# Create Phoenix web template
+mix task_validator.create_template --category phoenix_web --semantic
+
+# Create OTP template  
+mix task_validator.create_template --category otp_genserver --semantic
+
+# Create data layer template
+mix task_validator.create_template --category data_layer --semantic
+```
+
+### Migration from Legacy Format
+
+To migrate existing task lists:
+
+1. **Update Task IDs**: Convert to semantic prefixes
+   - `SSH001` → `OTP001` (if it's a GenServer)
+   - `WEB001` → `PHX101` (if it's Phoenix web)
+
+2. **Add Category Sections**: Include required sections for your category
+   - Phoenix tasks need Route Design, Context Integration, Template/Component Strategy
+   - Data layer tasks need Schema Design, Migration Strategy, Query Optimization
+
+3. **Enhance Error Handling**: Use category-specific templates
+   - Replace generic error handling with `{{phoenix-error-handling}}`
+   - Use `{{otp-error-handling}}` for GenServer tasks
+
+4. **Update KPIs**: Add Elixir-specific metrics
+   - Include pattern match depth, Dialyzer warnings, Credo score
+   - Add category-specific KPIs (GenServer state complexity, etc.)
+
+5. **Use References**: Convert repetitive content to reference system
+   - Replace repeated KPI sections with `{{phoenix-kpis}}`
+   - Use section references for common patterns
+
+## Examples
+
+See comprehensive examples in `docs/examples/`:
+- `phoenix_web_example.md` - Complete Phoenix LiveView application
+- `otp_application_example.md` - Distributed OTP system
+- `ecto_data_layer_example.md` - Database schema and migrations

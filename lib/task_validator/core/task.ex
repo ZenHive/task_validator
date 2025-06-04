@@ -115,10 +115,12 @@ defmodule TaskValidator.Core.Task do
         number = String.to_integer(number_str)
 
         cond do
-          number >= 1 && number <= 99 -> :core
-          number >= 100 && number <= 199 -> :features
-          number >= 200 && number <= 299 -> :docs
-          number >= 300 && number <= 399 -> :testing
+          number >= 1 && number <= 99 -> :otp_genserver
+          number >= 100 && number <= 199 -> :phoenix_web
+          number >= 200 && number <= 299 -> :business_logic
+          number >= 300 && number <= 399 -> :data_layer
+          number >= 400 && number <= 499 -> :infrastructure
+          number >= 500 && number <= 599 -> :testing
           true -> :other
         end
 

@@ -1,9 +1,9 @@
 defmodule TaskValidator.Validators.SubtaskValidatorTest do
   use ExUnit.Case, async: true
 
-  alias TaskValidator.Validators.SubtaskValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Validators.SubtaskValidator
 
   describe "validate/2" do
     test "validates main task with no subtasks" do

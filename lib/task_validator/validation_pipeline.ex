@@ -21,7 +21,8 @@ defmodule TaskValidator.ValidationPipeline do
       results = ValidationPipeline.run_many(tasks, context, validators)
   """
 
-  alias TaskValidator.Core.{Task, ValidationResult}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
   alias TaskValidator.Validators
 
   @type validator_spec :: {module(), map()}
@@ -46,7 +47,7 @@ defmodule TaskValidator.ValidationPipeline do
     |> Enum.sort_by(&get_validator_priority/1, :desc)
     |> Enum.reduce(ValidationResult.success(), fn {validator_module, options}, acc ->
       if acc.valid? do
-        validator_context = Map.merge(context, %{validator_options: options})
+        validator_context = Map.put(context, :validator_options, options)
         result = validator_module.validate(task, validator_context)
         ValidationResult.combine([acc, result])
       else
@@ -144,10 +145,10 @@ defmodule TaskValidator.ValidationPipeline do
     Enum.map(validator_configs, fn
       {validator_name, options} when is_atom(validator_name) ->
         validator_module = resolve_validator_module(validator_name)
-        {validator_module, Enum.into(options, %{})}
+        {validator_module, Map.new(options)}
 
       {validator_module, options} when is_atom(validator_module) ->
-        {validator_module, Enum.into(options, %{})}
+        {validator_module, Map.new(options)}
     end)
   end
 

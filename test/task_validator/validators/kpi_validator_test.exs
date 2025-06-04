@@ -1,9 +1,9 @@
 defmodule TaskValidator.Validators.KpiValidatorTest do
   use ExUnit.Case, async: true
 
-  alias TaskValidator.Validators.KpiValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Validators.KpiValidator
 
   describe "validate/2" do
     test "validates task with explicit KPI section" do
@@ -57,15 +57,19 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          "- Functions per module: 10",
-          "- Lines per function: 20",
-          "- Call depth: 4",
-          "- Cyclomatic complexity: 8"
+          "- Functions per module: 8",
+          "- Lines per function: 15",
+          "- Call depth: 3",
+          "- Cyclomatic complexity: 5"
         ]
       }
 
       context = %{config: Config.get_all(), references: %{}}
       result = KpiValidator.validate(task, context)
+
+      if !result.valid? do
+        IO.inspect(result.errors, label: "Custom KPI validation errors")
+      end
 
       assert result.valid?
       assert Enum.empty?(result.errors)
@@ -85,12 +89,13 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
       result = KpiValidator.validate(task, context)
 
       refute result.valid?
-      assert length(result.errors) == 1
+      # Enhanced validation may find multiple issues - check for KPI-specific error
+      assert length(result.errors) >= 1
 
-      error = hd(result.errors)
-      assert error.type == :missing_kpi_section
-      assert error.task_id == "SSH001"
-      assert String.contains?(error.message, "missing **Code Quality KPIs** section")
+      kpi_error = Enum.find(result.errors, &(&1.type == :missing_kpi_section))
+      assert kpi_error != nil
+      assert kpi_error.task_id == "SSH001"
+      assert String.contains?(kpi_error.message, "missing **Code Quality KPIs** section")
     end
 
     test "fails task missing required KPI metrics" do
@@ -110,12 +115,13 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
       result = KpiValidator.validate(task, context)
 
       refute result.valid?
-      assert length(result.errors) == 1
+      # Enhanced validation may find multiple issues - check for KPI-specific error
+      assert length(result.errors) >= 1
 
-      error = hd(result.errors)
-      assert error.type == :missing_kpi_metrics
-      assert error.task_id == "SSH001"
-      assert String.contains?(error.message, "missing required KPI metrics")
+      kpi_error = Enum.find(result.errors, &(&1.type == :missing_kpi_metrics))
+      assert kpi_error != nil
+      assert kpi_error.task_id == "SSH001"
+      assert String.contains?(kpi_error.message, "missing required KPI metrics")
     end
 
     test "fails task with KPI value exceeding functions per module limit" do
@@ -126,10 +132,10 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          # Exceeds default limit of 15
+          # Exceeds default limit of 5
           "- Functions per module: 25",
           "- Lines per function: 15",
-          "- Call depth: 3"
+          "- Call depth: 2"
         ]
       }
 
@@ -153,10 +159,10 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          "- Functions per module: 8",
-          # Exceeds default limit of 25
+          "- Functions per module: 5",
+          # Exceeds default limit of 15
           "- Lines per function: 50",
-          "- Call depth: 3"
+          "- Call depth: 2"
         ]
       }
 
@@ -180,9 +186,9 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          "- Functions per module: 8",
+          "- Functions per module: 5",
           "- Lines per function: 15",
-          # Exceeds default limit of 5
+          # Exceeds default limit of 2
           "- Call depth: 10"
         ]
       }
@@ -214,12 +220,13 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
       result = KpiValidator.validate(task, context)
 
       refute result.valid?
-      assert length(result.errors) == 1
+      # Enhanced validation may find multiple issues - check for KPI-specific error
+      assert length(result.errors) >= 1
 
-      error = hd(result.errors)
-      assert error.type == :missing_kpi_reference
-      assert error.task_id == "SSH001"
-      assert String.contains?(error.message, "undefined KPI definitions")
+      kpi_error = Enum.find(result.errors, &(&1.type == :missing_kpi_reference))
+      assert kpi_error != nil
+      assert kpi_error.task_id == "SSH001"
+      assert String.contains?(kpi_error.message, "undefined KPI definitions")
     end
 
     test "validates alternative KPI reference formats" do
@@ -252,9 +259,9 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          "- FUNCTIONS PER MODULE: 8",
+          "- FUNCTIONS PER MODULE: 5",
           "- Lines Per Function: 15",
-          "- call depth: 3"
+          "- call depth: 2"
         ]
       }
 
@@ -273,9 +280,9 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
           "**Description**",
           "Test task description",
           "**Code Quality KPIs**",
-          "  - Functions per module:   8  ",
+          "  - Functions per module:   5  ",
           "  - Lines per function:     15",
-          "  - Call depth:             3 "
+          "  - Call depth:             2 "
         ]
       }
 
@@ -307,6 +314,109 @@ defmodule TaskValidator.Validators.KpiValidatorTest do
       }
 
       context = %{config: custom_config, references: %{}}
+      result = KpiValidator.validate(task, context)
+
+      assert result.valid?
+      assert Enum.empty?(result.errors)
+    end
+
+    test "validates Elixir-specific KPI metrics" do
+      task = %Task{
+        id: "SSH001",
+        type: :main,
+        content: [
+          "**Description**",
+          "Test task description",
+          "**Code Quality KPIs**",
+          "- Functions per module: 8",
+          "- Lines per function: 15",
+          "- Call depth: 3",
+          "- Pattern match depth: 4",
+          "- Dialyzer warnings: 0",
+          "- Credo score: 8.5",
+          "- GenServer state complexity: 5"
+        ]
+      }
+
+      context = %{config: Config.get_all(), references: %{}}
+      result = KpiValidator.validate(task, context)
+
+      assert result.valid?
+      assert Enum.empty?(result.errors)
+    end
+
+    test "fails validation for Elixir KPI exceeding pattern match depth limit" do
+      task = %Task{
+        id: "SSH001",
+        type: :main,
+        content: [
+          "**Description**",
+          "Test task description",
+          "**Code Quality KPIs**",
+          "- Functions per module: 8",
+          "- Lines per function: 15",
+          "- Call depth: 3",
+          # Exceeds default limit of 4
+          "- Pattern match depth: 10"
+        ]
+      }
+
+      context = %{config: Config.get_all(), references: %{}}
+      result = KpiValidator.validate(task, context)
+
+      refute result.valid?
+      assert length(result.errors) == 1
+
+      error = hd(result.errors)
+      assert error.type == :invalid_kpi_value
+      assert error.task_id == "SSH001"
+      assert String.contains?(error.message, "exceeds Pattern match depth limit")
+    end
+
+    test "fails validation for Credo score below minimum" do
+      task = %Task{
+        id: "SSH001",
+        type: :main,
+        content: [
+          "**Description**",
+          "Test task description",
+          "**Code Quality KPIs**",
+          "- Functions per module: 8",
+          "- Lines per function: 15",
+          "- Call depth: 3",
+          # Below minimum of 8.0
+          "- Credo score: 5.0"
+        ]
+      }
+
+      context = %{config: Config.get_all(), references: %{}}
+      result = KpiValidator.validate(task, context)
+
+      refute result.valid?
+      assert length(result.errors) == 1
+
+      error = hd(result.errors)
+      assert error.type == :invalid_kpi_value
+      assert error.task_id == "SSH001"
+      assert String.contains?(error.message, "has Credo score below minimum")
+    end
+
+    test "validates Elixir-specific KPI references" do
+      task = %Task{
+        id: "SSH001",
+        type: :main,
+        content: [
+          "**Description**",
+          "Test task description",
+          "{{otp-kpis}}"
+        ]
+      }
+
+      context = %{
+        config: Config.get_all(),
+        references: %{"otp-kpis" => ["- Functions per module: 8"]}
+      }
+
       result = KpiValidator.validate(task, context)
 
       assert result.valid?

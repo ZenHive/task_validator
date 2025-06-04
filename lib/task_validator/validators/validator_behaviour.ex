@@ -48,7 +48,8 @@ defmodule TaskValidator.Validators.ValidatorBehaviour do
   - `:details` - Additional error-specific information (optional)
   """
 
-  alias TaskValidator.Core.{Task, ValidationResult}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates a single task according to the validator's rules.

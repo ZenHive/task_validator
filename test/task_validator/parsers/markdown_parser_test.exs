@@ -1,8 +1,8 @@
 defmodule TaskValidator.Parsers.MarkdownParserTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.TaskList
   alias TaskValidator.Parsers.MarkdownParser
-  alias TaskValidator.Core.{Task, TaskList}
 
   describe "parse/1" do
     test "parses a simple markdown task list" do

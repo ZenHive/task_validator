@@ -59,37 +59,9 @@ defmodule TaskValidator.Validators.SectionValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
-
-  # Required sections for error handling - main tasks
-  @error_handling_sections [
-    "**Error Handling**",
-    "**Core Principles**",
-    "- Pass raw errors",
-    "- Use {:ok, result} | {:error, reason}",
-    "- Let it crash",
-    "**Error Implementation**",
-    "- No wrapping",
-    "- Minimal rescue",
-    "- function/1 & /! versions",
-    "**Error Examples**",
-    "- Raw error passthrough",
-    "- Simple rescue case",
-    "- Supervisor handling",
-    "**GenServer Specifics**",
-    "- Handle_call/3 error pattern",
-    "- Terminate/2 proper usage",
-    "- Process linking considerations"
-  ]
-
-  # Required sections for error handling in subtasks - simplified format
-  @subtask_error_handling_sections [
-    "**Error Handling**",
-    "**Task-Specific Approach**",
-    "- Error pattern for this task",
-    "**Error Reporting**",
-    "- Monitoring approach"
-  ]
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   # Required sections for completed tasks
   @completed_task_sections [
@@ -97,6 +69,26 @@ defmodule TaskValidator.Validators.SectionValidator do
     "**Complexity Assessment**",
     "**Maintenance Impact**",
     "**Error Handling Implementation**"
+  ]
+
+  # Phoenix Web (100-199) specific required sections
+  @phoenix_web_sections [
+    "**Route Design**",
+    "**Context Integration**",
+    "**Template/Component Strategy**"
+  ]
+
+  # Data Layer (300-399) specific required sections  
+  @data_layer_sections [
+    "**Schema Design**",
+    "**Migration Strategy**",
+    "**Query Optimization**"
+  ]
+
+  # Business Logic (200-299) specific sections
+  @business_logic_sections [
+    "**Context Boundaries**",
+    "**Business Rules**"
   ]
 
   @doc """
@@ -115,8 +107,8 @@ defmodule TaskValidator.Validators.SectionValidator do
 
     validators = [
       &validate_basic_sections/2,
-      &validate_error_handling/2,
-      &validate_status_specific_sections/2
+      &validate_status_specific_sections/2,
+      &validate_category_specific_sections/2
     ]
 
     validators
@@ -146,8 +138,7 @@ defmodule TaskValidator.Validators.SectionValidator do
     else
       error = %ValidationError{
         type: :missing_required_section,
-        message:
-          "Task '#{id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
+        message: "Task '#{id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
         task_id: id,
         severity: :error,
         context: %{
@@ -174,8 +165,7 @@ defmodule TaskValidator.Validators.SectionValidator do
     else
       error = %ValidationError{
         type: :missing_required_section,
-        message:
-          "Subtask '#{id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
+        message: "Subtask '#{id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
         task_id: id,
         severity: :error,
         context: %{
@@ -188,72 +178,8 @@ defmodule TaskValidator.Validators.SectionValidator do
     end
   end
 
-  # Validates error handling sections
-  defp validate_error_handling(%Task{type: :main, content: content, id: id}, references) do
-    # Check if error handling is present in content or via reference
-    has_error_handling =
-      has_section?(content, "**Error Handling**") or
-        has_reference?(content, references, ["error-handling", "error-handling-main"])
-
-    if has_error_handling do
-      # If using reference, assume it's valid. If inline, validate structure
-      if has_section?(content, "**Error Handling**") do
-        validate_error_handling_structure(content, @error_handling_sections, id, :main)
-      else
-        ValidationResult.success()
-      end
-    else
-      error = %ValidationError{
-        type: :missing_error_handling,
-        message:
-          "Main task '#{id}' is missing error handling section. Main tasks require comprehensive error handling documentation.",
-        task_id: id,
-        severity: :error,
-        context: %{
-          task_type: :main,
-          required_sections: @error_handling_sections
-        }
-      }
-
-      ValidationResult.failure(error)
-    end
-  end
-
-  defp validate_error_handling(%Task{type: :subtask, content: content, id: id}, references) do
-    # Check if error handling is present in content or via reference
-    has_error_handling =
-      has_section?(content, "**Error Handling**") or
-        has_reference?(content, references, ["error-handling-subtask"])
-
-    if has_error_handling do
-      # If using reference, assume it's valid. If inline, validate structure
-      if has_section?(content, "**Error Handling**") do
-        validate_error_handling_structure(content, @subtask_error_handling_sections, id, :subtask)
-      else
-        ValidationResult.success()
-      end
-    else
-      error = %ValidationError{
-        type: :missing_error_handling,
-        message:
-          "Subtask '#{id}' is missing error handling section. Subtasks require simplified error handling documentation.",
-        task_id: id,
-        severity: :error,
-        context: %{
-          task_type: :subtask,
-          required_sections: @subtask_error_handling_sections
-        }
-      }
-
-      ValidationResult.failure(error)
-    end
-  end
-
   # Validates status-specific required sections
-  defp validate_status_specific_sections(
-         %Task{status: "Completed", type: :main, content: content, id: id},
-         _references
-       ) do
+  defp validate_status_specific_sections(%Task{status: "Completed", type: :main, content: content, id: id}, _references) do
     missing_sections = find_missing_sections(content, @completed_task_sections)
 
     if missing_sections == [] do
@@ -261,8 +187,7 @@ defmodule TaskValidator.Validators.SectionValidator do
     else
       error = %ValidationError{
         type: :incomplete_completed_task,
-        message:
-          "Completed task '#{id}' is missing required completion sections: #{Enum.join(missing_sections, ", ")}",
+        message: "Completed task '#{id}' is missing required completion sections: #{Enum.join(missing_sections, ", ")}",
         task_id: id,
         severity: :error,
         context: %{
@@ -280,29 +205,6 @@ defmodule TaskValidator.Validators.SectionValidator do
     ValidationResult.success()
   end
 
-  # Validates the structure of error handling sections
-  defp validate_error_handling_structure(content, required_sections, task_id, task_type) do
-    missing_sections = find_missing_sections(content, required_sections)
-
-    if missing_sections == [] do
-      ValidationResult.success()
-    else
-      error = %ValidationError{
-        type: :invalid_section_format,
-        message:
-          "Task '#{task_id}' has incomplete error handling section. Missing: #{Enum.join(missing_sections, ", ")}",
-        task_id: task_id,
-        severity: :error,
-        context: %{
-          missing_error_handling_parts: missing_sections,
-          task_type: task_type
-        }
-      }
-
-      ValidationResult.failure(error)
-    end
-  end
-
   # Finds sections that are missing from the content
   defp find_missing_sections(content, required_sections) do
     content_text = Enum.join(content, "\n")
@@ -312,19 +214,102 @@ defmodule TaskValidator.Validators.SectionValidator do
     end)
   end
 
-  # Checks if a section exists in the content
-  defp has_section?(content, section_name) do
-    content_text = Enum.join(content, "\n")
-    String.contains?(content_text, section_name)
+  # Validates category-specific required sections based on task category
+  defp validate_category_specific_sections(%Task{type: :subtask}, _references) do
+    # Subtasks don't need category-specific sections
+    ValidationResult.success()
   end
 
-  # Checks if content contains any of the specified reference patterns
-  defp has_reference?(content, references, reference_names) do
+  defp validate_category_specific_sections(%Task{category: nil}, _references) do
+    # Tasks without category don't need category-specific sections
+    ValidationResult.success()
+  end
+
+  defp validate_category_specific_sections(%Task{} = task, references) do
+    required_sections = get_category_sections(task.category)
+
+    if required_sections == [] do
+      ValidationResult.success()
+    else
+      validate_category_sections(task, required_sections, references)
+    end
+  end
+
+  # Gets required sections for a specific category
+  defp get_category_sections(category) do
+    case category do
+      :phoenix_web -> @phoenix_web_sections
+      :data_layer -> @data_layer_sections
+      :business_logic -> @business_logic_sections
+      _ -> []
+    end
+  end
+
+  # Validates that category-specific sections are present
+  defp validate_category_sections(%Task{content: content, id: task_id, category: category}, required_sections, references) do
+    missing_sections = find_missing_category_sections(content, required_sections, references)
+
+    if missing_sections == [] do
+      ValidationResult.success()
+    else
+      error = %ValidationError{
+        type: :missing_required_section,
+        message: "Task '#{task_id}' is missing required #{category} sections: #{Enum.join(missing_sections, ", ")}",
+        task_id: task_id,
+        severity: :error,
+        context: %{
+          category: category,
+          missing_sections: missing_sections,
+          required_sections: required_sections
+        }
+      }
+
+      ValidationResult.failure(error)
+    end
+  end
+
+  # Finds category sections that are missing (allowing for references)
+  defp find_missing_category_sections(content, required_sections, references) do
     content_text = Enum.join(content, "\n")
 
+    Enum.filter(required_sections, fn section ->
+      # Check if section exists directly or via reference
+      section_exists = String.contains?(content_text, section)
+
+      # Check if any reference might contain this section
+      reference_contains_section = check_references_for_section(content, references, section)
+
+      not (section_exists or reference_contains_section)
+    end)
+  end
+
+  # Checks if any referenced content contains the required section
+  defp check_references_for_section(content, references, section) do
+    content_text = Enum.join(content, "\n")
+
+    # Extract all reference names from content
+    reference_names =
+      ~r/\{\{([^}]+)\}\}/
+      |> Regex.scan(content_text)
+      |> Enum.map(fn [_, ref] -> ref end)
+      |> Enum.uniq()
+
+    # Check if any referenced content contains the section
     Enum.any?(reference_names, fn ref_name ->
-      # Check if the reference is used in content and exists in definitions
-      String.contains?(content_text, "{{#{ref_name}}}") and Map.has_key?(references, ref_name)
+      case Map.get(references, ref_name) do
+        nil ->
+          false
+
+        ref_content when is_list(ref_content) ->
+          ref_text = Enum.join(ref_content, "\n")
+          String.contains?(ref_text, section)
+
+        ref_content when is_binary(ref_content) ->
+          String.contains?(ref_content, section)
+
+        _ ->
+          false
+      end
     end)
   end
 end

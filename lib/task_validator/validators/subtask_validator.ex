@@ -60,8 +60,10 @@ defmodule TaskValidator.Validators.SubtaskValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates subtask structure, status, and required sections.
@@ -178,8 +180,7 @@ defmodule TaskValidator.Validators.SubtaskValidator do
     else
       error = %ValidationError{
         type: :missing_subtask_sections,
-        message:
-          "Subtask '#{subtask.id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
+        message: "Subtask '#{subtask.id}' is missing required sections: #{Enum.join(missing_sections, ", ")}",
         task_id: subtask.id,
         line_number: subtask.line_number,
         severity: :error,

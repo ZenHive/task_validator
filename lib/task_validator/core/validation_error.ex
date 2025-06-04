@@ -233,8 +233,7 @@ defmodule TaskValidator.Core.ValidationError do
     new(
       :missing_reference,
       message,
-      opts
-      |> Keyword.put(:context, %{reference_name: reference_name})
+      Keyword.put(opts, :context, %{reference_name: reference_name})
     )
   end
 

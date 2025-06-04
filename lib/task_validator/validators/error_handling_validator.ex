@@ -68,7 +68,9 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   # Required sections for main task error handling
   @main_error_handling_sections [
@@ -133,25 +135,25 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
 
   # Validates error handling sections based on task type
   defp validate_error_handling(%Task{type: :main, content: content, id: id}, references) do
-    # Check if task has error handling section or reference
+    # Check if task has error handling section or reference usage
     has_error_handling = has_section?(content, "**Error Handling**")
-    has_reference = has_error_handling_reference?(content, references)
+    has_reference_usage = has_error_handling_reference_usage?(content)
 
     cond do
+      has_reference_usage ->
+        # Reference is being used, validate it exists
+        validate_reference_exists(content, references, id)
+
       has_error_handling ->
         # Validate explicit error handling structure
         validate_error_handling_structure(content, @main_error_handling_sections, id, :main)
-
-      has_reference ->
-        # Reference is present, validate it exists
-        validate_reference_exists(content, references, id)
 
       true ->
         # No error handling found
         error = %ValidationError{
           type: :missing_error_handling,
           message:
-            "Main task '#{id}' is missing error handling section. Must have explicit **Error Handling** section or use {{error-handling}} reference.",
+            "Main task '#{id}' is missing error handling section. Main tasks require comprehensive error handling documentation.",
           task_id: id,
           severity: :error,
           context: %{
@@ -166,17 +168,17 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
   end
 
   defp validate_error_handling(%Task{type: :subtask, content: content, id: id}, references) do
-    # Check if subtask has error handling section or reference
+    # Check if subtask has error handling section or reference usage
     has_error_handling = has_section?(content, "**Error Handling**")
-    has_reference = has_subtask_error_handling_reference?(content, references)
+    has_reference_usage = has_subtask_error_handling_reference_usage?(content)
 
     cond do
       has_error_handling ->
         # Validate explicit error handling structure for subtasks
         validate_error_handling_structure(content, @subtask_error_handling_sections, id, :subtask)
 
-      has_reference ->
-        # Reference is present, validate it exists
+      has_reference_usage ->
+        # Reference is being used, validate it exists
         validate_reference_exists(content, references, id)
 
       true ->
@@ -199,10 +201,7 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
   end
 
   # Validates that completed tasks have error handling implementation
-  defp validate_completed_error_implementation(
-         %Task{status: "Completed", content: content, id: id},
-         _references
-       ) do
+  defp validate_completed_error_implementation(%Task{status: "Completed", content: content, id: id}, _references) do
     if has_section?(content, "**Error Handling Implementation**") do
       ValidationResult.success()
     else
@@ -263,8 +262,7 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
     else
       error = %ValidationError{
         type: :missing_error_handling,
-        message:
-          "Task '#{task_id}' references undefined error handling: #{Enum.join(missing_references, ", ")}",
+        message: "Task '#{task_id}' references undefined error handling: #{Enum.join(missing_references, ", ")}",
         task_id: task_id,
         severity: :error,
         context: %{
@@ -284,19 +282,16 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
     end)
   end
 
-  # Checks if content has main task error handling references
-  defp has_error_handling_reference?(content, references) do
-    error_refs = ["error-handling", "error-handling-main", "def-error-handling"]
-
+  # Checks if content uses error handling references (regardless of whether they exist)
+  defp has_error_handling_reference_usage?(content) do
     Enum.any?(content, fn line ->
-      Enum.any?(error_refs, fn ref ->
-        String.contains?(line, "{{#{ref}}}") and Map.has_key?(references, ref)
-      end)
+      # Look for any reference that contains "error-handling"
+      String.match?(line, ~r/\{\{[^}]*error-handling[^}]*\}\}/)
     end)
   end
 
-  # Checks if content has subtask error handling references
-  defp has_subtask_error_handling_reference?(content, references) do
+  # Checks if content uses subtask error handling references (regardless of whether they exist)
+  defp has_subtask_error_handling_reference_usage?(content) do
     subtask_refs = [
       "error-handling-subtask",
       "subtask-error-handling",
@@ -305,7 +300,7 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
 
     Enum.any?(content, fn line ->
       Enum.any?(subtask_refs, fn ref ->
-        String.contains?(line, "{{#{ref}}}") and Map.has_key?(references, ref)
+        String.contains?(line, "{{#{ref}}}")
       end)
     end)
   end
@@ -314,10 +309,8 @@ defmodule TaskValidator.Validators.ErrorHandlingValidator do
   defp extract_error_handling_references(content) do
     content
     |> Enum.flat_map(fn line ->
-      Regex.scan(
-        ~r/\{\{(error-handling[^}]*|def-error-handling[^}]*|subtask-error-handling[^}]*)\}\}/,
-        line
-      )
+      ~r/\{\{([^}]*error-handling[^}]*)\}\}/
+      |> Regex.scan(line)
       |> Enum.map(fn [_, ref] -> ref end)
     end)
     |> Enum.uniq()

@@ -60,7 +60,9 @@ defmodule TaskValidator.Validators.DependencyValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates task dependencies according to format and existence rules.
@@ -101,8 +103,7 @@ defmodule TaskValidator.Validators.DependencyValidator do
     if is_nil(content) or not is_list(content) do
       error = %ValidationError{
         type: :missing_dependencies_section,
-        message:
-          "Task '#{id}' has invalid or missing content. Tasks must have content with dependency information.",
+        message: "Task '#{id}' has invalid or missing content. Tasks must have content with dependency information.",
         task_id: id,
         severity: :error,
         context: %{content_type: inspect(content)}
@@ -223,8 +224,7 @@ defmodule TaskValidator.Validators.DependencyValidator do
     else
       error = %ValidationError{
         type: :invalid_dependency_reference,
-        message:
-          "Task '#{task_id}' references non-existent dependencies: #{Enum.join(invalid_deps, ", ")}",
+        message: "Task '#{task_id}' references non-existent dependencies: #{Enum.join(invalid_deps, ", ")}",
         task_id: task_id,
         severity: :error,
         context: %{
@@ -249,8 +249,7 @@ defmodule TaskValidator.Validators.DependencyValidator do
     else
       error = %ValidationError{
         type: :missing_dependency_reference,
-        message:
-          "Task '#{task_id}' references undefined dependency definitions: #{Enum.join(missing_references, ", ")}",
+        message: "Task '#{task_id}' references undefined dependency definitions: #{Enum.join(missing_references, ", ")}",
         task_id: task_id,
         severity: :error,
         context: %{
@@ -372,8 +371,7 @@ defmodule TaskValidator.Validators.DependencyValidator do
 
   # Extracts all task IDs from task list (including subtasks)
   defp extract_all_task_ids(all_tasks) do
-    all_tasks
-    |> Enum.flat_map(fn task ->
+    Enum.flat_map(all_tasks, fn task ->
       subtask_ids = if task.subtasks, do: Enum.map(task.subtasks, & &1.id), else: []
       [task.id | subtask_ids]
     end)
@@ -401,7 +399,8 @@ defmodule TaskValidator.Validators.DependencyValidator do
   defp extract_dependency_references(content) do
     content
     |> Enum.flat_map(fn line ->
-      Regex.scan(~r/\{\{(def-no-dependencies|no-dependencies|DEF:no-dependencies)\}\}/, line)
+      ~r/\{\{(def-no-dependencies|no-dependencies|DEF:no-dependencies)\}\}/
+      |> Regex.scan(line)
       |> Enum.map(fn [_, ref] -> ref end)
     end)
     |> Enum.uniq()

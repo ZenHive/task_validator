@@ -41,7 +41,9 @@ defmodule TaskValidator.Validators.ValidatorPipeline do
   when fundamental validation fails.
   """
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
   alias TaskValidator.Validators.ValidatorBehaviour
 
   @doc """

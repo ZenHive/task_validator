@@ -80,8 +80,8 @@ defmodule TaskValidator.Core.ValidationResult do
   def combine([single_result]), do: single_result
 
   def combine(results) when is_list(results) do
-    all_errors = results |> Enum.flat_map(& &1.errors)
-    all_warnings = results |> Enum.flat_map(& &1.warnings)
+    all_errors = Enum.flat_map(results, & &1.errors)
+    all_warnings = Enum.flat_map(results, & &1.warnings)
     total_task_count = results |> Enum.map(&(&1.task_count || 0)) |> Enum.sum()
 
     %__MODULE__{
@@ -161,35 +161,23 @@ defmodule TaskValidator.Core.ValidationResult do
   Formats the validation result for display.
   """
   @spec format(t()) :: String.t()
-  def format(%__MODULE__{valid?: true, task_count: task_count, warnings: warnings})
-      when length(warnings) == 0 do
+  def format(%__MODULE__{valid?: true, task_count: task_count, warnings: warnings}) when length(warnings) == 0 do
     "✓ TaskList validation passed! (#{task_count} tasks validated)"
   end
 
   def format(%__MODULE__{valid?: true, task_count: task_count, warnings: warnings}) do
     warning_count = length(warnings)
 
-    formatted_warnings =
-      warnings
-      |> Enum.map(&ValidationError.format/1)
-      |> Enum.join("\n")
+    formatted_warnings = Enum.map_join(warnings, "\n", &ValidationError.format/1)
 
     "✓ TaskList validation passed with #{warning_count} warning(s)! (#{task_count} tasks validated)\n\nWarnings:\n#{formatted_warnings}"
   end
 
-  def format(%__MODULE__{
-        valid?: false,
-        errors: errors,
-        warnings: warnings,
-        task_count: task_count
-      }) do
+  def format(%__MODULE__{valid?: false, errors: errors, warnings: warnings, task_count: task_count}) do
     error_count = length(errors)
     warning_count = length(warnings)
 
-    formatted_errors =
-      errors
-      |> Enum.map(&ValidationError.format/1)
-      |> Enum.join("\n")
+    formatted_errors = Enum.map_join(errors, "\n", &ValidationError.format/1)
 
     result = "✗ TaskList validation failed with #{error_count} error(s)"
 
@@ -203,10 +191,7 @@ defmodule TaskValidator.Core.ValidationResult do
     result = result <> " (#{task_count} tasks processed)\n\nErrors:\n#{formatted_errors}"
 
     if warning_count > 0 do
-      formatted_warnings =
-        warnings
-        |> Enum.map(&ValidationError.format/1)
-        |> Enum.join("\n")
+      formatted_warnings = Enum.map_join(warnings, "\n", &ValidationError.format/1)
 
       result <> "\n\nWarnings:\n#{formatted_warnings}"
     else

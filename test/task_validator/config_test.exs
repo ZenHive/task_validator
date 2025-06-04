@@ -23,9 +23,9 @@ defmodule TaskValidator.ConfigTest do
              ]
 
       assert Config.get(:valid_priorities) == ["Critical", "High", "Medium", "Low"]
-      assert Config.get(:max_functions_per_module) == 5
+      assert Config.get(:max_functions_per_module) == 8
       assert Config.get(:max_lines_per_function) == 15
-      assert Config.get(:max_call_depth) == 2
+      assert Config.get(:max_call_depth) == 3
     end
 
     test "returns default regex patterns" do
@@ -35,10 +35,12 @@ defmodule TaskValidator.ConfigTest do
 
     test "returns default category ranges" do
       ranges = Config.get(:category_ranges)
-      assert ranges["core"] == {1, 99}
-      assert ranges["features"] == {100, 199}
-      assert ranges["documentation"] == {200, 299}
-      assert ranges["testing"] == {300, 399}
+      assert ranges["otp_genserver"] == {1, 99}
+      assert ranges["phoenix_web"] == {100, 199}
+      assert ranges["business_logic"] == {200, 299}
+      assert ranges["data_layer"] == {300, 399}
+      assert ranges["infrastructure"] == {400, 499}
+      assert ranges["testing"] == {500, 599}
     end
 
     test "raises for unknown configuration key" do

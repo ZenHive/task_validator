@@ -15,6 +15,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
       --path       Path where to create the TaskList.md file (default: ./TaskList.md)
       --prefix     Project prefix for example tasks (default: PRJ)
       --category   Task category to generate template for: otp_genserver, phoenix_web, business_logic, data_layer, infrastructure, testing (default: phoenix_web)
+      --semantic   Use semantic prefixes (OTP, PHX, CTX, DB, INF, TST) instead of custom prefix
 
   ## Example
 
@@ -78,6 +79,36 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Not found: {:error, :not_found}
   - Constraint violation: {:error, :constraint_violation}
 
+  ## \#{{ecto-error-handling}}
+  **Error Handling**
+  **Ecto Principles**
+  - Use changesets for validation errors
+  - Handle constraint violations gracefully
+  - Use Multi for transactional operations
+  **Migration Safety**
+  - Always test rollback procedures
+  - Handle data integrity during migrations
+  - Use constraints instead of validations where possible
+  **Error Examples**
+  - Validation: {:error, %Ecto.Changeset{}}
+  - Constraint: {:error, :constraint_violation}
+  - Transaction: {:error, :transaction_failed}
+
+  ## \#{{infrastructure-error-handling}}
+  **Error Handling**
+  **Infrastructure Principles**
+  - Monitor system resources and limits
+  - Handle network failures gracefully
+  - Use circuit breakers for external services
+  **Deployment Safety**
+  - Health checks and readiness probes
+  - Graceful shutdown procedures
+  - Rollback strategies for failed deployments
+  **Error Examples**
+  - Resource exhaustion: {:error, :resource_limit}
+  - Network failure: {:error, :network_timeout}
+  - Service unavailable: {:error, :service_down}
+
   ## \#{{error-handling-subtask}}
   **Error Handling**
   **Task-Specific Approach**
@@ -95,6 +126,128 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Credo score: Minimum A grade
   - Test coverage: ≥ 95% line coverage
   - Documentation coverage: 100% for public functions
+
+  ## \#{{error-handling}}
+  **Error Handling**
+  **Core Principles**
+  - Pass raw errors
+  - Use {:ok, result} | {:error, reason}
+  - Let it crash
+  **Error Implementation**
+  - No wrapping
+  - Minimal rescue
+  - function/1 & /! versions
+  **Error Examples**
+  - Raw error passthrough
+  - Simple rescue case
+  - Supervisor handling
+  **GenServer Specifics**
+  - Handle_call/3 error pattern
+  - Terminate/2 proper usage
+  - Process linking considerations
+
+  ## \#{{test-requirements}}
+  **ExUnit Test Requirements**:
+  - Comprehensive unit tests
+  - Edge case testing
+  - Error condition testing
+
+  **Integration Test Scenarios**:
+  - End-to-end validation
+  - Performance testing
+  - Concurrent operation testing
+
+  ## \#{{typespec-requirements}}
+  **Typespec Requirements**:
+  - All public functions must have @spec
+  - Use custom types for clarity
+  - Document complex types
+
+  **TypeSpec Documentation**:
+  - Clear @doc for all public functions
+  - Examples in documentation
+  - Parameter constraints documented
+
+  **TypeSpec Verification**:
+  - Run dialyzer with no warnings
+  - Test with invalid inputs
+  - Verify type coverage
+
+  ## \#{{standard-kpis}}
+  **Code Quality KPIs**
+  - Functions per module: 8
+  - Lines per function: 15
+  - Call depth: 3
+
+  ## \#{{elixir-kpis}}
+  **Code Quality KPIs**
+  - Functions per module: 8
+  - Lines per function: 15
+  - Call depth: 3
+  - Pattern match depth: 4
+  - Dialyzer warnings: 0
+  - Credo score: 8.0
+
+  ## \#{{otp-kpis}}
+  **Code Quality KPIs**
+  - Functions per module: 8
+  - Lines per function: 15
+  - Call depth: 3
+  - Pattern match depth: 4
+  - Dialyzer warnings: 0
+  - Credo score: 8.0
+  - GenServer state complexity: 5
+
+  ## \#{{phoenix-kpis}}
+  **Code Quality KPIs**
+  - Functions per module: 8
+  - Lines per function: 15
+  - Call depth: 3
+  - Pattern match depth: 4
+  - Dialyzer warnings: 0
+  - Credo score: 8.0
+  - Phoenix context boundaries: 3
+
+  ## \#{{ecto-kpis}}
+  **Code Quality KPIs**
+  - Functions per module: 8
+  - Lines per function: 15
+  - Call depth: 3
+  - Pattern match depth: 4
+  - Dialyzer warnings: 0
+  - Credo score: 8.0
+  - Ecto query complexity: 4
+
+  ## \#{{phoenix-web-sections}}
+  **Route Design**
+  RESTful routes with proper HTTP verbs and path helpers. Clear resource mapping and nested routes where appropriate.
+
+  **Context Integration**
+  Clean integration with Phoenix contexts following domain boundaries. Minimal coupling between web and business logic layers.
+
+  **Template/Component Strategy**
+  LiveView components or traditional templates with proper separation of concerns. Reusable components and clear state management.
+
+  ## \#{{data-layer-sections}}
+  **Schema Design**
+  Well-normalized Ecto schemas with proper field types, constraints, and relationships. Clear separation of concerns.
+
+  **Migration Strategy**
+  Rollback-safe migrations with proper indexes and constraints. Zero-downtime deployment considerations.
+
+  **Query Optimization**
+  Efficient query patterns with proper preloading and indexes. Performance monitoring for critical database operations.
+
+  ## \#{{business-logic-sections}}
+  **Context Boundaries**
+  Clear domain boundaries with focused contexts. Minimal cross-context dependencies and clean public APIs.
+
+  **Business Rules**
+  Explicit business rule validation and enforcement. Clear error handling for business logic violations.
+
+  ## \#{{def-no-dependencies}}
+  **Dependencies**
+  - None
   """
 
   @otp_genserver_template """
@@ -109,9 +262,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   ## Completed Tasks
 
-  | ID | Description | Status | Completed By | Review Rating |
-  | --- | --- | --- | ------------ | ------------- |
-  | <%= @prefix %>0003 | Project setup | Completed | @developer | 4.5 |
+  | ID | Description | Status | Priority | Assignee | Review Rating |
+  | --- | --- | --- | --- | --- | --- |
+  | <%= @prefix %>0003 | Project setup | Completed | High | developer1 | 4.5 |
 
   ## Active Task Details
 
@@ -119,15 +272,6 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   **Description**
   Develop a GenServer-based worker process with proper OTP patterns, state management, and supervision integration.
-
-  **Process Design**
-  GenServer chosen for stateful process with synchronous and asynchronous operations. State-based message handling with proper timeout management.
-
-  **State Management**
-  Simple map-based state with version tracking and periodic cleanup. Clear state transitions with validation on each update.
-
-  **Supervision Strategy**
-  Permanent restart strategy with exponential backoff. Parent supervisor escalation after 3 restarts in 60 seconds.
 
   **Simplicity Progression Plan**
   1. Define GenServer callbacks and state structure
@@ -148,69 +292,34 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Integration with supervision tree
   - Comprehensive test coverage
 
-  **ExUnit Test Requirements**
-  - Unit tests for client API functions
-  - GenServer callback tests with different scenarios
-  - State transition and validation tests
-  - Error condition and timeout tests
-  - Supervision integration tests
+  **Process Design**
+  GenServer chosen for stateful process with synchronous and asynchronous operations. State-based message handling with proper timeout management.
 
-  **Integration Test Scenarios**
-  - Normal operation workflows
-  - Error recovery and restart scenarios
-  - High load and concurrent access patterns
-  - Supervisor escalation testing
+  **State Management**
+  Simple map-based state with version tracking and periodic cleanup. Clear state transitions with validation on each update.
 
-  **Typespec Requirements**
-  - Full type coverage for state structure
-  - Client API function specifications
-  - GenServer callback return types
+  **Supervision Strategy**
+  Permanent restart strategy with exponential backoff. Parent supervisor escalation after 3 restarts in 60 seconds.
 
-  **TypeSpec Documentation**
-  Complete documentation of state types, API contracts, and error conditions
-
-  **TypeSpec Verification**
-  Dialyzer verification with zero warnings required
-
-  **Dependencies**
-  - None
-
-  {{elixir-kpis}}
-
+  {{test-requirements}}
+  {{typespec-requirements}}
   {{otp-error-handling}}
+  {{otp-kpis}}
+  {{def-no-dependencies}}
+
+  **Architecture Notes**
+  Standard OTP GenServer pattern with proper client/server separation.
+
+  **Complexity Assessment**
+  Medium - Requires understanding of OTP patterns and state management.
 
   **Status**: Planned
   **Priority**: High
-
-  **Subtasks**
-  - [ ] Define state structure and types [<%= @prefix %><%= @task_number %>-1]
-  - [ ] Implement client API functions [<%= @prefix %><%= @task_number %>-2]
-  - [ ] Add GenServer callbacks [<%= @prefix %><%= @task_number %>-3]
-  - [ ] Integration with supervision tree [<%= @prefix %><%= @task_number %>-4]
-
-  #### <%= @prefix %><%= @task_number %>-1: Define state structure and types
-
-  **Description**
-  Create comprehensive type definitions and state management patterns
-
-  **Status**
-  Planned
-
-  {{error-handling-subtask}}
 
   ### <%= @prefix %>0002: Add supervision tree
 
   **Description**
   Design and implement supervision tree with proper restart strategies and escalation patterns.
-
-  **Process Design**
-  Supervisor with one_for_one strategy managing worker processes. Dynamic child management with proper shutdown procedures.
-
-  **State Management**
-  Supervisor state tracking child processes with health monitoring and restart statistics.
-
-  **Supervision Strategy**
-  One_for_one restart with max_restarts: 3, max_seconds: 60. Escalate to parent supervisor on repeated failures.
 
   **Simplicity Progression Plan**
   1. Design supervision tree structure
@@ -230,35 +339,86 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Health monitoring and metrics
   - Graceful shutdown handling
 
-  **ExUnit Test Requirements**
-  - Supervisor startup and shutdown tests
-  - Child restart and escalation scenarios
-  - Dynamic child management tests
+  **Process Design**
+  Supervisor with one_for_one strategy managing worker processes. Dynamic child management with proper shutdown procedures.
 
-  **Integration Test Scenarios**
-  - Full supervision tree integration
-  - Failure recovery and escalation
-  - System-wide restart scenarios
+  **State Management**
+  Supervisor state tracking child processes with health monitoring and restart statistics.
 
-  **Typespec Requirements**
-  - Supervisor specification types
-  - Child specification documentation
+  **Supervision Strategy**
+  One_for_one restart with max_restarts: 3, max_seconds: 60. Escalate to parent supervisor on repeated failures.
 
-  **TypeSpec Documentation**
-  Clear supervision tree structure and child management contracts
-
-  **TypeSpec Verification**
-  Full type coverage with Dialyzer validation
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{otp-error-handling}}
+  {{otp-kpis}}
 
   **Dependencies**
   - <%= @prefix %><%= @task_number %>
 
-  {{elixir-kpis}}
+  **Architecture Notes**
+  Standard OTP supervision tree following established patterns.
 
-  {{otp-error-handling}}
+  **Complexity Assessment**
+  Low - Uses well-established OTP supervisor patterns.
 
   **Status**: Planned
   **Priority**: Medium
+
+  ## Completed Task Details
+
+  ### <%= @prefix %>0003: Project setup
+
+  **Description**
+  Initial project setup and structure implementation.
+
+  **Simplicity Progression Plan**
+  Incremental setup of project components with proper tooling.
+
+  **Simplicity Principle**
+  Clear organization and separation of concerns with standard Elixir project structure.
+
+  **Abstraction Evaluation**
+  Low - Standard project structure with minimal abstraction.
+
+  **Requirements**
+  - Mix project initialization
+  - Directory structure setup
+  - Basic configuration and dependencies
+
+  **Process Design**
+  Standard OTP application structure with proper supervision tree setup.
+
+  **State Management**
+  Application configuration state with environment-based management.
+
+  **Supervision Strategy**
+  One-for-one supervision with application startup and shutdown handling.
+
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{otp-error-handling}}
+  {{otp-kpis}}
+  {{def-no-dependencies}}
+
+  **Architecture Notes**
+  Standard OTP application structure with proper supervision tree.
+
+  **Implementation Notes**
+  Elegant setup using standard Mix tasks with minimal custom configuration.
+
+  **Complexity Assessment**
+  Low - Used built-in Mix tooling with minimal custom code.
+
+  **Maintenance Impact**
+  Low - Self-contained setup with clear interface.
+
+  **Error Handling Implementation**
+  Used standard OTP patterns with minimal custom error handling.
+
+  **Status**: Completed
+  **Priority**: High
+  **Review Rating**: 4.5
   """
 
   @phoenix_web_template """
@@ -273,9 +433,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   ## Completed Tasks
 
-  | ID | Description | Status | Completed By | Review Rating |
-  | --- | --- | --- | ------------ | ------------- |
-  | <%= @prefix %>0103 | Phoenix project setup | Completed | @developer | 4.5 |
+  | ID | Description | Status | Priority | Assignee | Review Rating |
+  | --- | --- | --- | --- | --- | --- |
+  | <%= @prefix %>0103 | Phoenix project setup | Completed | High | developer1 | 4.5 |
 
   ## Active Task Details
 
@@ -284,14 +444,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create a LiveView-based authentication system with real-time validation and smooth UX.
 
-  **Route Design**
-  RESTful routes: GET /login, POST /session, DELETE /session with proper path helpers and redirects.
-
-  **Context Integration**
-  Integrate with Accounts context for user validation, session management, and role-based access control.
-
-  **Template/Component Strategy**
-  Stateful LiveView component with reusable form components and real-time validation feedback.
+  {{phoenix-web-sections}}
 
   **Simplicity Progression Plan**
   1. Design route structure and controller actions
@@ -311,31 +464,9 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Flash messages and error feedback
   - Responsive design and accessibility
 
-  **ExUnit Test Requirements**
-  - LiveView mount and event handling tests
-  - Authentication flow integration tests
-  - Form validation and error display tests
-  - Session management tests
-
-  **Integration Test Scenarios**
-  - Complete authentication workflow
-  - Invalid credentials handling
-  - Session timeout and renewal
-  - Multiple concurrent sessions
-
-  **Typespec Requirements**
-  - LiveView assign types and validation
-  - Authentication event specifications
-  - Session data type definitions
-
-  **TypeSpec Documentation**
-  Clear documentation of LiveView state, events, and authentication contracts
-
-  **TypeSpec Verification**
-  Dialyzer verification of LiveView callbacks and type safety
-
-  **Dependencies**
-  - None
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{def-no-dependencies}}
 
   {{elixir-kpis}}
 
@@ -345,20 +476,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Priority**: High
 
   **Subtasks**
-  - [ ] Design LiveView component structure [<%= @prefix %><%= @task_number %>-1]
-  - [ ] Implement form validation [<%= @prefix %><%= @task_number %>-2]
-  - [ ] Add session management [<%= @prefix %><%= @task_number %>-3]
-  - [ ] Style and UX polish [<%= @prefix %><%= @task_number %>-4]
-
-  #### <%= @prefix %><%= @task_number %>-1: Design LiveView component structure
-
-  **Description**
-  Create the foundational LiveView component with proper mount and event handling
-
-  **Status**
-  Planned
-
-  {{error-handling-subtask}}
+  - [ ] Design LiveView component structure [<%= @prefix %><%= @task_number %>a]
+  - [ ] Implement form validation [<%= @prefix %><%= @task_number %>b]
+  - [ ] Add session management [<%= @prefix %><%= @task_number %>c]
+  - [ ] Style and UX polish [<%= @prefix %><%= @task_number %>d]
 
   ### <%= @prefix %>0102: Add product catalog controller
 
@@ -392,27 +513,70 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Image upload and management
   - Performance optimization for large catalogs
 
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{def-no-dependencies}}
+
+  {{elixir-kpis}}
+
+  {{phoenix-error-handling}}
+
+  **Status**: Planned
+  **Priority**: Medium
+
+  ## Completed Task Details
+
+  ### <%= @prefix %>0103: Phoenix project setup
+
+  **Description**
+  Initial Phoenix project setup with basic configuration and dependencies.
+
+  **Route Design**
+  Basic router setup with health check endpoint and static asset serving.
+
+  **Context Integration**
+  Initial context structure following Phoenix conventions.
+
+  **Template/Component Strategy**
+  Standard Phoenix template structure with layouts and components.
+
+  **Simplicity Progression Plan**
+  1. Generate Phoenix project
+  2. Configure dependencies
+  3. Setup database
+  4. Configure deployment
+
+  **Simplicity Principle**
+  Start with minimal Phoenix setup and add features progressively.
+
+  **Abstraction Evaluation**
+  Low - Standard Phoenix project structure.
+
+  **Requirements**
+  - Phoenix project generation
+  - Database configuration
+  - Basic route setup
+  - Development environment
+
   **ExUnit Test Requirements**
-  - Controller action tests for all routes
-  - Integration tests for search and filtering
-  - Performance tests for large datasets
+  - Basic controller tests
+  - Router tests
+  - View tests
 
   **Integration Test Scenarios**
-  - Product catalog browsing workflows
-  - Search and filter combinations
-  - Image upload and display
-  - Admin product management
+  - Application startup
+  - Database connectivity
+  - Basic route access
 
   **Typespec Requirements**
-  - Product schema type definitions
-  - Controller parameter specifications
-  - Search and filter option types
+  - Basic type definitions
+  - Controller types
 
   **TypeSpec Documentation**
-  Complete API documentation for product catalog endpoints
+  Standard Phoenix type documentation
 
   **TypeSpec Verification**
-  Type safety for all controller actions and business logic integration
+  Basic dialyzer setup
 
   **Dependencies**
   - None
@@ -421,8 +585,24 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   {{phoenix-error-handling}}
 
-  **Status**: Planned
-  **Priority**: Medium
+  **Architecture Notes**
+  Standard Phoenix architecture with contexts.
+
+  **Implementation Notes**
+  Used Phoenix generators for initial setup.
+
+  **Complexity Assessment**
+  Low - Standard Phoenix setup.
+
+  **Maintenance Impact**
+  Low - Following Phoenix conventions.
+
+  **Error Handling Implementation**
+  Standard Phoenix error handling with fallback controller.
+
+  **Status**: Completed
+  **Priority**: High
+  **Review Rating**: 4.5
   """
 
   @business_logic_template """
@@ -441,14 +621,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create a comprehensive user management context with proper business logic separation.
 
-  **API Design**
-  Clear function contracts: create_user/1, update_user/2, authenticate_user/2 with proper documentation.
-
-  **Data Access**
-  Proper Repo usage with optimized queries, preloading strategies, and transaction management.
-
-  **Validation Strategy**
-  Comprehensive changeset validation with custom validators and error message internationalization.
+  {{business-logic-sections}}
 
   **Requirements**
   - Context module with clear API boundaries
@@ -456,8 +629,11 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Optimized database queries
   - Business rule enforcement
 
-  {{elixir-kpis}}
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{phoenix-kpis}}
   {{context-error-handling}}
+  {{def-no-dependencies}}
 
   **Status**: Planned
   **Priority**: High
@@ -479,14 +655,7 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Description**
   Create comprehensive user schema with proper database design and migration strategy.
 
-  **Schema Design**
-  Well-normalized schema with proper constraints, indexes, and relationships.
-
-  **Migration Strategy**
-  Rollback-safe migrations with data integrity checks and zero-downtime deployment patterns.
-
-  **Query Optimization**
-  Strategic indexes, query analysis, and performance monitoring for critical paths.
+  {{data-layer-sections}}
 
   **Requirements**
   - Ecto schema with proper types and validations
@@ -494,8 +663,11 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Optimized query patterns
   - Constraint and index strategy
 
-  {{elixir-kpis}}
-  {{context-error-handling}}
+  {{test-requirements}}
+  {{typespec-requirements}}
+  {{ecto-kpis}}
+  {{ecto-error-handling}}
+  {{def-no-dependencies}}
 
   **Status**: Planned
   **Priority**: High
@@ -532,8 +704,13 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Monitoring and observability
   - Deployment automation
 
+  {{test-requirements}}
+  {{typespec-requirements}}
   {{elixir-kpis}}
-  {{context-error-handling}}
+  {{infrastructure-error-handling}}
+
+  **Dependencies**
+  - All application tasks
 
   **Status**: Planned
   **Priority**: High
@@ -612,7 +789,10 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   **Coverage Requirements**
   Minimum 90% code coverage with focus on critical business logic and error paths
 
-  {{error-handling-main}}
+  **Property-Based Testing**
+  StreamData generators for input validation and property verification
+
+  {{error-handling}}
 
   **Status**: Planned
   **Priority**: High
@@ -626,11 +806,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
   def run(args) do
     {options, _, _} =
-      OptionParser.parse(args, strict: [path: :string, prefix: :string, category: :string])
+      OptionParser.parse(args,
+        strict: [path: :string, prefix: :string, category: :string, semantic: :boolean]
+      )
 
     path = options[:path] || "TaskList.md"
-    prefix = options[:prefix] || "PRJ"
+    use_semantic = options[:semantic] || false
     category = options[:category] || "phoenix_web"
+
+    prefix =
+      if use_semantic do
+        get_semantic_prefix_for_category(category)
+      else
+        options[:prefix] || "PRJ"
+      end
 
     # Validate category
     valid_categories = [
@@ -642,10 +831,8 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
       "testing"
     ]
 
-    unless category in valid_categories do
-      Mix.shell().error(
-        "Invalid category: #{category}. Valid options: #{Enum.join(valid_categories, ", ")}"
-      )
+    if category not in valid_categories do
+      Mix.shell().error("Invalid category: #{category}. Valid options: #{Enum.join(valid_categories, ", ")}")
 
       exit({:shutdown, 1})
     end
@@ -682,6 +869,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
       "data_layer" -> "0301"
       "infrastructure" -> "0401"
       "testing" -> "0501"
+    end
+  end
+
+  # Gets semantic prefix for a category
+  defp get_semantic_prefix_for_category(category) do
+    case category do
+      "otp_genserver" -> "OTP"
+      "phoenix_web" -> "PHX"
+      "business_logic" -> "CTX"
+      "data_layer" -> "DB"
+      "infrastructure" -> "INF"
+      "testing" -> "TST"
+      # fallback
+      _ -> "PRJ"
     end
   end
 

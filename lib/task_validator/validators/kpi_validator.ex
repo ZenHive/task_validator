@@ -63,28 +63,72 @@ defmodule TaskValidator.Validators.KpiValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
-  # Standard KPI metric definitions
+  # Standard KPI metric definitions (enhanced for Elixir/Phoenix)
   @required_kpis [
     :functions_per_module,
     :lines_per_function,
     :call_depth
   ]
 
+  # Optional Elixir-specific KPIs
+  @elixir_kpis [
+    :pattern_match_depth,
+    :dialyzer_warnings,
+    :credo_score,
+    :genserver_state_complexity,
+    :phoenix_context_boundaries,
+    :ecto_query_complexity
+  ]
+
+  # Complexity multipliers for KPI limits
+  @complexity_multipliers %{
+    simple: 1.0,
+    medium: 1.5,
+    complex: 2.0,
+    critical: 3.0
+  }
+
+  # Default complexity by category
+  @category_complexity %{
+    "otp_genserver" => :medium,
+    "phoenix_web" => :simple,
+    "business_logic" => :medium,
+    "data_layer" => :simple,
+    "infrastructure" => :complex,
+    "testing" => :complex
+  }
+
   @kpi_patterns %{
     functions_per_module: ~r/functions per module:\s*(\d+)/i,
     lines_per_function: ~r/lines per function:\s*(\d+)/i,
     call_depth: ~r/call depth:\s*(\d+)/i,
-    cyclomatic_complexity: ~r/cyclomatic complexity:\s*(\d+)/i
+    cyclomatic_complexity: ~r/cyclomatic complexity:\s*(\d+)/i,
+    # Elixir-specific patterns
+    pattern_match_depth: ~r/pattern match depth:\s*(\d+)/i,
+    dialyzer_warnings: ~r/dialyzer warnings:\s*(\d+)/i,
+    credo_score: ~r/credo score:\s*(\d+(?:\.\d+)?)/i,
+    genserver_state_complexity: ~r/genserver state complexity:\s*(\d+)/i,
+    phoenix_context_boundaries: ~r/phoenix context boundaries:\s*(\d+)/i,
+    ecto_query_complexity: ~r/ecto query complexity:\s*(\d+)/i
   }
 
   @kpi_names %{
     functions_per_module: "Functions per module",
     lines_per_function: "Lines per function",
     call_depth: "Call depth",
-    cyclomatic_complexity: "Cyclomatic complexity"
+    cyclomatic_complexity: "Cyclomatic complexity",
+    # Elixir-specific names
+    pattern_match_depth: "Pattern match depth",
+    dialyzer_warnings: "Dialyzer warnings",
+    credo_score: "Credo score",
+    genserver_state_complexity: "GenServer state complexity",
+    phoenix_context_boundaries: "Phoenix context boundaries",
+    ecto_query_complexity: "Ecto query complexity"
   }
 
   @doc """
@@ -172,8 +216,7 @@ defmodule TaskValidator.Validators.KpiValidator do
 
         error = %ValidationError{
           type: :missing_kpi_metrics,
-          message:
-            "Task '#{id}' is missing required KPI metrics: #{Enum.join(missing_names, ", ")}",
+          message: "Task '#{id}' is missing required KPI metrics: #{Enum.join(missing_names, ", ")}",
           task_id: id,
           severity: :error,
           context: %{
@@ -189,7 +232,7 @@ defmodule TaskValidator.Validators.KpiValidator do
   end
 
   # Validates that KPI values are within configured limits
-  defp validate_kpi_values(%Task{content: content, id: id}, config, references) do
+  defp validate_kpi_values(%Task{content: content, id: id} = task, config, references) do
     if has_kpi_reference?(content, references) do
       # Using reference, assume values are valid
       ValidationResult.success()
@@ -198,40 +241,74 @@ defmodule TaskValidator.Validators.KpiValidator do
       kpi_content = extract_kpi_content(content)
       parsed_kpis = parse_kpi_metrics(kpi_content)
 
-      validation_results = [
-        validate_kpi_limit(id, :functions_per_module, parsed_kpis, config),
-        validate_kpi_limit(id, :lines_per_function, parsed_kpis, config),
-        validate_kpi_limit(id, :call_depth, parsed_kpis, config)
+      # Get task complexity for adjusted limits
+      complexity = get_task_complexity(task, config)
+
+      # Validate required KPIs with complexity adjustment
+      standard_validations = [
+        validate_kpi_limit(id, :functions_per_module, parsed_kpis, config, complexity),
+        validate_kpi_limit(id, :lines_per_function, parsed_kpis, config, complexity),
+        validate_kpi_limit(id, :call_depth, parsed_kpis, config, complexity)
       ]
 
-      validation_results
+      # Validate Elixir-specific KPIs if present
+      elixir_validations =
+        Enum.map(@elixir_kpis, fn kpi -> validate_kpi_limit(id, kpi, parsed_kpis, config, complexity) end)
+
+      (standard_validations ++ elixir_validations)
       |> Enum.reject(&is_nil/1)
       |> ValidationResult.combine()
     end
   end
 
   # Validates a specific KPI against its configured limit
-  defp validate_kpi_limit(task_id, kpi_key, parsed_kpis, config) do
+  defp validate_kpi_limit(task_id, kpi_key, parsed_kpis, config, complexity) do
     value = Map.get(parsed_kpis, kpi_key)
 
     if value do
-      limit = get_kpi_limit(kpi_key, config)
+      base_limit = get_kpi_limit(kpi_key, config)
 
-      if value <= limit do
+      # Apply complexity multiplier for non-minimum thresholds
+      limit =
+        case kpi_key do
+          # No adjustment for minimum thresholds
+          :credo_score -> base_limit
+          # No adjustment for zero-tolerance metrics
+          :dialyzer_warnings -> base_limit
+          _ -> apply_complexity_multiplier(base_limit, complexity)
+        end
+
+      kpi_name = @kpi_names[kpi_key]
+
+      # Special handling for Credo score (minimum threshold, higher is better)
+      is_valid =
+        case kpi_key do
+          :credo_score -> value >= limit
+          _ -> value <= limit
+        end
+
+      if is_valid do
         ValidationResult.success()
       else
-        kpi_name = @kpi_names[kpi_key]
+        message =
+          case kpi_key do
+            :credo_score -> "Task '#{task_id}' has #{kpi_name} below minimum: #{value} < #{limit}"
+            _ -> "Task '#{task_id}' exceeds #{kpi_name} limit: #{value} > #{limit}"
+          end
 
         error = %ValidationError{
           type: :invalid_kpi_value,
-          message: "Task '#{task_id}' exceeds #{kpi_name} limit: #{value} > #{limit}",
+          message: message,
           task_id: task_id,
           severity: :error,
           context: %{
             kpi_metric: kpi_key,
             actual_value: value,
             limit_value: limit,
-            kpi_name: kpi_name
+            base_limit: base_limit,
+            complexity: complexity,
+            kpi_name: kpi_name,
+            is_minimum_threshold: kpi_key == :credo_score
           }
         }
 
@@ -255,8 +332,7 @@ defmodule TaskValidator.Validators.KpiValidator do
     else
       error = %ValidationError{
         type: :missing_kpi_reference,
-        message:
-          "Task '#{task_id}' references undefined KPI definitions: #{Enum.join(missing_references, ", ")}",
+        message: "Task '#{task_id}' references undefined KPI definitions: #{Enum.join(missing_references, ", ")}",
         task_id: task_id,
         severity: :error,
         context: %{
@@ -301,8 +377,16 @@ defmodule TaskValidator.Validators.KpiValidator do
   defp extract_kpi_value(content, regex) do
     Enum.find_value(content, fn line ->
       case Regex.run(regex, line) do
-        [_, value] -> String.to_integer(value)
-        _ -> nil
+        [_, value] ->
+          # Handle decimal values (e.g., Credo score: 8.5)
+          if String.contains?(value, ".") do
+            String.to_float(value)
+          else
+            String.to_integer(value)
+          end
+
+        _ ->
+          nil
       end
     end)
   end
@@ -319,6 +403,33 @@ defmodule TaskValidator.Validators.KpiValidator do
       :call_depth ->
         Map.get(config, :max_call_depth, Config.get(:max_call_depth))
 
+      # Elixir-specific KPI limits
+      :pattern_match_depth ->
+        Map.get(config, :max_pattern_match_depth, Config.get(:max_pattern_match_depth))
+
+      :dialyzer_warnings ->
+        Map.get(config, :max_dialyzer_warnings, Config.get(:max_dialyzer_warnings))
+
+      :credo_score ->
+        Map.get(config, :min_credo_score, Config.get(:min_credo_score))
+
+      :genserver_state_complexity ->
+        Map.get(
+          config,
+          :max_genserver_state_complexity,
+          Config.get(:max_genserver_state_complexity)
+        )
+
+      :phoenix_context_boundaries ->
+        Map.get(
+          config,
+          :max_phoenix_context_boundaries,
+          Config.get(:max_phoenix_context_boundaries)
+        )
+
+      :ecto_query_complexity ->
+        Map.get(config, :max_ecto_query_complexity, Config.get(:max_ecto_query_complexity))
+
       _ ->
         # For unknown metrics, use a reasonable default
         100
@@ -333,13 +444,11 @@ defmodule TaskValidator.Validators.KpiValidator do
   end
 
   # Checks if content has KPI references
-  defp has_kpi_reference?(content, references) do
-    kpi_refs = ["standard-kpis", "def-standard-kpis", "kpi-requirements"]
+  defp has_kpi_reference?(content, _references) do
+    kpi_ref_pattern = ~r/\{\{[^}]*kpis?[^}]*\}\}/
 
     Enum.any?(content, fn line ->
-      Enum.any?(kpi_refs, fn ref ->
-        String.contains?(line, "{{#{ref}}}") and Map.has_key?(references, ref)
-      end)
+      String.match?(line, kpi_ref_pattern)
     end)
   end
 
@@ -347,9 +456,84 @@ defmodule TaskValidator.Validators.KpiValidator do
   defp extract_kpi_references(content) do
     content
     |> Enum.flat_map(fn line ->
-      Regex.scan(~r/\{\{(standard-kpis|def-standard-kpis|kpi-requirements)\}\}/, line)
+      ~r/\{\{([^}]*kpis?[^}]*)\}\}/
+      |> Regex.scan(line)
       |> Enum.map(fn [_, ref] -> ref end)
     end)
     |> Enum.uniq()
+  end
+
+  # Gets the complexity level for a task
+  defp get_task_complexity(%Task{content: content, category: category, id: id}, _config) do
+    # First, check for explicit complexity assessment in content
+    explicit_complexity = extract_complexity_assessment(content)
+
+    if explicit_complexity do
+      explicit_complexity
+    else
+      # Try to determine category from task ID if not set
+      determined_category =
+        if category do
+          to_string(category)
+        else
+          determine_category_from_id(id)
+        end
+
+      # Fall back to category-based default
+      Map.get(@category_complexity, determined_category, :simple)
+    end
+  end
+
+  # Determines category from task ID number
+  defp determine_category_from_id(task_id) do
+    case extract_task_number_for_category(task_id) do
+      {:ok, number} ->
+        cond do
+          number >= 1 and number <= 99 -> "otp_genserver"
+          number >= 100 and number <= 199 -> "phoenix_web"
+          number >= 200 and number <= 299 -> "business_logic"
+          number >= 300 and number <= 399 -> "data_layer"
+          number >= 400 and number <= 499 -> "infrastructure"
+          number >= 500 and number <= 599 -> "testing"
+          true -> nil
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  # Extracts task number from ID for categorization
+  defp extract_task_number_for_category(task_id) do
+    cond do
+      # Standard format: TST501, PHX101
+      match = Regex.run(~r/^[A-Z]{2,4}(\d{3,4})/, task_id) ->
+        [_, number_str] = match
+        {:ok, String.to_integer(number_str)}
+
+      # Custom format: PROJ-001
+      match = Regex.run(~r/^[A-Z]+-(\d{3,4})/, task_id) ->
+        [_, number_str] = match
+        {:ok, String.to_integer(number_str)}
+
+      true ->
+        {:error, "Cannot extract task number"}
+    end
+  end
+
+  # Extracts complexity assessment from task content
+  defp extract_complexity_assessment(content) do
+    Enum.find_value(content, fn line ->
+      case Regex.run(~r/\*\*Complexity Assessment\*\*:\s*(Simple|Medium|Complex|Critical)/i, line) do
+        [_, complexity] -> complexity |> String.downcase() |> String.to_atom()
+        _ -> nil
+      end
+    end)
+  end
+
+  # Applies complexity multiplier to a base limit
+  defp apply_complexity_multiplier(base_limit, complexity) do
+    multiplier = Map.get(@complexity_multipliers, complexity, 1.0)
+    round(base_limit * multiplier)
   end
 end

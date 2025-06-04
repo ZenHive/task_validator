@@ -1,8 +1,9 @@
 defmodule TaskValidator.Validators.StatusValidatorTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
   alias TaskValidator.Validators.StatusValidator
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
 
   describe "validate/2" do
     test "validates valid status and priority" do

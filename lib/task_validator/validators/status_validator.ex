@@ -46,8 +46,10 @@ defmodule TaskValidator.Validators.StatusValidator do
 
   @behaviour TaskValidator.Validators.ValidatorBehaviour
 
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
   alias TaskValidator.Config
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates task status, priority, and related business rules.
@@ -91,8 +93,7 @@ defmodule TaskValidator.Validators.StatusValidator do
     else
       error = %ValidationError{
         type: :invalid_status,
-        message:
-          "Invalid status '#{status}' for task '#{id}'. Valid statuses: #{Enum.join(valid_statuses, ", ")}",
+        message: "Invalid status '#{status}' for task '#{id}'. Valid statuses: #{Enum.join(valid_statuses, ", ")}",
         task_id: id,
         severity: :error,
         context: %{
@@ -129,10 +130,7 @@ defmodule TaskValidator.Validators.StatusValidator do
   end
 
   # Validates status-specific business rules
-  defp validate_status_requirements(
-         %Task{status: status, type: type, subtasks: subtasks, id: id},
-         _config
-       ) do
+  defp validate_status_requirements(%Task{status: status, type: type, subtasks: subtasks, id: id}, _config) do
     case {status, type} do
       {"In Progress", :main} ->
         validate_in_progress_has_subtasks(id, subtasks)
@@ -173,17 +171,13 @@ defmodule TaskValidator.Validators.StatusValidator do
   end
 
   # Validates review ratings for completed subtasks
-  defp validate_review_rating(
-         %Task{type: :subtask, status: "Completed", review_rating: rating, id: id},
-         config
-       ) do
+  defp validate_review_rating(%Task{type: :subtask, status: "Completed", review_rating: rating, id: id}, config) do
     if rating && rating != "-" && rating != "" do
       validate_rating_format(id, rating, config)
     else
       error = %ValidationError{
         type: :missing_review_rating,
-        message:
-          "Completed subtask '#{id}' is missing a review rating. Completed subtasks must have a review rating.",
+        message: "Completed subtask '#{id}' is missing a review rating. Completed subtasks must have a review rating.",
         task_id: id,
         severity: :error,
         context: %{

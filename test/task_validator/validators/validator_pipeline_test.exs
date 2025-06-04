@@ -1,8 +1,17 @@
 defmodule TaskValidator.Validators.ValidatorPipelineTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
+  alias TaskValidator.Validators.CategoryValidator
+  alias TaskValidator.Validators.DependencyValidator
+  alias TaskValidator.Validators.ErrorHandlingValidator
+  alias TaskValidator.Validators.IdValidator
+  alias TaskValidator.Validators.KpiValidator
+  alias TaskValidator.Validators.SectionValidator
+  alias TaskValidator.Validators.StatusValidator
+  alias TaskValidator.Validators.SubtaskValidator
   alias TaskValidator.Validators.ValidatorPipeline
-  alias TaskValidator.Core.{Task, ValidationResult, ValidationError}
 
   describe "validate_task/3" do
     test "validates a task with multiple validators" do
@@ -51,9 +60,18 @@ defmodule TaskValidator.Validators.ValidatorPipelineTest do
     test "sorts validators by priority" do
       validators = ValidatorPipeline.default_validators()
 
-      # Test that priority order is maintained - IdValidator (90) should come first
-      # We'll test this indirectly by checking the behavior
-      assert length(validators) == 3
+      # Test that we have all 8 validators in the pipeline
+      assert length(validators) == 8
+
+      # Test that validators include all expected modules
+      assert IdValidator in validators
+      assert StatusValidator in validators
+      assert ErrorHandlingValidator in validators
+      assert SectionValidator in validators
+      assert SubtaskValidator in validators
+      assert DependencyValidator in validators
+      assert CategoryValidator in validators
+      assert KpiValidator in validators
     end
   end
 
@@ -112,10 +130,20 @@ defmodule TaskValidator.Validators.ValidatorPipelineTest do
     test "returns the default set of validators" do
       validators = ValidatorPipeline.default_validators()
 
-      assert TaskValidator.Validators.IdValidator in validators
-      assert TaskValidator.Validators.StatusValidator in validators
-      assert TaskValidator.Validators.SectionValidator in validators
-      assert length(validators) == 3
+      # Core validators from original implementation
+      assert IdValidator in validators
+      assert StatusValidator in validators
+      assert SectionValidator in validators
+
+      # Additional validators from refactoring
+      assert ErrorHandlingValidator in validators
+      assert SubtaskValidator in validators
+      assert DependencyValidator in validators
+      assert KpiValidator in validators
+      assert CategoryValidator in validators
+
+      # Verify we have all 8 validators
+      assert length(validators) == 8
     end
   end
 end

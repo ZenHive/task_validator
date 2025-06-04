@@ -7,7 +7,9 @@ defmodule TaskValidator.Parsers.ReferenceResolver do
   as the TaskValidator only checks that references exist.
   """
 
-  alias TaskValidator.Core.{TaskList, ValidationError, ValidationResult}
+  alias TaskValidator.Core.TaskList
+  alias TaskValidator.Core.ValidationError
+  alias TaskValidator.Core.ValidationResult
 
   @doc """
   Validates that all reference placeholders have corresponding definitions.
@@ -68,7 +70,8 @@ defmodule TaskValidator.Parsers.ReferenceResolver do
     lines
     |> Enum.with_index()
     |> Enum.flat_map(fn {line, line_num} ->
-      Regex.scan(~r/\{\{([^}]+)\}\}/, line)
+      ~r/\{\{([^}]+)\}\}/
+      |> Regex.scan(line)
       |> Enum.map(fn [_full_match, ref_name] ->
         {ref_name, line_num + 1}
       end)
@@ -83,17 +86,14 @@ defmodule TaskValidator.Parsers.ReferenceResolver do
   """
   @spec validate_reference_integrity(list(String.t()), map()) ::
           :ok | {:error, String.t()}
-  def validate_reference_integrity(lines, references)
-      when is_list(lines) and is_map(references) do
+  def validate_reference_integrity(lines, references) when is_list(lines) and is_map(references) do
     missing_refs = find_missing_references(lines, references)
 
     if missing_refs == [] do
       :ok
     else
       missing_list =
-        missing_refs
-        |> Enum.map(fn {ref, line} -> "  - '{{#{ref}}}' at line #{line}" end)
-        |> Enum.join("\n")
+        Enum.map_join(missing_refs, "\n", fn {ref, line} -> "  - '{{#{ref}}}' at line #{line}" end)
 
       {:error, "Missing reference definitions:\n#{missing_list}"}
     end
@@ -128,7 +128,7 @@ defmodule TaskValidator.Parsers.ReferenceResolver do
     usage_counts =
       usages
       |> Enum.group_by(fn {ref_name, _line} -> ref_name end)
-      |> Enum.into(%{}, fn {ref_name, occurrences} -> {ref_name, length(occurrences)} end)
+      |> Map.new(fn {ref_name, occurrences} -> {ref_name, length(occurrences)} end)
 
     %{
       total_references: map_size(task_list.references),
@@ -180,8 +180,7 @@ defmodule TaskValidator.Parsers.ReferenceResolver do
   defp extract_lines_from_task_list(%TaskList{tasks: tasks}) do
     # This is a simplified extraction - in a real implementation,
     # we'd reconstruct the original markdown structure
-    tasks
-    |> Enum.flat_map(fn task -> task.content end)
+    Enum.flat_map(tasks, fn task -> task.content end)
   end
 
   defp find_unused_references(references, usage_counts) do

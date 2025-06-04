@@ -4,6 +4,7 @@ defmodule TaskValidator.Validators.ValidatorBehaviourTest do
   alias TaskValidator.Validators.ValidatorBehaviour
 
   defmodule TestValidator do
+    @moduledoc false
     @behaviour ValidatorBehaviour
 
     alias TaskValidator.Core.ValidationResult
@@ -12,6 +13,7 @@ defmodule TaskValidator.Validators.ValidatorBehaviourTest do
   end
 
   defmodule TestValidatorWithPriority do
+    @moduledoc false
     @behaviour ValidatorBehaviour
 
     alias TaskValidator.Core.ValidationResult

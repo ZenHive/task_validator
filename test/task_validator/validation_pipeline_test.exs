@@ -1,8 +1,11 @@
 defmodule TaskValidator.ValidationPipelineTest do
   use ExUnit.Case, async: true
 
+  alias TaskValidator.Core.Task
+  alias TaskValidator.Core.ValidationResult
   alias TaskValidator.ValidationPipeline
-  alias TaskValidator.Core.{Task, ValidationResult}
+  alias TaskValidator.Validators.IdValidator
+  alias TaskValidator.Validators.StatusValidator
 
   describe "run/3" do
     setup do
@@ -43,7 +46,7 @@ defmodule TaskValidator.ValidationPipelineTest do
     end
 
     test "runs validation with custom validator list", %{task: task, context: context} do
-      validators = [{TaskValidator.Validators.IdValidator, %{}}]
+      validators = [{IdValidator, %{}}]
       result = ValidationPipeline.run(task, context, validators)
 
       assert %ValidationResult{} = result
@@ -89,10 +92,10 @@ defmodule TaskValidator.ValidationPipelineTest do
       validators = ValidationPipeline.default_validators()
 
       assert length(validators) == 8
-      assert Enum.any?(validators, fn {mod, _} -> mod == TaskValidator.Validators.IdValidator end)
+      assert Enum.any?(validators, fn {mod, _} -> mod == IdValidator end)
 
       assert Enum.any?(validators, fn {mod, _} ->
-               mod == TaskValidator.Validators.StatusValidator
+               mod == StatusValidator
              end)
     end
 
@@ -100,8 +103,8 @@ defmodule TaskValidator.ValidationPipelineTest do
       validators = ValidationPipeline.minimal_validators()
 
       assert length(validators) == 2
-      assert {TaskValidator.Validators.IdValidator, %{}} in validators
-      assert {TaskValidator.Validators.StatusValidator, %{}} in validators
+      assert {IdValidator, %{}} in validators
+      assert {StatusValidator, %{}} in validators
     end
 
     test "strict_validators/1 returns enhanced validators" do
@@ -110,7 +113,7 @@ defmodule TaskValidator.ValidationPipelineTest do
       assert length(validators) == 8
       # Should have strict options for some validators
       assert Enum.any?(validators, fn {mod, opts} ->
-               mod == TaskValidator.Validators.IdValidator &&
+               mod == IdValidator &&
                  Map.get(opts, :strict_format) == true
              end)
     end
@@ -126,8 +129,8 @@ defmodule TaskValidator.ValidationPipelineTest do
       validators = ValidationPipeline.build_validators(config)
 
       assert length(validators) == 2
-      assert {TaskValidator.Validators.IdValidator, %{strict_format: true}} in validators
-      assert {TaskValidator.Validators.StatusValidator, %{}} in validators
+      assert {IdValidator, %{strict_format: true}} in validators
+      assert {StatusValidator, %{}} in validators
     end
   end
 end
