@@ -4,7 +4,7 @@ defmodule TaskValidator.MixProject do
   def project do
     [
       app: :task_validator,
-      version: "0.9.1",
+      version: "0.9.2",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -46,7 +46,7 @@ defmodule TaskValidator.MixProject do
 
   defp package do
     [
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE),
+      files: ~w(lib .formatter.exs mix.exs README.md LICENSE llm.txt),
       maintainers: ["TaskValidator Team"],
       licenses: ["MIT"],
       links: %{

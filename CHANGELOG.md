@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.2 (2025-06-05)
+
+### Added
+- **llm.txt** - Machine-readable instructions for LLMs
+  - Comprehensive guide for AI assistants using the library
+  - Quick reference for validation rules and formats
+  - Common error solutions and best practices
+  - API usage examples and patterns
+
 ## v0.9.1 (2025-06-05)
 
 ### Added

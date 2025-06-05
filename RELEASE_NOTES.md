@@ -1,10 +1,20 @@
-# Release Notes - v0.9.1
+# Release Notes - v0.9.2
 
 ## Summary
 
-TaskValidator v0.9.1 is ready for release with comprehensive documentation updates and bug fixes.
+TaskValidator v0.9.2 is ready for release with comprehensive documentation updates, bug fixes, and new LLM support.
 
-## What's New
+## What's New in v0.9.2
+
+### Added
+- **llm.txt** - Machine-readable instructions for AI assistants
+  - Comprehensive guide for LLMs to understand and use the library
+  - Quick reference for all validation rules and formats
+  - Common error patterns and solutions
+  - API usage examples and best practices
+  - Designed to help AI assistants work effectively with TaskValidator
+
+## What's New in v0.9.1
 
 ### Bug Fixes
 - **BUG001**: Fixed subtask content parsing in MarkdownParser

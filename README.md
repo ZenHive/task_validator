@@ -311,6 +311,14 @@ Full working examples for different project categories:
 
 Each example demonstrates proper subtask formatting, including both numbered subtasks with full sections and checkbox format for minor items. See `docs/examples/README.md` for detailed explanations.
 
+## Documentation
+
+- [Configuration Guide](guides/configuration.md) - Detailed configuration options
+- [Writing Compliant Tasks](guides/writing_compliant_tasks.md) - How to write valid task lists
+- [Sample Task List](guides/sample_tasklist.md) - Complete example demonstrating all features
+- [Examples Directory](docs/examples/) - Category-specific examples for all 6 categories
+- [LLM Instructions](llm.txt) - Machine-readable guide for AI assistants
+
 ### Test Fixtures (`test/fixtures/`)
 
 Validation test cases:
