@@ -157,28 +157,34 @@ The validator ensures all referenced tasks exist in the task list.
 
 Subtasks can be organized in two formats:
 
-**Checkbox Format (Recommended):**
+**Checkbox Format (Simplified):**
 ```markdown
 ### SSH0001: SSH Session Initialization
 
 **Subtasks**
-- [x] Implement password authentication [SSH0001-1]
-- [ ] Add key-based authentication [SSH0001-2]
-- [ ] Implement host verification [SSH0001-3]
+- [x] Implement password authentication [SSH0001a]
+- [ ] Add key-based authentication [SSH0001b]
+- [ ] Implement host verification [SSH0001c]
 ```
 
-This format provides immediate visual feedback on task progress and is the recommended approach for new task lists.
+This format provides immediate visual feedback on task progress and is ideal for minor subtasks or quick checklists.
 
-**Numbered Format (Alternative):**
+**Numbered Format (Full sections):**
 ```markdown
 #### 1. Implement password authentication (SSH0001-1)
+**Description**
+Create password-based authentication mechanism with secure credential handling
+
 **Status**
 Completed
+
 **Review Rating**
 4.5
+
+{{error-handling-subtask}}
 ```
 
-Both formats are valid and can be mixed within the same task list.
+The numbered format is recommended for significant subtasks that need detailed tracking. Both formats are valid and can be mixed within the same task list. See `docs/examples/` for complete working examples demonstrating both formats.
 
 ### Code Quality KPIs
 
@@ -256,21 +262,21 @@ See `/docs/example_tasklist_with_references.md` for a complete working example.
 
 ### Task Categories
 
-Tasks are organized into categories based on their ID number:
-- **Core Infrastructure (1-99)**: Essential system components
-- **Features (100-199)**: User-facing functionality
-- **Documentation (200-299)**: Documentation tasks
-- **Testing (300-399)**: Test implementation
+For Elixir/Phoenix projects, tasks are organized into semantic categories:
 
-Each category has specific required sections. For example, feature tasks require:
-- Feature Specification
-- User Impact
-- Integration Points
+| Category | ID Range | Prefix | Description |
+| --- | --- | --- | --- |
+| OTP/GenServer | 0001-0099 | OTP | Process management, supervisors, state machines |
+| Phoenix Web | 0100-0199 | PHX | Controllers, LiveView, routes, plugs |
+| Business Logic | 0200-0299 | CTX | Contexts, domain logic, business rules |
+| Data Layer | 0300-0399 | DB | Schemas, migrations, queries, repos |
+| Infrastructure | 0400-0499 | INF | Deployment, monitoring, configuration |
+| Testing | 0500-0599 | TST | Test implementation, coverage, CI/CD |
 
-Documentation tasks require:
-- Documentation Scope
-- Target Audience
-- Related Documents
+Each category has specific required sections tailored to its domain. For example:
+- **OTP tasks**: Process Design, State Management, Supervision Strategy
+- **Phoenix tasks**: Route Design, Context Integration, Template/Component Strategy
+- **Data tasks**: Schema Design, Migration Strategy, Query Optimization
 
 ## Multi-Project Support
 
@@ -290,7 +296,24 @@ The validator ensures consistency within each task hierarchy, so a task with ID 
 
 ## Example Files
 
-The repository includes several example files in the `test/fixtures` directory:
+The repository includes several example files:
+
+### Complete Task List Examples (`docs/examples/`)
+
+Full working examples for different project categories:
+
+- `otp_genserver_example.md` - OTP/GenServer tasks with supervision patterns
+- `phoenix_web_example.md` - Phoenix web development tasks (LiveView, controllers)
+- `business_logic_example.md` - Phoenix contexts and business logic tasks
+- `data_layer_example.md` - Ecto schemas and database design tasks
+- `infrastructure_example.md` - Deployment and infrastructure tasks
+- `testing_example.md` - Comprehensive testing strategy tasks
+
+Each example demonstrates proper subtask formatting, including both numbered subtasks with full sections and checkbox format for minor items. See `docs/examples/README.md` for detailed explanations.
+
+### Test Fixtures (`test/fixtures/`)
+
+Validation test cases:
 
 - `sample_tasklist.md` - A basic valid task list
 - `multi_prefix_tasklist.md` - A valid task list with multiple project prefixes

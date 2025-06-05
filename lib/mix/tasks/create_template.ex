@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.TaskValidator.CreateTemplate do
+  @shortdoc "Creates a template TaskList.md with example tasks"
+
   @moduledoc """
   Creates a template TaskList.md file with example tasks.
 
@@ -14,14 +16,59 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
 
       --path       Path where to create the TaskList.md file (default: ./TaskList.md)
       --prefix     Project prefix for example tasks (default: PRJ)
-      --category   Task category to generate template for: otp_genserver, phoenix_web, business_logic, data_layer, infrastructure, testing (default: phoenix_web)
-      --semantic   Use semantic prefixes (OTP, PHX, CTX, DB, INF, TST) instead of custom prefix
+      --category   Task category to generate template for (default: phoenix_web)
+      --semantic   Use semantic prefixes instead of custom prefix
 
-  ## Example
+  ## Categories
 
+  Each category generates a template tailored for specific development areas:
+
+      * otp_genserver    - OTP/GenServer development (processes, supervisors, state management)
+      * phoenix_web      - Phoenix web development (LiveView, controllers, routes)
+      * business_logic   - Phoenix contexts and domain logic (CRUD operations, validations)
+      * data_layer       - Ecto schemas and database design (migrations, queries)
+      * infrastructure   - Deployment and DevOps (releases, monitoring, configuration)
+      * testing          - Test implementation (unit tests, integration, property-based)
+
+  ## Semantic Prefixes
+
+  When using --semantic, the following domain-specific prefixes are used:
+
+      * OTP - OTP/GenServer tasks
+      * PHX - Phoenix web tasks
+      * CTX - Context/business logic tasks
+      * DB  - Database/Ecto tasks
+      * INF - Infrastructure tasks
+      * TST - Testing tasks
+
+  ## Examples
+
+      # Generate default Phoenix web template
       mix task_validator.create_template
+
+      # Generate OTP template with custom prefix
       mix task_validator.create_template --path ./docs/TaskList.md --prefix SSH --category otp_genserver
-      mix task_validator.create_template --category testing
+
+      # Generate testing template with semantic prefix (TST)
+      mix task_validator.create_template --category testing --semantic
+
+      # Generate all templates in a directory
+      for cat in otp_genserver phoenix_web business_logic data_layer infrastructure testing; do
+        mix task_validator.create_template --category $cat --path docs/$cat.md
+      done
+
+  ## Template Features
+
+  All generated templates include:
+
+      * Main tasks demonstrating "In Progress" status with subtasks
+      * Numbered subtasks with full sections (Status, Error Handling)
+      * Checkbox subtasks for minor items (phoenix_web and data_layer templates)
+      * Completed task examples with all required sections
+      * Proper use of the reference system ({{error-handling}}, {{test-requirements}}, etc.)
+      * Category-specific sections and requirements
+
+  The generated templates are guaranteed to pass validation.
   """
 
   use Mix.Task

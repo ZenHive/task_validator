@@ -3,6 +3,12 @@
 <!-- REFERENCE USAGE EXAMPLE: This file demonstrates proper use of content references -->
 <!-- References reduce file size by 60-70% while maintaining consistency -->
 <!-- The TaskValidator library ONLY validates references exist - it does NOT expand them -->
+
+<!-- For guidance on writing task lists, see:
+     - guides/writing_compliant_tasks.md - Complete guide
+     - guides/configuration.md - Configuration options  
+     - guides/sample_tasklist.md - Full example
+     - docs/examples/ - Category-specific examples -->
 <!-- AI tools should expand references when editing/processing this file -->
 
 <!-- COMMON REFERENCES USED IN THIS FILE: -->

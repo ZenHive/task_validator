@@ -1,34 +1,56 @@
 defmodule Mix.Tasks.ValidateTasklist do
+  @shortdoc "Validates a TaskList.md file format and structure"
+
   @moduledoc """
   Validates the format and structure of a TaskList.md file.
 
+  ## Usage
+
+      mix validate_tasklist [OPTIONS]
+
+  ## Options
+
+      --path       Path to the TaskList.md file (default: ./TaskList.md)
+
+  ## Examples
+
+      # Validate default TaskList.md in current directory
+      mix validate_tasklist
+
+      # Validate specific file
+      mix validate_tasklist --path docs/TaskList.md
+
+      # Validate example templates
+      mix validate_tasklist --path docs/examples/phoenix_web_example.md
+
   ## Task List Structure
-  The task list must contain two main sections:
-  - Current Tasks (Active tasks in progress)
-  - Completed Tasks (Tasks that have been finished)
+
+  The task list must contain:
+  - **Current Tasks** table (active tasks)
+  - **Completed Tasks** table (finished tasks)
+  - **Task Details** sections for each task
 
   ## Validation Rules
 
   ### Task ID Format
   - 2-4 uppercase letters as prefix (e.g., SSH, SCP, ERR)
-  - 3-4 digits as sequence number
-  - Optional hyphen and number for subtasks (e.g., SSH0001-1)
-  - Examples: SSH0001, SCP0001, ERR001, SSH0001-1
+  - 3-4 digits as sequence number (e.g., 001, 0001)
+  - Optional subtask suffix: hyphen + number for numbered subtasks (e.g., SSH0001-1)
+  - Optional subtask suffix: letter for checkbox subtasks (e.g., SSH0001a)
+  - Examples: SSH0001, SCP0001, ERR001, SSH0001-1, SSH0001a
 
   ### Status Values
-  Valid statuses:
-  - Planned
-  - In Progress
-  - Review
-  - Completed
-  - Blocked
+  - **Planned** - Task not yet started
+  - **In Progress** - Active work (requires subtasks)
+  - **Review** - Under review
+  - **Completed** - Finished (requires additional sections)
+  - **Blocked** - Work blocked
 
   ### Priority Values
-  Valid priorities:
-  - Critical
-  - High
-  - Medium
-  - Low
+  - **Critical** - Must be done immediately
+  - **High** - Important, should be prioritized
+  - **Medium** - Normal priority
+  - **Low** - Can be deferred
 
   ### Error Handling Requirements
   Main tasks and subtasks have different error handling requirements:
@@ -71,19 +93,31 @@ defmodule Mix.Tasks.ValidateTasklist do
   - Incomplete error handling documentation
 
   ### Required Sections
-  Main tasks must include:
-  - Description
-  - Simplicity Progression Plan
-  - Simplicity Principle
-  - Abstraction Evaluation
-  - Requirements
-  - ExUnit Test Requirements
-  - Integration Test Scenarios
-  - Typespec Requirements
-  - TypeSpec Documentation
-  - TypeSpec Verification
-  - Status
-  - Priority
+
+  #### Main Tasks
+  All main tasks must include these sections:
+  - **Description** - What the task accomplishes
+  - **Status** - Current state (Planned, In Progress, etc.)
+  - **Priority** - Task importance (Critical, High, Medium, Low)
+  - **Dependencies** - Other tasks that must be completed first (or "None")
+  - **Error Handling** - Comprehensive error handling documentation
+  - Test sections: ExUnit Test Requirements, Integration Test Scenarios
+  - TypeSpec sections: Requirements, Documentation, Verification
+  - Code Quality KPIs - Metrics for code quality
+
+  Additional sections for specific categories:
+  - **OTP tasks**: Process Design, State Management, Supervision Strategy
+  - **Phoenix tasks**: Route Design, Context Integration, Template/Component Strategy
+  - **Data tasks**: Schema Design, Migration Strategy, Query Optimization
+  - **Business logic**: Context Boundaries, Business Rules
+
+  #### Completed Tasks
+  Completed tasks require additional sections:
+  - **Implementation Notes** - How it was implemented
+  - **Complexity Assessment** - Implementation complexity
+  - **Maintenance Impact** - Long-term maintenance considerations
+  - **Error Handling Implementation** - How errors were handled
+  - **Review Rating** - Quality score (1-5)
 
   ### Subtask Requirements
   - Must use same prefix as parent task
@@ -94,25 +128,35 @@ defmodule Mix.Tasks.ValidateTasklist do
   - Can be organized as checkboxes or numbered entries
 
   ### Subtask Formats
+
   Tasks can organize subtasks in two formats:
 
-  1. **Checkbox Format** (Recommended):
+  #### 1. Checkbox Format (for minor items)
+  Simple checklist format for quick subtasks:
   ```markdown
   **Subtasks**
-  - [x] Basic structure implementation [SSH0001-1]
-  - [ ] Essential features [SSH0001-2]
-  - [ ] Integration testing [SSH0001-3]
+  - [x] Basic structure implementation [SSH0001a]
+  - [ ] Essential features [SSH0001b]
+  - [ ] Integration testing [SSH0001c]
   ```
 
-  2. **Numbered Format**:
+  #### 2. Numbered Format (for major subtasks)
+  Full format with sections for significant subtasks:
   ```markdown
   #### 1. Basic structure implementation (SSH0001-1)
+  **Description**
+  Implement the core structure with proper error handling
+
   **Status**
   Completed
 
   **Review Rating**
   4.5
+
+  \\{\\{error-handling-subtask\\}\\}
   ```
+
+  Use numbered format when subtasks need detailed tracking, checkbox format for simple items.
 
   ### Additional Rules
   - Tasks marked as "In Progress" must have at least one subtask
@@ -120,13 +164,28 @@ defmodule Mix.Tasks.ValidateTasklist do
   - No duplicate task IDs allowed
   - All subtasks must use the same prefix as their parent task
 
-  ## Usage
+  ### Reference System
 
-      mix validate_tasklist [OPTIONS]
+  The validator supports content references to reduce file size by 60-70%:
+  - Define references: `## #\\{\\{reference-name\\}\\}`
+  - Use references: `\\{\\{reference-name\\}\\}`
+  - Common references: \\{\\{error-handling\\}\\}, \\{\\{test-requirements\\}\\}, \\{\\{standard-kpis\\}\\}
+  - The validator only checks existence, not content
 
-  ## Options
+  ### Common Validation Errors
 
-      --path  Specify a non-default path to the TaskList.md file (default: docs/TaskList.md)
+  1. **Wrong error handling format** - Using main task format for subtasks
+  2. **Missing subtasks** - "In Progress" tasks without subtasks
+  3. **Prefix mismatch** - Subtask ID doesn't match parent prefix
+  4. **Invalid status** - Using non-standard status values
+  5. **Missing sections** - Required sections not present
+  6. **Invalid review rating** - Wrong format or out of range
+
+  ## See Also
+
+  - Run `mix help task_validator.create_template` to generate templates
+  - Check `docs/examples/` for complete working examples
+  - See `README.md` for detailed documentation
 
   ## Example
 

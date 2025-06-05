@@ -1,5 +1,35 @@
 # Changelog
 
+## v0.9.1 (2025-06-05)
+
+### Added
+- **BUG001 Fix**: Corrected subtask content parsing in MarkdownParser
+  - Subtasks now properly capture all content between headers
+  - Both numbered (#### format) and checkbox formats work correctly
+  
+- **BUG002 Fix**: Enhanced all templates with proper subtask examples  
+  - All 6 category templates now include comprehensive subtask demonstrations
+  - Templates show both numbered and checkbox subtask formats
+  - Parent tasks with subtasks correctly show "In Progress" status
+  - All templates now pass validation
+
+- **Mix Task Improvements**
+  - Created Mix.Tasks.TaskValidator as main entry point
+  - Enhanced help documentation with detailed examples
+  - Fixed naming inconsistency (all tasks now appear in `mix help`)
+  - Added @shortdoc attributes for better discoverability
+
+### Fixed
+- Subtask content extraction not capturing full content between headers
+- Template generation missing proper subtask examples
+- Confusing Mix task naming structure  
+- Missing documentation files referenced in README and mix.exs
+
+### Documentation
+- Recreated missing guides/ directory with comprehensive documentation
+- Updated CHANGELOG to reflect actual project state
+- Fixed broken references throughout the codebase
+
 ## v0.9.0 (2025-06-04)
 
 ### Features
@@ -35,10 +65,13 @@
 
 ### Documentation
 
-- Added comprehensive refactoring review (docs/RefactorReview.md)
-- Added complexity-based KPI documentation to writing guide
-- Created KPI_Complexity_Proposal.md explaining the design rationale
-- Updated examples to demonstrate all new features
+- Created comprehensive guides/ directory with:
+  - configuration.md - How to configure TaskValidator
+  - writing_compliant_tasks.md - Complete guide for writing valid task lists
+  - sample_tasklist.md - Full example demonstrating all features
+- Created docs/examples/ directory with 6 category-specific examples
+- Added docs/examples/README.md explaining subtask formats
+- Updated main README with clearer documentation structure
 - Added multiple Elixir/Phoenix-specific examples
 
 ### Internal Improvements
