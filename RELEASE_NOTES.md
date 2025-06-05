@@ -14,6 +14,14 @@ TaskValidator v0.9.2 is ready for release with comprehensive documentation updat
   - API usage examples and best practices
   - Designed to help AI assistants work effectively with TaskValidator
 
+### Improved
+- **Testing Philosophy** - Integration-first approach
+  - All test requirement references now emphasize testing against real dependencies first
+  - "Document actual behavior before mocking" is a core principle
+  - Unit tests should be extracted from integration test observations
+  - Specific real-world test scenarios for different task categories
+  - Clear message: unrealistic mocks are worse than no tests
+
 ## What's New in v0.9.1
 
 ### Bug Fixes

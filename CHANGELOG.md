@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.9.2 (2025-06-05)
+## v0.9.3 (2025-06-05)
 
 ### Added
 - **llm.txt** - Machine-readable instructions for LLMs
@@ -12,9 +12,22 @@
 ### Improved
 - **Test Requirements Philosophy** - Emphasize integration-first testing
   - Updated all test requirement references to promote testing against real dependencies first
-  - Document actual behavior before creating any mocks
+  - Document actual behavior before creating mocks
   - Extract unit tests from integration test observations
   - Emphasizes that unrealistic mocks are worse than no tests
+
+## v0.9.2 (2025-06-05)
+
+### Added
+- **llm.txt** - Machine-readable instructions for LLMs
+  - Comprehensive guide for AI assistants using the library
+  - Quick reference for validation rules and formats
+  - Common error solutions and best practices
+  - API usage examples and patterns
+
+## v0.9.2 (2025-06-05) - Not Published
+
+_Skipped due to Hex.pm publication timing - all changes included in v0.9.3_
 
 ## v0.9.1 (2025-06-05)
 
