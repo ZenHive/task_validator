@@ -25,7 +25,8 @@
 | ID      | Description                                           | Status      | Priority | Assignee | Review Rating |
 | ------- | ----------------------------------------------------- | ----------- | -------- | -------- | ------------- |
 | TST001  | Improve Test Coverage for Core Modules                | Planned     | High     | AI       | -             |
-| BUG001  | Fix Subtask Content Parsing in MarkdownParser         | Planned     | Critical | AI       | -             |
+| BUG001  | Fix Subtask Content Parsing in MarkdownParser         | Completed   | Critical | AI       | 5.0           |
+| BUG002  | Fix Template Generation Missing Subtasks              | Planned     | High     | AI       | -             |
 
 ## Task Details
 
@@ -44,6 +45,51 @@
 - Ensure edge cases are covered
 
 **Dependencies**: None
+
+#### 1. Add tests for TaskList module (TST001-1)
+**Description**
+Create comprehensive unit tests for TaskValidator.Core.TaskList module including struct creation, validation, and edge cases
+
+**Status**
+Planned
+
+{{error-handling-subtask}}
+
+#### 2. Add tests for ValidationError module (TST001-2)
+**Description**
+Test ValidationError creation, formatting, and error aggregation functionality
+
+**Status**
+Planned
+
+{{error-handling-subtask}}
+
+#### 3. Add tests for TaskExtractor module (TST001-3)
+**Description**
+Test TaskExtractor parsing functionality for various task formats and edge cases
+
+**Status**
+Planned
+
+{{error-handling-subtask}}
+
+#### 4. Add property-based tests (TST001-4)
+**Description**
+Implement property-based testing using StreamData for robust edge case coverage
+
+**Status**
+Planned
+
+{{error-handling-subtask}}
+
+#### 5. Add integration tests (TST001-5)
+**Description**
+Create integration tests that verify the interaction between core modules
+
+**Status**
+Planned
+
+{{error-handling-subtask}}
 
 {{error-handling-main}}
 
@@ -74,7 +120,7 @@
 
 **Description**: The MarkdownParser's `extract_subtasks` function currently creates subtasks with empty content arrays. It only extracts the `#### N. Description (ID)` header line but doesn't capture the content between that header and the next subtask or section. This causes all subtasks to fail validation because required sections like **Status** and **Error Handling** cannot be found in empty content arrays.
 
-**Current Status**: Planned
+**Current Status**: Completed
 
 **Priority**: Critical
 
@@ -84,6 +130,102 @@
 - Populate the `content` field of subtask Task structs (currently hardcoded as empty array at line 255)
 - Preserve accurate line numbers for error reporting
 - Handle edge cases: last subtask in section, empty subtasks, nested content
+
+**Dependencies**: None
+
+#### 1. Analyze extract_subtasks function (BUG001-1)
+**Description**
+Understand the current implementation and identify where content extraction fails
+
+**Status**
+Completed
+
+**Review Rating**: 5.0
+
+{{error-handling-subtask}}
+
+#### 2. Implement content extraction logic (BUG001-2)
+**Description**
+Modify extract_subtasks to capture content between subtask headers
+
+**Status**
+Completed
+
+**Review Rating**: 5.0
+
+{{error-handling-subtask}}
+
+#### 3. Handle edge cases (BUG001-3)
+**Description**
+Ensure proper handling of empty subtasks, consecutive headers, and last subtask
+
+**Status**
+Completed
+
+**Review Rating**: 5.0
+
+{{error-handling-subtask}}
+
+#### 4. Add comprehensive tests (BUG001-4)
+**Description**
+Create tests for various subtask formats and edge cases
+
+**Status**
+Completed
+
+**Review Rating**: 5.0
+
+{{error-handling-subtask}}
+
+{{error-handling-main}}
+
+{{test-requirements}}
+
+{{typespec-requirements}}
+
+**Implementation Notes**: 
+- Modified `extract_subtasks` function to track positions of all subtasks and extract content between them
+- Added logic to handle edge cases where subtasks have no content (consecutive headers)
+- Updated status and priority extraction to use content from subtasks
+- Fixed range warning by checking if start index is less than or equal to end index
+- Added comprehensive tests including edge cases
+
+**Complexity Assessment**: Medium - Required understanding of list processing and edge case handling
+
+**Maintenance Impact**: Low - The fix is self-contained within the parser module
+
+**Error Handling Implementation**: Used existing error handling patterns, no rescue blocks needed
+
+**Code Quality Metrics**: {{standard-kpis}}
+
+**Testing Strategy**:
+- Test subtask content extraction with various formats
+- Verify line number accuracy
+- Test edge cases (empty content, nested sections)
+- Ensure backward compatibility
+
+**Performance Requirements**:
+- No significant parsing performance degradation
+- Memory efficient content extraction
+
+**Status**: Completed
+
+---
+
+### BUG002: Fix Template Generation Missing Subtasks
+
+**Description**: The `mix task_validator.create_template` command creates task list templates without any subtask examples. This makes it unclear to users how to properly format subtasks in their task lists. The template should include at least one example of both numbered subtasks (e.g., TSK001-1) and checkbox subtasks to demonstrate the proper format.
+
+**Current Status**: Planned
+
+**Priority**: High
+
+**Technical Requirements**:
+- Modify create_template.ex to include subtask examples in generated templates
+- Add at least one numbered subtask example (#### format)
+- Add at least one checkbox subtask example (- [ ] format)
+- Ensure subtasks follow proper ID formatting (PARENT-N for numbered, PARENTa for checkbox)
+- Include proper subtask sections (Status, Error Handling reference)
 
 **Dependencies**: None
 
@@ -98,14 +240,14 @@
 **Code Quality Metrics**: {{standard-kpis}}
 
 **Testing Strategy**:
-- Test subtask content extraction with various formats
-- Verify line number accuracy
-- Test edge cases (empty content, nested sections)
-- Ensure backward compatibility
+- Test template generation includes subtasks
+- Verify generated templates pass validation
+- Test both default and custom prefix scenarios
+- Ensure subtask IDs match parent task prefix
 
 **Performance Requirements**:
-- No significant parsing performance degradation
-- Memory efficient content extraction
+- No performance impact on template generation
+- Template should remain readable and not overly complex
 
 **Status**: Planned
 

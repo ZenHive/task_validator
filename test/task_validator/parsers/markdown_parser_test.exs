@@ -78,7 +78,7 @@ defmodule TaskValidator.Parsers.MarkdownParserTest do
       # Check numbered subtask
       numbered_subtask = Enum.find(task.subtasks, &(&1.id == "TST001-1"))
       assert numbered_subtask.type == :subtask
-      assert numbered_subtask.status == "Planned"
+      assert numbered_subtask.status == "Completed"
 
       # Check checkbox subtasks
       checkbox_subtask_a = Enum.find(task.subtasks, &(&1.id == "TST001a"))
@@ -190,6 +190,142 @@ defmodule TaskValidator.Parsers.MarkdownParserTest do
       lines = ["# Empty task list"]
 
       assert {:error, "No tasks found in the document"} = MarkdownParser.extract_tasks(lines)
+    end
+
+    test "extracts subtask content correctly" do
+      content = """
+      # Task List
+
+      ## Current Tasks
+      | ID | Description | Status | Priority |
+      | --- | --- | --- | --- |
+      | TST002 | Task with detailed subtasks | In Progress | High |
+
+      ## Task Details
+
+      ### TST002: Task with detailed subtasks
+      **Description**
+      Testing subtask content extraction
+
+      **Status**
+      In Progress
+
+      #### 1. First subtask (TST002-1)
+      **Description**
+      First subtask with content
+
+      **Status**
+      In Progress
+
+      **Error Handling**
+      {{error-handling-subtask}}
+
+      #### 2. Second subtask (TST002-2)
+      **Description**
+      Second subtask
+
+      **Status**
+      Planned
+
+      **Error Handling**
+      Custom error handling for this subtask
+
+      #### 3. Last subtask (TST002-3)
+      **Description**
+      Last subtask to test edge case
+
+      **Status**
+      Completed
+      """
+
+      assert {:ok, %TaskList{} = task_list} = MarkdownParser.parse(content)
+      task = hd(task_list.tasks)
+      assert length(task.subtasks) == 3
+
+      # Check first subtask content
+      first_subtask = Enum.find(task.subtasks, &(&1.id == "TST002-1"))
+      assert first_subtask.status == "In Progress"
+      assert "**Description**" in first_subtask.content
+      assert "First subtask with content" in first_subtask.content
+      assert "{{error-handling-subtask}}" in first_subtask.content
+
+      # Check second subtask content
+      second_subtask = Enum.find(task.subtasks, &(&1.id == "TST002-2"))
+      assert second_subtask.status == "Planned"
+      assert "Custom error handling for this subtask" in second_subtask.content
+
+      # Check last subtask (edge case)
+      last_subtask = Enum.find(task.subtasks, &(&1.id == "TST002-3"))
+      assert last_subtask.status == "Completed"
+      assert "Last subtask to test edge case" in last_subtask.content
+    end
+
+    test "handles edge cases for subtask content extraction" do
+      content = """
+      # Task List
+
+      ## Current Tasks
+      | ID | Description | Status | Priority |
+      | --- | --- | --- | --- |
+      | TST003 | Edge case testing | In Progress | High |
+
+      ## Task Details
+
+      ### TST003: Edge case testing
+      **Description**
+      Testing edge cases
+
+      #### 1. Empty subtask (TST003-1)
+      #### 2. Subtask with only status (TST003-2)
+      **Status**
+      Completed
+
+      #### 3. Mixed content subtask (TST003-3)
+      Some text here
+      **Status**
+      In Progress
+      More text
+      **Error Handling**
+      Error info
+
+      - [x] Checkbox in between [TST003a]
+      - [ ] Another checkbox [TST003b]
+
+      #### 4. Last subtask before end (TST003-4)
+      **Status**
+      Planned
+      This is the last numbered subtask
+      """
+
+      assert {:ok, %TaskList{} = task_list} = MarkdownParser.parse(content)
+      task = hd(task_list.tasks)
+      # 4 numbered + 2 checkbox
+      assert length(task.subtasks) == 6
+
+      # Empty subtask
+      empty_subtask = Enum.find(task.subtasks, &(&1.id == "TST003-1"))
+      assert empty_subtask.content == []
+      # Default when no status found
+      assert empty_subtask.status == "Planned"
+
+      # Subtask with only status
+      status_only = Enum.find(task.subtasks, &(&1.id == "TST003-2"))
+      assert status_only.status == "Completed"
+      assert length(status_only.content) > 0
+
+      # Mixed content subtask
+      mixed_subtask = Enum.find(task.subtasks, &(&1.id == "TST003-3"))
+      assert mixed_subtask.status == "In Progress"
+      assert "Some text here" in mixed_subtask.content
+      assert "More text" in mixed_subtask.content
+      assert "Error info" in mixed_subtask.content
+      # Should not include checkbox lines
+      refute Enum.any?(mixed_subtask.content, &String.contains?(&1, "[TST003a]"))
+
+      # Last subtask
+      last_subtask = Enum.find(task.subtasks, &(&1.id == "TST003-4"))
+      assert last_subtask.status == "Planned"
+      assert "This is the last numbered subtask" in last_subtask.content
     end
   end
 end

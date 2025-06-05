@@ -230,14 +230,48 @@ defmodule TaskValidator.Parsers.MarkdownParser do
   end
 
   defp extract_subtasks(task_content, base_line_number) do
-    task_content
+    # Find all subtask positions
+    subtask_positions =
+      task_content
+      |> Enum.with_index()
+      |> Enum.filter(fn {line, _} ->
+        String.match?(line, ~r/^#### \d+\./) || String.match?(line, ~r/^- \[[x\s]\]/)
+      end)
+
+    # Process each subtask with its content
+    subtask_positions
     |> Enum.with_index()
-    |> Enum.filter(fn {line, _} ->
-      String.match?(line, ~r/^#### \d+\./) || String.match?(line, ~r/^- \[[x\s]\]/)
-    end)
-    |> Enum.map(fn {line, idx} ->
+    |> Enum.map(fn {{line, idx}, pos_idx} ->
       # Adjust line number to be relative to full document
       actual_line_number = base_line_number + idx
+
+      # Find the end of this subtask's content
+      next_subtask_idx =
+        if pos_idx + 1 < length(subtask_positions) do
+          {_, next_idx} = Enum.at(subtask_positions, pos_idx + 1)
+          next_idx
+        else
+          # This is the last subtask, so content goes to the end of task content
+          length(task_content)
+        end
+
+      # Extract content for this subtask (from current line to next subtask/end)
+      subtask_content =
+        if String.match?(line, ~r/^#### \d+\./) do
+          # For numbered subtasks, include content after the header line
+          start_idx = idx + 1
+          end_idx = next_subtask_idx - 1
+
+          if start_idx <= end_idx do
+            Enum.slice(task_content, start_idx..end_idx)
+          else
+            # Empty content when subtask immediately follows another
+            []
+          end
+        else
+          # For checkbox subtasks, they typically don't have content sections
+          []
+        end
 
       cond do
         String.match?(line, ~r/^#### \d+\./) ->
@@ -250,9 +284,10 @@ defmodule TaskValidator.Parsers.MarkdownParser do
                 prefix: extract_task_prefix(subtask_id),
                 parent_id: extract_parent_id(subtask_id),
                 description: extract_subtask_description(line),
-                status: "Planned",
-                priority: "",
-                content: [],
+                status: extract_status_from_content(subtask_content) || "Planned",
+                priority: extract_priority_from_content(subtask_content) || "",
+                review_rating: extract_review_rating_from_content(subtask_content),
+                content: subtask_content,
                 subtasks: [],
                 category: Task.determine_category(subtask_id)
               }
@@ -267,7 +302,8 @@ defmodule TaskValidator.Parsers.MarkdownParser do
                 description: line,
                 status: "Planned",
                 priority: "",
-                content: [],
+                review_rating: nil,
+                content: subtask_content,
                 subtasks: [],
                 category: nil
               }
@@ -297,6 +333,7 @@ defmodule TaskValidator.Parsers.MarkdownParser do
             description: extract_checkbox_description(line),
             status: if(checked, do: "Completed", else: "Planned"),
             priority: "",
+            review_rating: nil,
             content: [],
             subtasks: [],
             category: Task.determine_category(subtask_id)
@@ -448,6 +485,24 @@ defmodule TaskValidator.Parsers.MarkdownParser do
     case Regex.run(~r/^#### \d+\.\s*(.+?)(?:\s*\([A-Z]{2,4}\d{3,4}-\d+\))?$/, line) do
       [_, desc] -> String.trim(desc)
       _ -> String.trim(line)
+    end
+  end
+
+  defp extract_review_rating_from_content(content) do
+    case Enum.find(content, &String.starts_with?(&1, "**Review Rating**")) do
+      nil ->
+        nil
+
+      rating_line ->
+        if String.contains?(rating_line, ":") do
+          rating_line |> String.split(":", parts: 2) |> List.last() |> String.trim()
+        else
+          rating_idx = Enum.find_index(content, &(&1 == rating_line))
+
+          if rating_idx && rating_idx + 1 < length(content) do
+            content |> Enum.at(rating_idx + 1) |> String.trim()
+          end
+        end
     end
   end
 
