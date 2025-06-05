@@ -9,6 +9,13 @@
   - Common error solutions and best practices
   - API usage examples and patterns
 
+### Improved
+- **Test Requirements Philosophy** - Emphasize integration-first testing
+  - Updated all test requirement references to promote testing against real dependencies first
+  - Document actual behavior before creating any mocks
+  - Extract unit tests from integration test observations
+  - Emphasizes that unrealistic mocks are worse than no tests
+
 ## v0.9.1 (2025-06-05)
 
 ### Added

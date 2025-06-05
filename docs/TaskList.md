@@ -326,16 +326,20 @@ None
 - Include context in error messages
 
 ## #{{test-requirements}}
-**ExUnit Test Requirements**:
-- Comprehensive unit tests for all functions
-- Edge case testing
-- Error condition testing
-- Integration testing where applicable
+**ExUnit Test Requirements**
+- Integration tests FIRST against real dependencies
+- Document actual behavior before mocking
+- Unit tests extracted from integration test observations
+- Test error paths with real error conditions
+- Property-based testing for complex validations
 
-**Integration Test Scenarios**:
-- End-to-end validation testing
-- Performance testing for large inputs
-- Concurrent operation testing
+**Integration Test Scenarios**
+- Real file system operations with actual TaskList.md files
+- Actual Mix task execution with real command output
+- Genuine validation errors from malformed files
+- Real pipeline execution with multiple validators
+- Actual performance testing with large task lists
+- Concurrent validation of multiple files
 - Failure recovery testing
 
 ## #{{typespec-requirements}}

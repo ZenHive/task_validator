@@ -239,7 +239,7 @@ To reduce file size and maintain consistency, use references:
 Common references:
 - `{{error-handling}}` - Main task error handling
 - `{{error-handling-subtask}}` - Subtask error handling
-- `{{test-requirements}}` - Test sections
+- `{{test-requirements}}` - Integration-first test sections
 - `{{typespec-requirements}}` - TypeSpec sections
 - `{{standard-kpis}}` - Code quality metrics
 

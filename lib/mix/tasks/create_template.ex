@@ -194,15 +194,20 @@ defmodule Mix.Tasks.TaskValidator.CreateTemplate do
   - Process linking considerations
 
   ## \#{{test-requirements}}
-  **ExUnit Test Requirements**:
-  - Comprehensive unit tests
-  - Edge case testing
-  - Error condition testing
+  **ExUnit Test Requirements**
+  - Integration tests FIRST against real dependencies
+  - Document actual behavior before mocking
+  - Unit tests extracted from integration test observations
+  - Test error paths with real error conditions
+  - Verify supervisor integration with real processes
 
-  **Integration Test Scenarios**:
-  - End-to-end validation
-  - Performance testing
-  - Concurrent operation testing
+  **Integration Test Scenarios**
+  - Real database operations, not mocked repos
+  - Actual process communication, not test doubles
+  - Real file system operations with temp directories
+  - Actual network calls to local test servers
+  - Real supervision tree behavior under failure
+  - Genuine timeout and error conditions
 
   ## \#{{typespec-requirements}}
   **Typespec Requirements**:

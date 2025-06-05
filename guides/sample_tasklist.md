@@ -325,15 +325,20 @@ Changeset-based validation with database constraints as backup.
 - Monitoring approach
 
 ## #{{test-requirements}}
-**ExUnit Test Requirements**:
-- Comprehensive unit tests
-- Edge case testing
-- Error condition testing
+**ExUnit Test Requirements**
+- Integration tests FIRST against real dependencies
+- Document actual behavior before mocking
+- Unit tests extracted from integration test observations
+- Test error paths with real error conditions
+- Verify supervisor integration with real processes
 
-**Integration Test Scenarios**:
-- End-to-end validation
-- Performance testing
-- Concurrent operation testing
+**Integration Test Scenarios**
+- Real GenServer processes under supervision
+- Actual message passing and timeouts
+- Real process crashes and restarts
+- Genuine state persistence and recovery
+- Actual distributed node communication
+- Real resource exhaustion scenarios
 
 ## #{{typespec-requirements}}
 **Typespec Requirements**:

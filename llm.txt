@@ -194,7 +194,7 @@ Planned
 Common references:
 - {{error-handling}} - Main task error handling
 - {{error-handling-subtask}} - Subtask error handling
-- {{test-requirements}} - All test sections
+- {{test-requirements}} - Integration-first test requirements
 - {{typespec-requirements}} - All TypeSpec sections
 - {{standard-kpis}} - Code quality metrics
 - {{def-no-dependencies}} - When task has no dependencies
@@ -254,6 +254,11 @@ mix task_validator.create_template [--category CAT] [--prefix PRE] [--semantic]
 5. **Subtasks**: Use numbered for complex, checkbox for simple
 6. **Error Handling**: Never mix main/subtask formats
 7. **Status Flow**: Planned → In Progress (with subtasks) → Completed
+8. **Testing Philosophy**: Integration tests FIRST against real dependencies
+   - Test with real databases, processes, files, networks
+   - Document actual behavior before any mocking
+   - Extract unit tests from integration observations
+   - Mocks that don't match reality are worse than no tests
 
 ## Quick Examples
 
