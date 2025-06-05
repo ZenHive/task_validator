@@ -214,18 +214,20 @@ Completed
 
 ### BUG002: Fix Template Generation Missing Subtasks
 
-**Description**: The `mix task_validator.create_template` command creates task list templates without any subtask examples. This makes it unclear to users how to properly format subtasks in their task lists. The template should include at least one example of both numbered subtasks (e.g., TSK001-1) and checkbox subtasks to demonstrate the proper format.
+**Description**: The `mix task_validator.create_template` command creates task list templates with incomplete or missing subtask examples. Only the phoenix_web template includes subtasks, but they use a simplified checkbox format that wouldn't pass validation if the parent task status was "In Progress". None of the templates demonstrate the full subtask format with proper sections (Status, Error Handling, etc.) or numbered subtasks (#### format). This makes it unclear to users how to properly format subtasks in their task lists.
 
 **Current Status**: Planned
 
 **Priority**: High
 
 **Technical Requirements**:
-- Modify create_template.ex to include subtask examples in generated templates
-- Add at least one numbered subtask example (#### format)
-- Add at least one checkbox subtask example (- [ ] format)
+- Fix phoenix_web template: Replace simple checkbox format with proper subtask structure
+- Add subtask examples to all other templates (otp_genserver, business_logic, data_layer, infrastructure, testing)
+- Include at least one numbered subtask example (#### format) with full sections
+- Keep checkbox subtask examples but ensure they're noted as simplified format
 - Ensure subtasks follow proper ID formatting (PARENT-N for numbered, PARENTa for checkbox)
-- Include proper subtask sections (Status, Error Handling reference)
+- Include proper subtask sections (Status, Error Handling reference, Review Rating for completed)
+- Ensure generated templates still pass validation
 
 **Dependencies**: None
 
@@ -235,7 +237,13 @@ Completed
 
 {{typespec-requirements}}
 
-**Implementation Notes**: (To be completed)
+**Implementation Notes**: 
+Current findings:
+- All templates currently pass validation (tested all 6 categories)
+- Only phoenix_web template has subtask examples (simple checkbox format)
+- Checkbox format works for display but wouldn't validate if parent task is "In Progress"
+- No templates demonstrate full numbered subtask format with sections
+- Templates use {{error-handling-subtask}} reference but don't show subtask structure
 
 **Code Quality Metrics**: {{standard-kpis}}
 
