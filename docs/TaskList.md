@@ -26,7 +26,7 @@
 | ------- | ----------------------------------------------------- | ----------- | -------- | -------- | ------------- |
 | TST001  | Improve Test Coverage for Core Modules                | Planned     | High     | AI       | -             |
 | BUG001  | Fix Subtask Content Parsing in MarkdownParser         | Completed   | Critical | AI       | 5.0           |
-| BUG002  | Fix Template Generation Missing Subtasks              | Planned     | High     | AI       | -             |
+| BUG002  | Fix Template Generation Missing Subtasks              | Completed   | High     | AI       | 5.0           |
 
 ## Task Details
 
@@ -216,7 +216,7 @@ Completed
 
 **Description**: The `mix task_validator.create_template` command creates task list templates with incomplete or missing subtask examples. Only the phoenix_web template includes subtasks, but they use a simplified checkbox format that wouldn't pass validation if the parent task status was "In Progress". None of the templates demonstrate the full subtask format with proper sections (Status, Error Handling, etc.) or numbered subtasks (#### format). This makes it unclear to users how to properly format subtasks in their task lists.
 
-**Current Status**: Planned
+**Current Status**: Completed
 
 **Priority**: High
 
@@ -238,12 +238,12 @@ Completed
 {{typespec-requirements}}
 
 **Implementation Notes**: 
-Current findings:
-- All templates currently pass validation (tested all 6 categories)
-- Only phoenix_web template has subtask examples (simple checkbox format)
-- Checkbox format works for display but wouldn't validate if parent task is "In Progress"
-- No templates demonstrate full numbered subtask format with sections
-- Templates use {{error-handling-subtask}} reference but don't show subtask structure
+- Updated all 6 template categories to include proper subtask examples
+- Each template now shows numbered subtasks with full sections (Status, Error Handling)
+- Phoenix_web and data_layer templates also demonstrate checkbox format for minor items
+- Templates now properly demonstrate "In Progress" status with subtasks
+- All enhanced templates pass validation
+- Testing template includes multiple tasks to show variety
 
 **Code Quality Metrics**: {{standard-kpis}}
 
@@ -257,7 +257,14 @@ Current findings:
 - No performance impact on template generation
 - Template should remain readable and not overly complex
 
-**Status**: Planned
+**Complexity Assessment**: Low - Template string updates only
+
+**Maintenance Impact**: Low - Self-contained template improvements
+
+**Error Handling Implementation**: No error handling changes needed
+
+**Status**: Completed
+**Review Rating**: 5.0
 
 ---
 
