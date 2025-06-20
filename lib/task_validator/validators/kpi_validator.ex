@@ -103,19 +103,7 @@ defmodule TaskValidator.Validators.KpiValidator do
     "testing" => :complex
   }
 
-  @kpi_patterns %{
-    functions_per_module: ~r/functions per module:\s*(\d+)/i,
-    lines_per_function: ~r/lines per function:\s*(\d+)/i,
-    call_depth: ~r/call depth:\s*(\d+)/i,
-    cyclomatic_complexity: ~r/cyclomatic complexity:\s*(\d+)/i,
-    # Elixir-specific patterns
-    pattern_match_depth: ~r/pattern match depth:\s*(\d+)/i,
-    dialyzer_warnings: ~r/dialyzer warnings:\s*(\d+)/i,
-    credo_score: ~r/credo score:\s*(\d+(?:\.\d+)?)/i,
-    genserver_state_complexity: ~r/genserver state complexity:\s*(\d+)/i,
-    phoenix_context_boundaries: ~r/phoenix context boundaries:\s*(\d+)/i,
-    ecto_query_complexity: ~r/ecto query complexity:\s*(\d+)/i
-  }
+  # KPI patterns are defined in get_kpi_patterns/0 function to avoid compile-time issues
 
   @kpi_names %{
     functions_per_module: "Functions per module",
@@ -367,10 +355,27 @@ defmodule TaskValidator.Validators.KpiValidator do
 
   # Parses KPI metrics from content lines
   defp parse_kpi_metrics(kpi_lines) do
-    Enum.reduce(@kpi_patterns, %{}, fn {kpi_key, pattern}, acc ->
+    Enum.reduce(get_kpi_patterns(), %{}, fn {kpi_key, pattern}, acc ->
       value = extract_kpi_value(kpi_lines, pattern)
       if value, do: Map.put(acc, kpi_key, value), else: acc
     end)
+  end
+
+  # Returns KPI patterns map
+  defp get_kpi_patterns do
+    %{
+      functions_per_module: ~r/functions per module:\s*(\d+)/i,
+      lines_per_function: ~r/lines per function:\s*(\d+)/i,
+      call_depth: ~r/call depth:\s*(\d+)/i,
+      cyclomatic_complexity: ~r/cyclomatic complexity:\s*(\d+)/i,
+      # Elixir-specific patterns
+      pattern_match_depth: ~r/pattern match depth:\s*(\d+)/i,
+      dialyzer_warnings: ~r/dialyzer warnings:\s*(\d+)/i,
+      credo_score: ~r/credo score:\s*(\d+(?:\.\d+)?)/i,
+      genserver_state_complexity: ~r/genserver state complexity:\s*(\d+)/i,
+      phoenix_context_boundaries: ~r/phoenix context boundaries:\s*(\d+)/i,
+      ecto_query_complexity: ~r/ecto query complexity:\s*(\d+)/i
+    }
   end
 
   # Extracts a KPI value using regex pattern

@@ -191,11 +191,12 @@ defmodule TaskValidator.Parsers.MarkdownParser do
       |> Enum.with_index()
       |> Enum.filter(fn {line, _} ->
         # Match both traditional format (SSH0001) and dash format (PROJ-0001)
-        String.match?(line, ~r/^### [A-Z-]{2,9}\d{3,4}:/)
+        # Support both ### and #### headers
+        String.match?(line, ~r/^###+ [A-Z-]{2,9}\d{3,4}:/)
       end)
       |> Enum.map(fn {line, idx} ->
         # Extract ID from various formats: SSH0001, PROJ-0001, etc.
-        [_, id | _] = Regex.run(~r/### ([A-Z-]{2,9}\d{3,4})/, line)
+        [_, id | _] = Regex.run(~r/###+ ([A-Z-]{2,9}\d{3,4})/, line)
         %{id: id, start_line: idx}
       end)
 
@@ -205,8 +206,9 @@ defmodule TaskValidator.Parsers.MarkdownParser do
         |> Enum.drop(start_line + 1)
         |> Enum.with_index()
         |> Enum.find(fn {line, _} ->
-          # Stop at next task header (###) or reference definition (## #{{) or major section (##)
-          String.match?(line, ~r/^###\s/) or
+          # Stop at next main task header or reference definition or major section
+          # Main task headers have format: ### ID: or #### ID:
+          String.match?(line, ~r/^###+ [A-Z-]{2,9}\d{3,4}:/) or
             String.match?(line, ~r/^## #?\{\{/) or
             String.match?(line, ~r/^## [A-Z]/)
         end)

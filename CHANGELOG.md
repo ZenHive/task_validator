@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.9.5 (2025-01-20)
+
+### Fixed
+- **KPI Validator Compilation** - Fixed regex pattern compilation error
+  - Moved regex patterns from module attributes to runtime function
+  - Resolves ArgumentError when compiling with Elixir 1.19.0+
+  - Prevents "cannot inject attribute into function/macro" errors
+  - No changes to validation behavior - internal implementation fix only
+
+## v0.9.4 (2025-01-06)
+
+### Improved
+- **Markdown Parser Enhancement** - Support for flexible task header formats
+  - Now accepts both `###` and `####` (3 or 4 hashes) for task headers
+  - Enables validation of task lists with different markdown formatting styles
+  - Fixes compatibility with projects using 4-hash headers for task details
+
 ## v0.9.3 (2025-06-05)
 
 ### Added
